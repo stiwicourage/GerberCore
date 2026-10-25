@@ -57,8 +57,11 @@ Describe 'Show-GerberUpdatePolicyView' -Tag 'CoreUpdatePolicy' {
             Should -Invoke Wait-GerberContinue -Times 0
         }
 
-        It 'shows actionable save failure without a success message' {
-            Mock Set-GerberCoreUpdateChannel { throw [IO.IOException]::new('fixture failure') }
+        It 'shows actionable save failure without a success message for <FailureType>' -ForEach @(
+            @{ FailureType = [IO.IOException] }
+            @{ FailureType = [UnauthorizedAccessException] }
+        ) {
+            Mock Set-GerberCoreUpdateChannel { throw $FailureType::new('fixture failure') }
             { Show-GerberUpdatePolicyView } | Should -Throw '*test escape*'
             Should -Invoke Write-GerberScreenLine -ParameterFilter { $Text -match 'could not save.*permissions' }
             Should -Invoke Write-GerberScreenLine -Times 0 -ParameterFilter { $Text -match 'saved:' }
