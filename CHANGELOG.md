@@ -8,6 +8,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Added
+
+### Fixed
+
+### Security
+
+## [0.1.0] - 2026-10-25
+
+### Added
+
 - Added Gerber Core update management through `/update`: fresh PSModuleUpdate
   discovery, compact version/repository overview, default-cancel installation
   confirmation and verification/recovery/restart guidance. Startup checks are
@@ -193,10 +209,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   are distinguished explicitly.
 - `/repository review` is no longer implemented in Gerber Core. The shared `/repository` root remains in Core, while the DevOps review workflow and review-rule configuration are now provided by the sibling Gerber.ExampleOrg plugin through the public Gerber Plugin API.
 
-### Deprecated
-
-### Removed
-
 ### Added
 
 - Added version number to Gerber menu header (now displays "Gerber #0.1.0-preview - DevOps Multitool") so users can confirm the module has been reloaded after rebuilds
@@ -234,5 +246,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Double `Esc` within 200 milliseconds still returns directly to the root prompt from nested plugin-management views.
   - Direct `/plugins list` and `/plugins info` execution continues to use Gerber's existing command-resolution behavior without inventing a separate navigation history.
 
-
-### Security
