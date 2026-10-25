@@ -9,13 +9,14 @@ Describe 'Show-GerberStartupUpdateNotification' -Tag 'G4A7' {
 
     Context 'root redraw notification' {
         It 'renders the available Core version with the manual review command' {
+            . "$root/src/private/update/Show-GerberStartupUpdateNotification.ps1"
             Mock Get-Variable { [pscustomobject]@{ Status = 'Available'; Available = '0.2.0' } } -ParameterFilter {
                 $Name -eq 'GerberStartupUpdateState' -and $Scope -eq 'Script'
             }
             Mock Write-GerberScreenLine {}
-            Write-Host "Notification source: $((Get-Command Show-GerberStartupUpdateNotification).ScriptBlock.File)"
-            Write-Host "Notification implementation: $((Get-Command Show-GerberStartupUpdateNotification).ScriptBlock)"
+            Write-Host "Before notification: $(Get-PSBreakpoint | Where-Object Script -Like '*Show-GerberStartupUpdateNotification.ps1' | Format-List * | Out-String)"
             Show-GerberStartupUpdateNotification
+            Write-Host "After notification: $(Get-PSBreakpoint | Where-Object Script -Like '*Show-GerberStartupUpdateNotification.ps1' | Format-List * | Out-String)"
             Should -Invoke Write-GerberScreenLine -Times 1 -Exactly -ParameterFilter {
                 $Text -ceq 'Gerber Core 0.2.0 is available. Run /update list to review.'
             }
