@@ -38,7 +38,12 @@
       "Enabled": true,
       "Path": [
         "src/public/*.ps1",
-        "src/private/**/*.ps1"
+        "src/private/**/*.ps1",
+        "scripts/build/Invoke-ScriptAnalyzerCI.ps1",
+        "scripts/build/Sync-AgenticCopilotScaffold.ps1",
+        "scripts/build/ci/Invoke-CodeSceneAnalysis.ps1",
+        "scripts/build/ci/Invoke-NativeCredentialPlatformCI.ps1",
+        "scripts/build/ci/Repair-CodeSceneJaCoCoCoverage.ps1"
       ],
       "CoveragePercentTarget": 90,
       "OutputPath": "artifacts/coverage.xml",

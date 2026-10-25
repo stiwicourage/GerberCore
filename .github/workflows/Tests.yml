@@ -9,7 +9,7 @@ on:
       - main
       - develop
   schedule:
-    - cron: '0 3 * * *'
+    - cron: "0 3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -94,11 +94,6 @@ jobs:
           Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $report
           Write-Output $report
 
-      - name: Upload results to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-
   codescene-coverage-gates:
     runs-on: ubuntu-latest
     needs:
@@ -121,7 +116,7 @@ jobs:
         with:
           access-token: ${{ secrets.CS_ACCESS_TOKEN }}
           project-url: ${{ format('{0}/v2/projects/{1}', vars.CS_URL, vars.CS_PROJECT_ID) }}
-          coverage-files: '**/coverage.xml'
+          coverage-files: "**/coverage.xml"
 
   codescene-analysis:
     runs-on: ubuntu-latest
