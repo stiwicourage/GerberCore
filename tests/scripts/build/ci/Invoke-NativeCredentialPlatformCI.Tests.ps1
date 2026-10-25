@@ -9,6 +9,8 @@ BeforeAll {
             $report.SelectSingleNode('//test-suite').SetAttribute($Attribute, $Value)
         }
         $report.Save($Path)
+        # Coarse filesystem timestamps can predate the runner's start time on Linux.
+        (Get-Item -LiteralPath $Path).LastWriteTimeUtc = [datetime]::UtcNow.AddSeconds(5)
     }
 
     function Get-NativeCredentialLinuxShell {
