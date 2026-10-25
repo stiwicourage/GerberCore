@@ -3,10 +3,12 @@
 BeforeAll {
     $root = Split-Path -Parent $PSScriptRoot
     $script:gerber = Import-Module "$root/dist/Gerber/Gerber.psd1" -Force -PassThru
+    $script:coreContractConfigPath = $env:GERBER_CONFIG_PATH
 }
 
 Describe 'Core equal-version update contract' -Tag 'GerberPmu011' {
     BeforeEach {
+        $env:GERBER_CONFIG_PATH = Join-Path $TestDrive 'missing-core-update-config.json'
         Mock Get-PSModuleUpdate -ModuleName Gerber {
             [pscustomobject]@{
                 InstalledVersion = '0.1.0'; TargetVersion = '0.1.0'; Disposition = 'UpToDate'
@@ -19,6 +21,10 @@ Describe 'Core equal-version update contract' -Tag 'GerberPmu011' {
         Mock Write-GerberPromptTrace -ModuleName Gerber {}
         Mock Wait-GerberContinue -ModuleName Gerber {}
         Mock Read-GerberConfirmationPrompt -ModuleName Gerber { throw 'An up-to-date plan cannot offer installation.' }
+    }
+
+    AfterAll {
+        $env:GERBER_CONFIG_PATH = $script:coreContractConfigPath
     }
 
     It 'preserves PMU available 0.1.0 and UpToDate without offering installation' {

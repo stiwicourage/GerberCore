@@ -38,9 +38,11 @@ function script:Get-PSModuleUpdate {
     $state = Get-GerberTerminalUpdateState
     if ($script:GerberTerminalUpdateStartup) { $state.startupDiscoveryCount++ } else { $state.discoveryCount++ }
     $state.repository = $Repository
+    $state.channel = $Policy.Channel
+    if ($script:GerberTerminalUpdateStartup) { $state.startupChannel = $Policy.Channel }
     Write-GerberTerminalUpdateState $state
     Assert-GerberTerminalUpdateDiscovery $fixture $state
-    $script:GerberTerminalLiveUpdatePlan = Get-GerberTerminalUpdatePlan $fixture
+    $script:GerberTerminalLiveUpdatePlan = Get-GerberTerminalUpdatePlan $fixture $Policy.Channel
     $script:GerberTerminalLiveUpdatePlan
 }
 
@@ -61,21 +63,35 @@ function script:Test-GerberTerminalUpdateFailure {
 function script:Assert-GerberTerminalUpdateRequest {
     param([object]$Module, [string]$Repository, [hashtable]$Policy, [pscredential]$Credential)
     if ($Module.Name -ne 'Gerber' -or $Repository -cne 'PSGallery') { throw 'Unexpected terminal update target.' }
-    if ($Policy.Channel -cne 'Stable' -or $Policy.Scope -cne 'CurrentUser') { throw 'Unexpected terminal update policy.' }
+    if ($Policy.Channel -cnotin @('Stable', 'IncludePrerelease') -or $Policy.Scope -cne 'CurrentUser') { throw 'Unexpected terminal update policy.' }
     if ($Policy.ExpectedRepositoryUri.AbsoluteUri -cne 'https://www.powershellgallery.com/api/v2') { throw 'Unexpected terminal update endpoint.' }
     if ($null -ne $Credential) { throw 'Core must not request credentials.' }
 }
 
 function script:Get-GerberTerminalUpdatePlan {
-    param([hashtable]$Fixture)
+    param([hashtable]$Fixture, [string]$Channel)
     $installed = if ($Fixture.Contains('installedVersion')) { $Fixture.installedVersion } else { '0.1.0-preview' }
     $target = if ($Fixture.Contains('targetVersion')) { $Fixture.targetVersion } else { '0.2.0' }
     [pscustomobject]@{
         ModuleName = 'Gerber'; InstalledVersion = $installed; TargetVersion = $target
         RepositoryName = 'PSGallery'; UpdateAvailable = $Fixture.disposition -eq 'UpdateAvailable'
-        RepositoryUri = 'https://www.powershellgallery.com/api/v2'; Channel = 'Stable'; Scope = 'CurrentUser'
+        RepositoryUri = 'https://www.powershellgallery.com/api/v2'; Channel = $Channel; Scope = 'CurrentUser'
         Disposition = $Fixture.disposition; RestartRequired = $false
         RequiresRepositoryTrust = $false; RequiresLicenseAcceptance = $false
+    }
+
+    $script:GerberTerminalSaveConfiguration = ${function:Save-GerberUserConfiguration}
+    function script:Save-GerberUserConfiguration {
+        [CmdletBinding(SupportsShouldProcess)]
+        param([object]$Configuration)
+        if (-not $PSCmdlet.ShouldProcess('disposable terminal configuration', 'Save')) { return }
+        $fixture = Get-GerberTerminalUpdateFixture
+        if ($fixture.Contains('failPolicySaveCount') -and $fixture.failPolicySaveCount -gt 0) {
+            $fixture.failPolicySaveCount--
+            [IO.File]::WriteAllText($script:GerberTerminalUpdateFixturePath, ($fixture | ConvertTo-Json))
+            throw [IO.IOException]::new('Simulated configuration write failure.')
+        }
+        & $script:GerberTerminalSaveConfiguration -Configuration $Configuration -Confirm:$false
     }
 }
 

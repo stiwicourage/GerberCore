@@ -27,9 +27,10 @@ Describe 'Core update architecture' -Tag 'G4A7' {
         $text | Should -Not -Match 'Register-PSRepository|Register-PSResourceRepository'
     }
 
-    It 'keeps Core independent of user environment and plugin update configuration' {
+    It 'reads only the isolated Core channel resolver, never legacy or plugin update bindings' {
         $text = ($updateFiles | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n"
         $text | Should -Not -Match 'Get-GerberUserConfiguration|Get-GerberCredential|updates\.modules|Unconfigured|CredentialRequired'
+        $text | Should -Match 'Resolve-GerberCoreUpdatePolicy'
         $bindingFiles = $updateFiles | Where-Object BaseName -NE 'Test-GerberUpdateInteractive'
         $bindingText = ($bindingFiles | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n"
         $bindingText | Should -Not -Match '\$env:|GetEnvironmentVariable'

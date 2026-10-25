@@ -1,6 +1,6 @@
 function Show-GerberUpdateView {
     param()
-    Start-GerberScreen -Name '/update'
+    Start-GerberScreen -Name '/update list'
     Write-GerberScreenLine -Text 'Checking Core updates...'
     $interactive = Test-GerberUpdateInteractive
     $state = Get-GerberCoreUpdateState
@@ -15,7 +15,7 @@ function Invoke-GerberUpdateConfirmation {
     param([object]$State)
     $text = Get-GerberUpdateConsentText $State
     $options = Get-GerberConfirmationPromptOptionSet -ActionLabel 'Install Core update' -CancelLabel 'Cancel' -DefaultOption 'cancel'
-    $accepted = Read-GerberConfirmationPrompt -Prompt 'Install Core update?' -ScreenTitle '/update' -ScreenText $text -PromptOptionSet $options
+    $accepted = Read-GerberConfirmationPrompt -Prompt 'Install Core update?' -ScreenTitle '/update list' -ScreenText $text -PromptOptionSet $options
     Write-GerberScreenLine
     Write-GerberPromptTrace -EventName 'update-confirmation' -Data @{ Accepted = $accepted }
     if (-not $accepted) {

@@ -2,6 +2,8 @@
 
 **Status:** Current project-owner architecture contract, amended by **G-4A7R**:
 permanent PSGallery-only Core distribution; G-4A9 plugin updates remain planned.
+Core channel selection is amended by the approved `/update policy` design:
+Stable remains the default; IncludePrerelease is an explicit persisted opt-in.
 Historical G-4A5/G-4A6/G-4A7 evidence is retained below.
 **Date:** 2026-10-23; dependency clarification, source inspection and G-4A7/G-4A7R follow-up 2026-10-24.
 **Authority:** This document and decision [D-017](../../DECISIONS.md) supersede the conflicting recommendations in [G-4A0](G-4A0-shared-self-update-analysis.md), [G-4A1](G-4A1-psmoduleupdate-design.md) and [G-4A2](G-4A2-psresourceget-provider-qualification.md), and explicitly amend the NovaModuleTools exclusion in D-002. Those reports and the original D-002 wording remain historical context; no other D-002 boundaries are removed.
@@ -109,7 +111,7 @@ Illustrative notification only, not an observed available Gerber package:
 Gerber v0.1.0-preview
 
 A new version of Gerber is available: v0.1.0
-Run /update to install the latest version.
+Run /update list to review the available update.
 ```
 
 The check is **informational only**. It never installs, prompts for installation, changes module versions, updates plugins, modifies Gerber configuration, or triggers a release/publication. There is no automatic installation or scheduled background updating.
@@ -119,9 +121,9 @@ Outcomes must stay distinct and must never claim currency without evidence:
 | Outcome | Meaning | Presentation |
 | --- | --- | --- |
 | No update available | Check completed; no newer eligible version | No notification required |
-| Update available | Newer eligible version found | Short notification with version and `/update` |
+| Update available | Newer eligible version found | Short notification with version and `/update list` |
 | Update check failed | Network or repository error occurred | Startup continues; no "up to date" claim |
-| No matching package / no eligible stable release | Discovery completed but Core is unpublished or no target satisfies PMU policy | Startup continues without an availability/currency claim; `/update` explains the outcome |
+| No matching package / no eligible release | Discovery completed but Core is unpublished or no target satisfies the selected PMU policy | Startup continues without an availability/currency claim; `/update list` explains the outcome |
 | Update check could not be completed | Probe timed out or executing-module identity could not be resolved | Startup continues; no "up to date" claim |
 
 Failure never blocks startup. Exact wording, timeouts and caching are implementation details to be specified without changing the above contract.
@@ -140,7 +142,10 @@ outcomes do not display a currency claim. Core never reports `Unconfigured`.
 
 `/update` is Gerber's central update-management command. It is architecturally responsible for **both** Core and plugin updates and is **not** Core-only (the Core-only scope in G-4A0/G-4A1 is superseded). Both use the same PMU engine.
 
-`/update` performs a **fresh** update check when invoked; it never reuses a startup notification result as current.
+`/update` opens the shared inline **list**/**policy** chooser.
+`/update list` performs a **fresh** update check when invoked; it never reuses
+a startup notification result as current. Result continuation and policy Escape
+return to the update chooser using the standard local-back navigation.
 
 **Implementation sequencing:**
 
@@ -197,13 +202,25 @@ into `PMU.DiscoveryFailed`; that path remains a reported failure, not inferred
 success. See the [observed integration limits](../core-updates.md#qualification-and-remaining-scope).
 
 `Resolve-GerberCoreUpdateRequest` is Core-specific and does not read user or
-plugin configuration. Core explicitly passes `-Repository PSGallery` and PMU
+plugin configuration. `Resolve-GerberCoreUpdatePolicy` separately reads only
+the optional `coreUpdates.channel` setting from validated user configuration.
+Both manual discovery and the isolated startup process use that resolver and
+the same configuration path, including `GERBER_CONFIG_PATH`.
+Core explicitly passes `-Repository PSGallery` and PMU
 policy with `ExpectedRepositoryUri` equal to
-`https://www.powershellgallery.com/api/v2`, `Channel = Stable` and
+`https://www.powershellgallery.com/api/v2`, the selected channel and
 `Scope = CurrentUser`. PMU rejects a missing/repointed registration. Installation
 uses the original live plan, which retains the exact repository binding.
 The obsolete `updates.modules.Gerber` object is ignored, not migrated or
 rewritten; unrelated plugin settings are preserved.
+
+`/update policy` persists `Stable` or `IncludePrerelease` atomically without
+discovery or installation; missing values default to Stable without writing,
+while explicit invalid values/types fail validation. A changed channel clears
+the session's old startup notification. Discovery retains its effective channel
+separately from the original PMU plan, and installation requires both to match
+the current configured channel. Repository identity, endpoint, CurrentUser
+scope and explicit default-Cancel confirmation remain mandatory.
 
 **Plugins select repositories independently per plugin** through Gerber-owned
 metadata/configuration (G-4A9; schema not implemented here). Different plugins
@@ -216,10 +233,11 @@ engine; no vendor-specific providers or duplicate package mechanics are introduc
 ### Core prerelease policy
 
 The installed Core identity includes manifest `PSData.Prerelease`, for example
-`0.1.0-preview`. Core explicitly uses PMU's **Stable** channel: newer previews
+`0.1.0-preview`. Core defaults to PMU's **Stable** channel: newer previews
 are excluded; stable `0.1.0` may supersede that preview, and newer stable versions
 are eligible under PMU's normal no-downgrade/installed-copy rules. PMU also
-supports `IncludePrerelease`, but Core does not expose a channel setting.
+supports `IncludePrerelease`, selected explicitly through `/update policy`
+and persisted as `coreUpdates.channel` for startup and manual checks.
 Gerber neither compares version strings nor changes its declared version.
 PMU owns semantic ordering, candidate filtering, plan selection and installation.
 

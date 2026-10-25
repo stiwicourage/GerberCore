@@ -29,7 +29,7 @@ Gerber requires **NovaModuleTools** for its plugin-development functionality
 integrated update management. Both are declared in `project.json` `RequiredModules`;
 Nova build/package/publish operations do not run at startup. Gerber now performs a
 bounded, notification-only Core update check when `Invoke-Gerber` starts, and
-`/update` checks afresh and installs only after explicit confirmation;
+`/update list` checks afresh and installs only after explicit confirmation;
 no repository setup is required. Core always uses the official **PSGallery**
 repository; user settings, environment variables and plugins cannot override it,
 and there is no fallback.
@@ -82,7 +82,9 @@ Root commands and completion suggestions show `/exit`, `/help`, `/plugins`, and 
 | `/exit` | Exit the interactive session cleanly |
 | `/help` | Show the built-in command help |
 | `/plugins` | Inspect, enable or disable plugins, or generate a working plugin with `/plugins create` |
-| `/update` | Check Gerber Core in PSGallery and confirm installation of an eligible stable update |
+| `/update` | Open the Core update submenu with list and policy actions |
+| `/update list` | Check Gerber Core in PSGallery and confirm installation of an eligible update |
+| `/update policy` | Choose Stable only (default) or Include prereleases for Core updates |
 | `/branch` | Open an inline submenu for repository branch operations such as `find` and `set-searchable` |
 | `/list` | Open an inline submenu for read-only list/report actions such as `ado-agents` and `ado-team-members`; plugins may contribute more beneath the same root |
 | `/pipelines` | Open an inline submenu for pipeline workflows such as `release common-data-model`, `release approve-environment`, `tags update`, and `tags delete` |
@@ -134,7 +136,7 @@ Examples inside the palette:
 /plugins list
 /plugins info Gerber.Example
 /plugins create
-/update
+/update list
 /help
 /secrets list
 /secrets test
@@ -143,7 +145,8 @@ Examples inside the palette:
 
 ### `/update`
 
-`/update` shows Core's installed and available versions, PSGallery and
+`/update` opens the shared submenu with **list** and **policy**, like `/secrets`.
+`/update list` shows Core's installed and available versions, PSGallery and
 discovery status. **Cancel is the default**; installation delegates to PSModuleUpdate,
 reports verification/recovery outcomes and tells you when to restart PowerShell.
 An unreachable repository is not reported as "up to date". Startup checks never
@@ -151,7 +154,13 @@ install, request installation consent or access native credential storage.
 An unpublished package is reported without inventing an available version.
 
 See [Core updates](docs/core-updates.md) for the fixed repository binding,
-stable-only prerelease policy and separation from future per-plugin repositories.
+channel selection and separation from future per-plugin repositories.
+
+`/update policy` saves **Stable only** (default) or **Include prereleases** in
+your user configuration. Startup and manual `/update list` checks use the same choice.
+The current choice is preselected: `Enter` saves it, and `Esc` leaves it unchanged.
+Changing the policy performs no update check or installation, clears any old
+startup notification and takes effect on the next `/update list`.
 
 ### `/tools create-uuid`
 

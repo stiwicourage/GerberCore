@@ -5,6 +5,16 @@ BeforeAll {
 
 Describe 'Get-GerberUpdateFailureMessage' -Tag 'G4A7' {
     Context 'safe actionable PMU diagnostics' {
+        It 'keeps missing-package guidance valid for either channel and names the check action' {
+            $record = [System.Management.Automation.ErrorRecord]::new(
+                [System.InvalidOperationException]::new('Provider detail'),
+                'PMU.PackageNotFound', [System.Management.Automation.ErrorCategory]::NotSpecified, $null
+            )
+            $message = Get-GerberUpdateFailureMessage -ErrorRecord $record
+            $message | Should -Match 'selected update policy.* /update list'
+            $message | Should -Not -Match 'stable update policy'
+        }
+
         It 'maps <id> to supported-layout guidance without guessing the cause or recovery outcome' -Tag 'UnsupportedInstallation' -ForEach @(
             @{ id = 'PMU.UnsupportedInstallation'; detail = 'raw-layout: no version directories user:secret' }
             @{ id = 'PMU.UnsupportedInstallation,Get-PSModuleUpdate'; detail = 'raw-layout: another unsupported case user:secret' }

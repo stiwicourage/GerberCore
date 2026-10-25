@@ -20,13 +20,16 @@
 
 ### Added
 
-- `/update` checks Gerber Core in its fixed official PSGallery repository and shows
+- `/update` opens the shared **list**/**policy** submenu. `/update list`
+  checks Gerber Core in its fixed official PSGallery repository and shows
   installed/available versions before asking whether to install. Cancel is the
   default; results explain verification, recovery and when to restart PowerShell.
   Startup can notify about an available version but never installs or asks to
   install or request credentials. No Core repository setup or override is
-  supported; old Core update settings are ignored. Only stable targets are
-  eligible, including stable promotion from an installed preview. Core is not
+  supported; old Core update settings are ignored. `/update policy` saves
+  **Stable only** (the default) or **Include prereleases** for both startup and
+  manual checks. Changing it installs nothing; installation still defaults to Cancel.
+  Stable promotion from an installed preview remains supported. Core is not
   published to PSGallery yet, so no matching package is a legitimate result.
   See [Core updates](docs/core-updates.md). Plugin updates are not included yet.
 

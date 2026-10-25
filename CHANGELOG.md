@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Added `/update policy` with persistent **Stable only** (default) and
+  **Include prereleases** channels in optional `coreUpdates.channel` user
+  configuration. Startup and manual discovery share the validated PMU policy;
+  installation rejects plans from a changed channel while retaining the fixed
+  PSGallery endpoint, CurrentUser scope and default-Cancel confirmation.
+  Selection performs no discovery or installation, preserves unrelated settings
+  and ignored legacy bindings, and clears stale startup notifications.
+  `/update` now opens the shared **list**/**policy** submenu; `/update list`
+  performs the fresh check and returns to that chooser after results.
+
 ### Changed
 
 - Raised the minimum PSModuleUpdate dependency from numeric `0.1.0` to `0.1.1`
