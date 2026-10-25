@@ -6,6 +6,23 @@ the overview and your confirmation. Both PMU and NovaModuleTools remain required
 modules; Nova's plugin-development operations are unrelated to update installation.
 **Plugin updates are planned, not implemented in this phase.**
 
+## PMU dependency and deployment
+
+Gerber requires numeric PMU **0.1.1** or later. The corrected upstream source is
+`0.1.1-preview`; its manifest version is numeric `0.1.1`, not a prerelease string.
+This minimum selects the installed-copy scan correction without adding a Gerber
+version comparator or changing Gerber's version.
+
+**PMU 0.1.1 is not yet published.** Bootstrapping that dependency is a separate,
+explicitly approved deployment action, not part of `/update` or this change.
+An installation with only PMU 0.1.0 cannot satisfy the new minimum. Local
+qualification uses the built PMU artifact on an isolated session module path,
+never edits to installed modules. Gerber does not automatically migrate,
+delete or clean up local Gerber copies or module directories.
+Updating this checkout or building Gerber does not replace an installed or
+already-loaded PMU. The actual `gerber` launcher must resolve the new dependency
+separately before source-level qualification applies to that session.
+
 ## Official Core repository
 
 **PSGallery is the permanent, sole official Gerber Core distribution channel.**
@@ -19,8 +36,7 @@ Core also supplies PMU with the expected official endpoint,
 registration is a discovery failure, not permission to use another repository.
 Gerber does not register repositories or ask for Core repository credentials.
 
-**Gerber Core has not yet been published to PSGallery.** Successful discovery
-can therefore find no matching package. This is not a configuration error, does
+Successful discovery can find no matching or eligible package. This is not a configuration error, does
 not prove the installed version is current and does not offer installation.
 Gerber never invents package versions or update results.
 
@@ -40,7 +56,7 @@ contract and plugin update implementation remain **G-4A9**; this task adds neith
 ## Prerelease policy
 
 Core explicitly selects PMU's **Stable** channel and **CurrentUser** scope.
-The installed `0.1.0-preview` remains unchanged and is displayed with its
+For an installed `0.1.0-preview`, discovery leaves it unchanged and displays its
 prerelease label. PMU understands installed prerelease metadata and compares
 semantic versions: stable `0.1.0` can supersede `0.1.0-preview`, as can a newer
 stable release. Newer prereleases are excluded by the Stable channel, even
@@ -75,6 +91,10 @@ Inside Gerber, run:
 
 Each invocation checks afresh and shows a Core row with installed version,
 available version, PSGallery and status. Core never reports `Unconfigured`.
+When PMU returns installed `0.1.0`, target `0.1.0` and `UpToDate`, the
+**Available** column remains `0.1.0`, the status remains `UpToDate`, and
+no installation is offered. Gerber maps PMU's plan directly; it does not
+re-query the gallery or compare versions to decide whether to show a target.
 No matching package or no eligible stable release is distinguished from a
 repository/discovery failure when PMU supplies its structured
 `PMU.PackageNotFound` result; none of these offers installation.
@@ -100,24 +120,62 @@ Azure Artifacts or Nexus, nor Gerber Windows/Linux qualification. A read-only
 package lookup is not installation qualification. PMU's own
 provider/platform results do not establish Gerber integration support.
 
-Two limitations were observed with the installed PMU `0.1.0-preview`:
+The earlier installed PMU `0.1.0-preview` exposed two separate limitations:
 
 - Its installed-copy scan treats subdirectories of an existing flat,
   unversioned CurrentUser Gerber installation as version candidates. Ordinary
   `en-US`/`resources` directories then cause `PMU.ModuleIdentityMismatch`
-  before repository discovery. Gerber reports Unavailable and PSGallery,
-  not Unconfigured; no installation layout is migrated or bypassed.
+  before repository discovery. Upstream `0.1.1-preview` corrects this scan:
+  legacy `en-US`/`resources` directories without a module manifest beside
+  numeric version installations are ignored, while genuine invalid candidates
+  are still rejected. A flat-only copy is not selected as a versioned
+  installation or migrated. Gerber consumes that correction through its
+  numeric `0.1.1` minimum; PMU owns the layout regression tests.
 - When PSResourceGet throws `PackageNotFound`, PMU currently replaces that
   identifier with `PMU.DiscoveryFailed` and withholds the original diagnostics.
   Gerber cannot safely classify that failure as successful no-package discovery.
   `NoMatchingPackage` is used only for PMU's explicit `PMU.PackageNotFound`.
   Gerber does not add a second package query or parse error text to guess.
 
-These are blockers to complete live Core-update qualification, not passing
-integration checks. A real read-only PSResourceGet lookup returned no Gerber
-package in PSGallery; direct PMU lookup on the current installation stopped at
-the identity issue above. No live update installation was attempted. Both PMU
-behaviors need an upstream correction before that live path can be qualified.
+The unpublished dependency and the separate `PackageNotFound` issue remain
+deployment/live-qualification blockers, not passing integration checks.
+Historically, a read-only PSResourceGet lookup returned no Gerber package in
+PSGallery and direct PMU lookup stopped at the identity issue before the correction.
+Those earlier observations are not current feed state.
+
+**Read-only verification, 2026-10-25:** the public `Get-PSModuleUpdate` command
+from built PMU `0.1.1-preview`, supplied the installed versioned Gerber `0.1.0`
+module and official PSGallery Stable/CurrentUser policy, returned
+`InstalledVersion: 0.1.0`, `TargetVersion: 0.1.0`, `Disposition: UpToDate`.
+This verifies the original local mixed-layout lookup against the actual feed.
+No global module/repository changes or installation were performed.
+It does not qualify a flat-only installation, dependency bootstrap or the
+complete live installation/recovery path.
+It also does not qualify a different executing Gerber version, such as a local
+`0.1.1-preview`. If that session's PMU check fails, Available remains `-` and
+status remains `Unavailable`; Gerber must not infer currency from the `0.1.0`
+probe, perform another gallery query or compare versions itself.
+
+**Later installed-launch diagnosis, 2026-10-25:** the user's locally published
+Gerber and PMU were both `0.1.1-preview` in flat-only layouts, without numeric
+version folders. Installed PMU contained the corrected candidate filter.
+Public discovery returned `PMU.UnsupportedInstallation`:
+`No existing installation was found in the requested scope.`
+This is the unsupported flat-only installation boundary, not the old identity
+scan error or a PSGallery failure. The corrected source does not select or
+migrate that flat copy; qualification of a supported installation remains a
+separate approved action. No installation mutation is performed by this change.
+An exact real-launch PTY check through the user's `gerber` launcher reproduced
+Available `-` / `Unavailable` and returned safely to the home prompt.
+
+Gerber now maps the structured `PMU.UnsupportedInstallation` identifier to
+generic supported-layout guidance: install Gerber in a supported numeric-version
+module directory, restart PowerShell and retry `/update`. This identifier can
+have multiple causes; Gerber does not parse exception text or label every case
+as flat-only. The message assumes neither successful installation nor rollback,
+and the update view offers no installation for this discovery failure.
+An already-installed/running Gerber copy retains its old diagnostic until the
+user separately updates that copy; editing this checkout does not change it.
 
 Plugin repository association, per-plugin selection, approval/GUID continuity
 and post-update activation still need their separate G-4A9 implementation and tests.

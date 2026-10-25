@@ -24,7 +24,7 @@ Historical G-4A5/G-4A6/G-4A7 evidence is retained below.
 | --- | --- |
 | PSModuleUpdate (PMU) generic engine, `Get-PSModuleUpdate` / `Install-PSModuleUpdate` | Implemented (PMU); G-4A3 closed 2026-10-23 within its qualified scope (macOS, PowerShell 7.6.6, PSResourceGet 1.2.0) |
 | PMU cross-platform CI (G-4A4) | Verified: the historical CI run (private evidence); six platform lanes (Windows x64, Linux x64, macOS ARM64, each on PowerShell 7.4 and stable), quality and ci-gate passed |
-| Gerber `RequiredModules` | **Decided for both modules; locally verified in [G-4A6](G-4A6-runtime-dependency-qualification.md):** exact Nova `3.4.2` generates both declarations; PMU `0.1.0-preview` satisfies numeric `0.1.0` on macOS/PowerShell 7.4.21 and 7.6.6. G-4A7 normal builds refresh the ignored checkout artifact; wider delivery qualification remains |
+| Gerber `RequiredModules` | **Decided for both modules:** current PMU minimum is numeric `0.1.1` for mixed-layout installed-copy discovery; Nova remains `3.4.2`. PMU `0.1.1-preview` is not yet published; dependency bootstrap is a separate approved action. [G-4A6](G-4A6-runtime-dependency-qualification.md) remains historical `0.1.0` build/import evidence, not current deployment qualification |
 | Plugin creation and Nova lifecycle integration | **Source inspected:** `/plugins create` stages Gerber templates and invokes Nova build/unit/integration validation before approval; local publication is a separate instructed step, not automatic creation behavior |
 | Gerber Core startup check and `/update` | **Implemented (Gerber), G-4A7:** bounded notification-only startup probe and fresh Core discovery/confirmed installation through PMU. Mocked/disposable unit, built-module import and PTY evidence on macOS/PowerShell 7.4.21; no live-provider installation or Windows/Linux Gerber qualification |
 | G-4A7R fixed Core repository | PSGallery-only binding and structured no-match presentation implemented; live PMU qualification blocked by installed-copy enumeration and provider-error classification limits documented in [Core updates](../core-updates.md#qualification-and-remaining-scope). Read-only PSResourceGet discovery found no Gerber package |
@@ -90,7 +90,9 @@ Existing lifecycle integration test source is at [New-GerberPluginProject.Integr
 
 The earlier 2026-10-23 record reports that a temporary manifest using `RequiredModules = @(@{ModuleName='PSModuleUpdate'; ModuleVersion='0.1.0-preview'})` failed with "Cannot convert value '0.1.0-preview' to type System.Version" on macOS PowerShell 7.x. `ModuleVersion` must be a plain `System.Version`; the then-inspected PMU reported `Version 0.1.0` with `PSData.Prerelease = 'preview'`. That historical evidence is retained; G-4A6 separately records fresh version-field experiments.
 
-The current `project.json` instead declares **PMU `ModuleVersion: "0.1.0"` and NovaModuleTools `"3.4.2"`**, unchanged by G-4A7. The former invalid `-preview` declaration is historical, not a current configuration defect. [G-4A6](G-4A6-runtime-dependency-qualification.md) verified disposable generation and offline import with exact Nova 3.4.2 and installed PMU 0.1.0-preview on macOS/PowerShell 7.4.21 and 7.6.6. Numeric ModuleVersion is a minimum and does not constrain the prerelease channel. G-4A7 refreshes the original ignored manifest through Nova; package-source and wider platform qualification remain. Neither required dependency is an unresolved architecture choice.
+The current `project.json` declares **PMU `ModuleVersion: "0.1.1"` and NovaModuleTools `"3.4.2"`**. The 2026-10-25 dependency correction consumes upstream `0.1.1-preview`'s mixed-layout installed-copy scan fix. PMU ignores legacy resource directories without a module manifest beside numeric installations, still rejects genuine invalid candidates, and does not select or migrate a flat-only copy as a versioned installation. PMU 0.1.1 is not yet published; dependency bootstrap is a separate approved action, with no automatic local Gerber migration or cleanup.
+
+The former invalid `-preview` declaration is historical, not a current configuration defect. [G-4A6](G-4A6-runtime-dependency-qualification.md) verified disposable generation and offline import with the then-required numeric PMU `0.1.0`, exact Nova 3.4.2 and installed PMU 0.1.0-preview on macOS/PowerShell 7.4.21 and 7.6.6. That dated evidence is preserved, not upgraded to qualification of the new dependency or a live installation. Numeric ModuleVersion is a minimum and does not constrain the prerelease channel. Nova refreshes the ignored manifest through normal builds; package-source and wider platform qualification remain. Neither required dependency is an unresolved architecture choice.
 
 ## 6. Startup update check (Decided; Core implemented in G-4A7)
 
@@ -182,10 +184,15 @@ rollback succeeded after a failure. Noninteractive views never confirm or instal
 distribution channel, not a configurable default. User configuration,
 environment variables and plugin metadata/configuration cannot override it.
 There is no repository-selection prompt and no alternative-repository fallback.
-Core has not yet been published to PSGallery, so no matching package is a
-legitimate discovery result, not a configuration error or a fabricated version.
+A read-only public PMU `0.1.1-preview` probe on 2026-10-25 returned installed/target
+Gerber `0.1.0` and `UpToDate` from the actual PSGallery feed using the installed
+versioned module and Stable/CurrentUser policy. No installation or global
+module/repository change occurred; this is mixed-layout/feed lookup evidence,
+not complete live installation qualification.
+No matching package remains a legitimate discovery result, not a configuration
+error or a fabricated version.
 Gerber classifies only PMU's explicit `PMU.PackageNotFound` as no matching/eligible
-package. The installed PMU currently collapses provider-thrown `PackageNotFound`
+package. The separate upstream PMU issue still collapses provider-thrown `PackageNotFound`
 into `PMU.DiscoveryFailed`; that path remains a reported failure, not inferred
 success. See the [observed integration limits](../core-updates.md#qualification-and-remaining-scope).
 
@@ -208,7 +215,7 @@ engine; no vendor-specific providers or duplicate package mechanics are introduc
 
 ### Core prerelease policy
 
-The installed Core identity includes manifest `PSData.Prerelease`, currently
+The installed Core identity includes manifest `PSData.Prerelease`, for example
 `0.1.0-preview`. Core explicitly uses PMU's **Stable** channel: newer previews
 are excluded; stable `0.1.0` may supersede that preview, and newer stable versions
 are eligible under PMU's normal no-downgrade/installed-copy rules. PMU also
@@ -265,7 +272,7 @@ configuration/metadata contract remains G-4A9.
 | G-4A3 | PMU API, locking, recovery, credential contract | Implemented (PMU), closed 2026-10-23 within its qualified scope; no Gerber integration |
 | G-4A4 | PMU cross-platform CI | Verified for PMU only (section 2) |
 | G-4A5, previously recorded analysis | Omission from `RequiredModules` and graceful absence recommended | Rejected by owner; retained here as historical context, not current policy |
-| G-4A5, earlier sec. 5 and 14 | Required Nova treated as conflicting/unresolved; dependency integration wholly planned; current PMU declaration described as `0.1.0-preview` | Owner clarified both required dependencies; declarations already exist. Only delivered-artifact/import qualification and update workflows remain outstanding; current PMU declaration is numeric `0.1.0` |
+| G-4A5, earlier sec. 5 and 14 | Required Nova treated as conflicting/unresolved; dependency integration wholly planned; current PMU declaration described as `0.1.0-preview` | Owner clarified both required dependencies; declarations already existed with then-numeric PMU `0.1.0`. The 2026-10-25 correction raises the minimum to numeric `0.1.1`; delivery and live-install qualification remain separate |
 
 D-002's original scope is evidenced by the reconstructed Core boundary and the contemporaneous on-demand creation description; it supplies no separate rationale for banning Nova at runtime. G-4A0 adds the recorded runtime-updater concerns (extra installable component, compatibility/recovery dependency and build-time reuse trade-offs), not a recovered explanation from the owner for D-002. The cited `G-1A.md` and `G-1A_response.md` are not in this checkout, so no original rationale beyond available records is asserted. Historical report bodies are preserved; current authority is explicit rather than silently rewriting past conclusions.
 

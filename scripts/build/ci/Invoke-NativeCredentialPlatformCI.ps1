@@ -111,7 +111,7 @@ function Invoke-NativeCredentialPlatformCI {
     Push-Location -LiteralPath $script:NativeCredentialRepositoryRoot
     try {
         Import-Module NovaModuleTools -MinimumVersion 3.4.2 -ErrorAction Stop
-        Import-Module PSModuleUpdate -MinimumVersion 0.1.0 -ErrorAction Stop
+        Import-Module PSModuleUpdate -MinimumVersion 0.1.1 -ErrorAction Stop
         Invoke-NovaBuild
         Invoke-NativeCredentialTest -ReportPath (Join-Path $script:NativeCredentialRepositoryRoot 'artifacts/TestResults.xml')
     } finally {

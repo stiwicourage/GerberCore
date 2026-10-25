@@ -149,7 +149,7 @@ def update_install_error_recovers(context) -> None:
 
 @scenario(
     "update-no-update-overview",
-    title="Core no-update overview shows explicit repository and version columns",
+    title="Core equal-version overview preserves PMU availability without an install offer",
     categories=("core", "updates"),
     metadata=ScenarioMetadata(
         commands=("update",), workflows=("command:update",),
@@ -157,7 +157,10 @@ def update_install_error_recovers(context) -> None:
     ),
 )
 def update_no_update_overview(context) -> None:
-    _seed_update(context, disposition="UpToDate", startupStatus="UpToDate")
+    _seed_update(
+        context, disposition="UpToDate", startupStatus="UpToDate",
+        installedVersion="0.1.0", targetVersion="0.1.0",
+    )
     context.app.start()
     context.app.wait_for_prompt()
     _open_update(context)
@@ -165,8 +168,13 @@ def update_no_update_overview(context) -> None:
     context.app.wait_for_text("Installed")
     context.app.wait_for_text("Available")
     context.app.wait_for_text("PSGallery")
+    context.app.wait_for_text("UpToDate")
+    row = next(line for line in context.app.visible_text().splitlines() if "PSGallery" in line)
+    assert row.split() == ["Core", "Gerber", "0.1.0", "0.1.0", "PSGallery", "UpToDate"], row
+    context.app.expect_text_absent("Install Core update?")
     assert _update_state(context)["installCount"] == 0
     _assert_trace_order(context, "update-discovery")
+    assert "update-confirmation" not in context.app.prompt_trace_text()
 
 
 @scenario(
@@ -191,3 +199,32 @@ def update_no_core_config_no_matching_package(context) -> None:
     context.app.expect_text_absent("Install Core update?")
     assert _update_state(context)["installCount"] == 0
     _assert_trace_order(context, "update-discovery")
+
+
+@scenario(
+    "update-unsupported-installation",
+    title="Unsupported installation gives layout guidance without blaming PSGallery",
+    categories=("core", "updates", "recovery"),
+    metadata=ScenarioMetadata(
+        commands=("update",), workflows=("command:update",),
+        coverage=("dispatch", "workflow", "navigation", "error-recovery", "rendering"),
+    ),
+)
+def update_unsupported_installation(context) -> None:
+    _seed_update(context, discoveryError="PMU.UnsupportedInstallation", startupStatus="Unavailable")
+    context.app.start()
+    context.app.wait_for_prompt()
+    _open_update(context)
+    context.app.wait_for_text("current installation layout")
+    context.app.wait_for_text("supported numeric-version")
+    context.app.wait_for_text("restart PowerShell")
+    assert "supported numeric-version module directory" in context.app.visible_text().replace("\n", "")
+    context.app.expect_text_absent("registration and connection")
+    context.app.expect_text_absent("raw-update-token")
+    context.app.expect_text_absent("Install Core update?")
+    context.app.expect_text_absent("Core is up to date")
+    assert _update_state(context)["installCount"] == 0
+    _assert_trace_order(context, "update-discovery")
+    assert "update-confirmation" not in context.app.prompt_trace_text()
+    context.app.press("ENTER")
+    context.app.wait_for_prompt()

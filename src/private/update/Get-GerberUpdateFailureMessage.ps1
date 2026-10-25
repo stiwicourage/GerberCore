@@ -9,7 +9,7 @@ function Get-GerberUpdateFailureMessage {
         'PMU.InstallationFailed' = 'Installation failed. Do not assume success or rollback; inspect the selected installation and obtain a fresh plan with /update.'
         'PMU.PlanStale' = 'The update plan is no longer current. Run /update again for a fresh plan.'
         'PMU.PermissionDenied' = 'The CurrentUser update scope is not writable. Check permissions, then retry /update.'
+        'PMU.UnsupportedInstallation' = 'Core update discovery cannot use the current installation layout. Install Gerber in a supported numeric-version module directory, then restart PowerShell and retry /update. No success or rollback is assumed.'
     }
-    if ($messages.ContainsKey($id)) { return $messages[$id] }
-    return 'Update unavailable or installation failed. Check the PSGallery repository registration and connection, then retry /update. No success or rollback is assumed.'
+    return $messages[$id] ?? 'Update unavailable or installation failed. Check the PSGallery repository registration and connection, then retry /update. No success or rollback is assumed.'
 }

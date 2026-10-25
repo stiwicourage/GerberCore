@@ -37,8 +37,8 @@ Authoritative contract: [G-4A5](docs/architecture/G-4A5-update-architecture.md);
 repository, explicitly passed to PMU and not a configurable default. The Core
 resolver does not read user, environment or plugin settings. Core pins the
 official PSGallery endpoint, uses PMU Stable/CurrentUser policy and never falls
-back, chooses a repository interactively or requests credentials. Gerber Core
-has not yet been published to PSGallery; no matching package is a legitimate
+back, chooses a repository interactively or requests credentials.
+No matching package is a legitimate
 discovery outcome, not a configuration error or proof of currency.
 
 Plugins retain independent Gerber-owned repository configuration; different
@@ -56,6 +56,31 @@ Core binding without migrating or rewriting unrelated configuration. The
 no persistent cache exists. Only eligible updates notify; failure does not block
 startup or imply currency. Noninteractive update views neither prompt nor install.
 See [Core updates](docs/core-updates.md) for prerelease and failure semantics.
+
+**Current dependency correction (2026-10-25):** the PMU minimum is numeric
+`0.1.1` (upstream source `0.1.1-preview`) for mixed-layout installed-copy
+discovery. PMU remains the sole discovery/version/install authority; Gerber's
+existing plan mapping preserves Available `0.1.0` and `UpToDate` for equal
+installed/target `0.1.0`, without an install offer or secondary query.
+PMU 0.1.1 is not yet published; dependency bootstrap requires a separate
+approved action. No automatic migration or cleanup of local Gerber is performed.
+PMU ignores legacy resource directories beside numeric installations; it does
+not select or migrate a flat-only copy as a versioned installation.
+The separate upstream `PackageNotFound` classification issue remains, and the
+layout correction does not establish complete live-install qualification.
+A read-only public PMU 0.1.1-preview probe on 2026-10-25 returned installed
+and target Gerber 0.1.0 / UpToDate against the actual PSGallery feed, without
+installation or global module/repository changes.
+The later actual installed 0.1.1-preview launcher used flat-only Gerber and PMU
+copies, with the corrected PMU filter present, and public discovery returned
+`PMU.UnsupportedInstallation` (no numeric version installation found).
+Flat-only selection/migration is excluded from this correction; this remaining
+installation-layout blocker must not be described as a gallery failure.
+Gerber maps structured `PMU.UnsupportedInstallation` to generic supported
+numeric-version layout/restart guidance without parsing provider text or
+assuming every case is flat-only; no success or rollback is inferred.
+The user's existing installed Gerber copy needs a separate approved update
+to receive this source diagnostic.
 
 ## Plugin identity and lifecycle
 - Permanent identity: manifest GUID. Display name, module name and slash namespace are separate concepts.

@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Gerber now requires numeric PSModuleUpdate `0.1.1` for corrected mixed-layout
+  discovery. PMU `0.1.1-preview` is not yet published; dependency bootstrap is a
+  separate approved action, not automatic installation or cleanup of local
+  Gerber. An up-to-date `0.1.0` remains visible in Available with no install offer.
+  The separate upstream `PackageNotFound` issue remains; live installation is
+  not fully qualified.
+
+### Fixed
+
+- Unsupported Core installation layouts now get supported numeric-version
+  directory/restart guidance instead of a PSGallery/connection diagnosis.
+  No automatic migration, installation or rollback is implied. An existing
+  installed Gerber copy needs a separate update to receive this message.
+
 ### Added
 
 - `/update` checks Gerber Core in its fixed official PSGallery repository and shows

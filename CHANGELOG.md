@@ -10,6 +10,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Raised the minimum PSModuleUpdate dependency from numeric `0.1.0` to `0.1.1`
+  for upstream mixed-layout installed-copy discovery, without changing Gerber's
+  version or its PMU-owned update decisions. Added built-module and terminal
+  contracts preserving Available `0.1.0` / `UpToDate` when installed equals
+  available, with no installation offer. PMU `0.1.1-preview` is not yet
+  published; dependency bootstrap requires a separate approved action.
+  No automatic local Gerber migration or cleanup is performed. The separate
+  upstream `PackageNotFound` issue and complete live-install qualification remain.
+
 ### Deprecated
 
 ### Removed
@@ -17,6 +26,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 ### Fixed
+
+- Core update discovery now maps structured `PMU.UnsupportedInstallation` to
+  supported numeric-version module directory and restart guidance, rather than
+  blaming PSGallery registration/connectivity. It neither parses provider text
+  nor assumes every unsupported installation is flat-only, and claims no
+  installation or rollback success. Flat-only migration remains unsupported;
+  existing installed Gerber copies need a separate update for the diagnostic.
 
 ### Security
 

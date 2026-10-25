@@ -32,7 +32,29 @@ bounded, notification-only Core update check when `Invoke-Gerber` starts, and
 `/update` checks afresh and installs only after explicit confirmation;
 no repository setup is required. Core always uses the official **PSGallery**
 repository; user settings, environment variables and plugins cannot override it,
-and there is no fallback. Gerber Core has not yet been published there.
+and there is no fallback.
+The minimum PMU dependency is numeric **0.1.1** (upstream source
+`0.1.1-preview`), which corrects installed-copy discovery for mixed layouts.
+**PMU 0.1.1 is not yet published.** Dependency bootstrap is a separate,
+explicitly approved action; `/update` does not bootstrap PMU or automatically
+migrate or clean up local Gerber installations. When PMU reports installed and
+available `0.1.0` as `UpToDate`, the overview retains available `0.1.0` and
+offers no installation. The separate upstream `PackageNotFound` classification
+issue remains; this is not complete live-install qualification.
+The scan ignores legacy resource directories beside numeric installations;
+it does not select a flat-only copy as a versioned installation.
+A read-only public PMU probe on 2026-10-25 returned installed/target `0.1.0`
+and `UpToDate` from the actual PSGallery feed; no installation was attempted.
+That probe does not qualify a local `0.1.1-preview` launcher. A source build
+does not replace installed/loaded PMU; failed checks remain `Unavailable`, not
+an inferred currency result.
+The later flat-only `0.1.1-preview` launcher was diagnosed with
+`PMU.UnsupportedInstallation`, despite having the fixed PMU scan. Flat-only
+selection/migration is not implemented; this is not a gallery failure.
+The source diagnostic for `PMU.UnsupportedInstallation` now gives generic
+supported numeric-version layout/restart guidance without guessing the cause
+or claiming installation/rollback success. Existing installed copies need a
+separate user-approved update to receive that diagnostic.
 Plugin updates remain planned. See [Core update policy](docs/core-updates.md).
 [Disposable build/import qualification](docs/architecture/G-4A6-runtime-dependency-qualification.md)
 passed on macOS/PowerShell 7.4.21 and 7.6.6; normal Nova builds now regenerate both

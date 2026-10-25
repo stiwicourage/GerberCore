@@ -39,12 +39,16 @@ function script:Get-PSModuleUpdate {
     if ($script:GerberTerminalUpdateStartup) { $state.startupDiscoveryCount++ } else { $state.discoveryCount++ }
     $state.repository = $Repository
     Write-GerberTerminalUpdateState $state
-    if ($fixture.Contains('noMatchingPackage')) { Write-Error -ErrorId 'PMU.PackageNotFound' -Message 'No eligible fixture package' -ErrorAction Stop }
-    if (Test-GerberTerminalUpdateFailure $fixture $state) {
-        throw 'raw-update-token in provider failure'
-    }
+    Assert-GerberTerminalUpdateDiscovery $fixture $state
     $script:GerberTerminalLiveUpdatePlan = Get-GerberTerminalUpdatePlan $fixture
     $script:GerberTerminalLiveUpdatePlan
+}
+
+function script:Assert-GerberTerminalUpdateDiscovery {
+    param([hashtable]$Fixture, [hashtable]$State)
+    if ($Fixture.Contains('noMatchingPackage')) { Write-Error -ErrorId 'PMU.PackageNotFound' -Message 'No eligible fixture package' -ErrorAction Stop }
+    if ($Fixture.Contains('discoveryError')) { Write-Error -ErrorId $Fixture.discoveryError -Message 'raw-update-token' -ErrorAction Stop }
+    if (Test-GerberTerminalUpdateFailure $Fixture $State) { throw 'raw-update-token in provider failure' }
 }
 
 function script:Test-GerberTerminalUpdateFailure {
@@ -64,8 +68,10 @@ function script:Assert-GerberTerminalUpdateRequest {
 
 function script:Get-GerberTerminalUpdatePlan {
     param([hashtable]$Fixture)
+    $installed = if ($Fixture.Contains('installedVersion')) { $Fixture.installedVersion } else { '0.1.0-preview' }
+    $target = if ($Fixture.Contains('targetVersion')) { $Fixture.targetVersion } else { '0.2.0' }
     [pscustomobject]@{
-        ModuleName = 'Gerber'; InstalledVersion = '0.1.0-preview'; TargetVersion = '0.2.0'
+        ModuleName = 'Gerber'; InstalledVersion = $installed; TargetVersion = $target
         RepositoryName = 'PSGallery'; UpdateAvailable = $Fixture.disposition -eq 'UpdateAvailable'
         RepositoryUri = 'https://www.powershellgallery.com/api/v2'; Channel = 'Stable'; Scope = 'CurrentUser'
         Disposition = $Fixture.disposition; RestartRequired = $false
