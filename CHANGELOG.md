@@ -245,4 +245,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Single `Esc` from `/plugins list` and `/plugins info` now returns to `/plugins`, while single `Esc` from plugin details opened through `/plugins list` still returns to the list view first.
   - Double `Esc` within 200 milliseconds still returns directly to the root prompt from nested plugin-management views.
   - Direct `/plugins list` and `/plugins info` execution continues to use Gerber's existing command-resolution behavior without inventing a separate navigation history.
-
