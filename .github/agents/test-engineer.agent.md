@@ -36,7 +36,7 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 
 ## Constraints
 
-- 1. Use `Invoke-NovaTest` when the change affects only in-memory logic with no module-load or file-system dependency. 2. Escalate to `Test-NovaBuild` when the change affects module manifest, exported commands, or build artifacts. 3. Run the full repo quality loop only when step 2 passes and a quality tooling regression is still open.
+- Start with focused `Invoke-NovaTest` validation and use `Test-NovaBuild` for built-module/integration behavior. Run the required full repository quality loop for code or test changes regardless of whether a quality tooling regression remains open. Follow the CI parity and readiness gate in `.github/instructions/repository-conventions.instructions.md`; local success does not qualify other platforms or dependency environments.
 - Passing tests are not enough if any quality tooling hotspot score for a changed file worsens compared to the baseline on the default branch.
 - If an existing fixture or support helper in `tests/*TestSupport.ps1` covers at least 80% of the setup needed, extend it rather than creating a new file. Only create a new support file when no existing helper addresses the scenario.
 - Do not group unrelated source files into one broad test file when mirrored `tests/public`, `tests/private`, or `tests/classes` ownership is possible. For source files outside `public`, `private`, and `classes` subdirectories, place tests in a `tests/<matching-subdirectory>/` folder that mirrors the source path. If no matching subdirectory exists, create it rather than placing the test in the root `tests/` folder.
@@ -55,6 +55,7 @@ Improve or maintain the repository's Pester coverage, coverage-gate behavior, an
 - The touched tests are readable and low-duplication.
 - Validation uses `Invoke-NovaTest` for unit execution and `Test-NovaBuild` for build-validation integration execution.
 - Validation and quality tooling implications are addressed.
+- Local and hosted validation evidence is reported separately under the repository CI parity gate; all required test/coverage and native-credential jobs must pass for the exact revision before claiming CI or PR readiness.
 - The pre-commit quality tooling safeguard is clean before the work is treated as commit-ready when local quality tooling is available. If local quality tooling is unavailable, document the gap in a `# TODO: verify quality tooling` comment on the PR description and do not block the commit, but treat the item as open.
 
 ## Must not do

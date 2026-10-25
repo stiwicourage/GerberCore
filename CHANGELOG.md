@@ -8,7 +8,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Added `/update policy` with persistent **Stable only** (default) and
+  **Include prereleases** channels in optional `coreUpdates.channel` user
+  configuration. Startup and manual discovery share the validated PMU policy;
+  installation rejects plans from a changed channel while retaining the fixed
+  PSGallery endpoint, CurrentUser scope and default-Cancel confirmation.
+  Selection performs no discovery or installation, preserves unrelated settings
+  and ignored legacy bindings, and clears stale startup notifications.
+  `/update` now opens the shared **list**/**policy** submenu; `/update list`
+  performs the fresh check and returns to that chooser after results.
+
 ### Changed
+
+- Raised the minimum PSModuleUpdate dependency from numeric `0.1.0` to `0.1.1`
+  for upstream mixed-layout installed-copy discovery, without changing Gerber's
+  version or its PMU-owned update decisions. Added built-module and terminal
+  contracts preserving Available `0.1.0` / `UpToDate` when installed equals
+  available, with no installation offer. PMU `0.1.1-preview` is not yet
+  published; dependency bootstrap requires a separate approved action.
+  No automatic local Gerber migration or cleanup is performed. The separate
+  upstream `PackageNotFound` issue and complete live-install qualification remain.
 
 ### Deprecated
 
@@ -17,6 +36,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 ### Fixed
+
+- Core update discovery now maps structured `PMU.UnsupportedInstallation` to
+  supported numeric-version module directory and restart guidance, rather than
+  blaming PSGallery registration/connectivity. It neither parses provider text
+  nor assumes every unsupported installation is flat-only, and claims no
+  installation or rollback success. Flat-only migration remains unsupported;
+  existing installed Gerber copies need a separate update for the diagnostic.
 
 ### Security
 

@@ -36,17 +36,15 @@ function Get-GerberCoreUpdateOverview {
     param()
     [pscustomobject]@{
         Name = 'Gerber'; Installed = '-'; Available = '-'; Repository = 'PSGallery'
-        Status = 'Unavailable'; Plan = $null
-        Message = 'Core update discovery is unavailable. Run /update to retry PSGallery.'
+        Status = 'Unavailable'; Plan = $null; Channel = $null
+        Message = 'Core update discovery is unavailable. Run /update list to retry PSGallery.'
     }
 }
 
 function Complete-GerberCoreUpdateOverview {
     param([object]$State, [object]$Request)
-    $policy = @{
-        Channel = 'Stable'; Scope = 'CurrentUser'
-        ExpectedRepositoryUri = [uri]'https://www.powershellgallery.com/api/v2'
-    }
+    $policy = Resolve-GerberCoreUpdatePolicy
+    $State.Channel = $policy.Channel
     $plan = Get-PSModuleUpdate -Module $Request.Module -Repository PSGallery -Policy $policy `
         -ErrorAction Stop -WarningAction SilentlyContinue -InformationAction SilentlyContinue -Verbose:$false -Debug:$false
     Complete-GerberCorePlanOverview -State $State -Plan $plan
@@ -57,7 +55,7 @@ function Complete-GerberCorePlanOverview {
     $State.Installed = $Plan.InstalledVersion
     $State.Available = $Plan.TargetVersion
     $State.Status = Resolve-GerberUpdateDisposition $Plan
-    $State.Message = Get-GerberUpdateDispositionMessage $State.Status
+    $State.Message = Get-GerberUpdateDispositionMessage $State.Status $State.Channel
     $State.Plan = $Plan
     $State
 }
@@ -75,10 +73,11 @@ function Resolve-GerberUpdateDisposition {
 }
 
 function Get-GerberUpdateDispositionMessage {
-    param([string]$Status)
+    param([string]$Status, [string]$Channel)
+    $label = Get-GerberCoreUpdateChannelLabel $Channel
     $messages = @{
         Available = 'A Core update is available.'
-        UpToDate = 'Core is up to date according to PSGallery and the stable update policy.'
+        UpToDate = "Core is up to date according to PSGallery and the selected update policy: $label."
         RestartRequired = 'A newer Core version is already installed. Restart PowerShell before using Gerber again.'
     }
     $messages[$Status]

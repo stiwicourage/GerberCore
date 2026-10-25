@@ -4,6 +4,10 @@ BeforeAll {
         . "$root/src/private/update/$name.ps1"
     }
     . "$root/src/private/credentials/Get-GerberCredential.ps1"
+    foreach ($name in @('Get-GerberUserConfiguration', 'Resolve-GerberCoreUpdatePolicy', 'Resolve-GerberUserConfigPath',
+        'Test-GerberCoreUpdateConfiguration', 'Test-GerberUserConfiguration', 'Get-GerberCoreUpdateChannelLabel')) {
+        . "$root/src/private/config/$name.ps1"
+    }
     . "$root/src/private/cli/Initialize-GerberCommandRegistry.ps1"
     Import-Module PSModuleUpdate
     $script:manifest = Join-Path $TestDrive 'Gerber.psd1'
@@ -23,6 +27,7 @@ Describe 'Get-GerberCoreUpdateState' -Tag 'G4A7' {
         Mock Resolve-GerberCoreUpdateRequest { $script:request }
         Mock Get-Command { [pscustomobject]@{ Module = $script:request.Module } } -ParameterFilter { $Name -eq 'Invoke-Gerber' }
         Mock Get-PSModuleUpdate { $script:plan }
+        Mock Get-GerberUserConfiguration { @{ schemaVersion = 1 } }
         Mock Install-PSModuleUpdate { throw 'Discovery cannot install' }
         Mock Get-GerberCredential { throw 'Core cannot read credentials' }
     }
@@ -72,6 +77,19 @@ Describe 'Get-GerberCoreUpdateState' -Tag 'G4A7' {
         ) {
             $script:plan.Disposition = $disposition
             (Get-GerberCoreUpdateState).Status | Should -Be $expected
+        }
+
+        It 'uses the configured prerelease channel and retains it independently of the live plan' {
+            Mock Get-GerberUserConfiguration { @{ schemaVersion = 1; coreUpdates = @{ channel = 'IncludePrerelease' } } }
+            $script:plan.Disposition = 'UpToDate'
+            $state = Get-GerberCoreUpdateState
+            $state.Channel | Should -BeExactly 'IncludePrerelease'
+            $state.Message | Should -Match 'Include prereleases'
+            $state.Message | Should -Not -Match 'stable update policy'
+            [object]::ReferenceEquals($state.Plan, $script:plan) | Should -BeTrue
+            Should -Invoke Get-PSModuleUpdate -Times 1 -ParameterFilter {
+                $Repository -ceq 'PSGallery' -and $Policy.Channel -ceq 'IncludePrerelease' -and $Policy.Scope -ceq 'CurrentUser'
+            }
         }
 
         It 'reports unavailable rather than unconfigured when executing identity cannot be resolved' {

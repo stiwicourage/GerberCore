@@ -4,6 +4,10 @@ BeforeAll {
 }
 
 Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
+    BeforeEach {
+        Mock Test-GerberUpdateInteractive { $true }
+    }
+
     It 'returns the core root and nested command definitions in deterministic order' {
         $definitionList = @(Get-GerberCoreCommandDefinitionList)
 
@@ -28,16 +32,44 @@ Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
             'plugins enable',
             'plugins disable',
             'plugins create',
-            'pipelines tags'
+            'pipelines tags',
+            'update list',
+            'update policy'
         )
     }
 
     It 'dispatches the root update command through the shared registry contract' {
         $definition = Get-GerberCoreCommandDefinitionList | Where-Object Name -EQ 'update'
-        Mock Show-GerberUpdateView {}
+        Mock Show-GerberRegisteredSubcommandMenu {}
         (& $definition.Handler ([pscustomobject]@{ Name = 'update'; Arguments = @() })) | Should -BeFalse
+        Should -Invoke Show-GerberRegisteredSubcommandMenu -Times 1 -ParameterFilter { $CommandName -eq 'update' }
+        (Get-GerberRegisteredCommand -Name update).Subcommands.Keys | Should -Be @('list', 'policy')
+    }
+
+    It 'dispatches list through a discoverable leaf' {
+        $definition = Get-GerberCoreCommandDefinitionList | Where-Object Name -EQ 'update list'
+        $definition | Should -Not -BeNullOrEmpty
+        Mock Show-GerberUpdateView {}
+        (& $definition.Handler ([pscustomobject]@{ Name = 'update list'; Arguments = @() })) | Should -BeFalse
         Should -Invoke Show-GerberUpdateView -Times 1
-        $definition.Subcommands.Count | Should -Be 0
+    }
+
+    It 'dispatches policy through a discoverable leaf' {
+        $definition = Get-GerberCoreCommandDefinitionList | Where-Object Name -EQ 'update policy'
+        $definition | Should -Not -BeNullOrEmpty
+        Mock Show-GerberUpdatePolicyView {}
+        (& $definition.Handler ([pscustomobject]@{ Name = 'update policy'; Arguments = @() })) | Should -BeFalse
+        Should -Invoke Show-GerberUpdatePolicyView -Times 1
+    }
+
+    It 'routes resolved slash input through the root handler to policy rather than discovering updates' {
+        Mock Show-GerberUpdatePolicyView {}
+        Mock Show-GerberUpdateView { throw 'Policy must not discover updates' }
+        Mock Read-GerberSubcommandPrompt { throw (Get-GerberMenuEscapeException) }
+        $command = Resolve-GerberCommand -InputText '/update policy' -ActionList (Get-GerberActionList)
+        Invoke-GerberMenuCommand -Command $command | Should -BeFalse
+        Should -Invoke Show-GerberUpdatePolicyView -Times 1
+        Should -Invoke Show-GerberUpdateView -Times 0
     }
 
     It 'exposes representative metadata and subcommand structure' {

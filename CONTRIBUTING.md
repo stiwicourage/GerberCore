@@ -40,17 +40,13 @@ Before opening a pull request:
 
 `run-platform-matrix` (`.github/workflows/Run-Platform-Matrix.yml`) is a narrow
 platform-dependent integration lane, not another full-suite or coverage run.
-Initially its only triggers are pushes to `feature/mainstream` and
-`workflow_dispatch`. GitHub only enables manual dispatch when the workflow exists
-on the default branch, so initial feature-only qualification must use a push to
-`feature/mainstream`; manual UI/CLI dispatch is not available yet. Add
-`develop`/`main` triggers only after actual feature-branch
-Windows, Linux and macOS runs are qualified and the owner accepts that rollout.
+It runs on pushes except `main`, pull requests targeting `main` or `develop`,
+the nightly schedule, reusable workflow calls and manual dispatch.
 Neither the workflow definition nor mocked/local tooling tests qualify a platform.
 
 The pinned lanes are Windows 2025/x64, Ubuntu 24.04/x64 and macOS 15/ARM64,
 using PowerShell >= 7.4. They install the existing CI module prerequisites and
-build with `Invoke-NovaBuild`. NovaModuleTools >= 3.4.2 and PSModuleUpdate >= 0.1.0
+build with `Invoke-NovaBuild`. NovaModuleTools >= 3.4.2 and PSModuleUpdate >= 0.1.1
 remain required. The only selected tests are the two existing
 `NativeCredentialStore` scenarios in
 `tests/public/CredentialService.Integration.Tests.ps1`: Core and external Plugin
@@ -97,6 +93,11 @@ can fail even when every selected tooling assertion passes; use the normal full
 quality flow for whole-project coverage evidence.
 
 ## Agentic Copilot workflow
+
+Follow the [CI parity and readiness gate](.github/instructions/repository-conventions.instructions.md#ci-parity-and-readiness)
+for every implementation or test change. Local build/unit/PTY results do not
+qualify hosted native credentials or prove that PSGallery supplies the required
+dependency versions. Report those checks separately for the exact revision.
 
 Recommended flow:
 
