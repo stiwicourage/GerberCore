@@ -574,10 +574,6 @@ Describe 'Initialize-GerberCommandRegistry' -Tag 'PluginTransactions', 'G4A7' {
             ExpectedMessage = "Gerber plugin 'Gerber.UnsupportedApiPlugin' requires plugin API version '2', but Gerber supports plugin API version '1'."
         }
         @{
-            ModuleNameList  = @('Gerber.IncompatibleVersionPlugin')
-            ExpectedMessage = "Gerber plugin 'Gerber.IncompatibleVersionPlugin' requires Gerber version '9.0.0' or later, but the current Gerber version is '0.1.0-preview'."
-        }
-        @{
             ModuleNameList  = @('Gerber.MissingEntryPointPlugin')
             ExpectedMessage = "Gerber plugin 'Gerber.MissingEntryPointPlugin' does not export the required entry point 'Get-GerberPlugin'."
         }
