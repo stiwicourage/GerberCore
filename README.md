@@ -1,0 +1,419 @@
+# Gerber
+
+Gerber is an interactive DevOps multitool for local PowerShell workflows. It runs as a lightweight terminal command palette with a minimal prompt-first home screen, then expands into interactive tools, reports, and secret-management flows on demand.
+
+Organization-specific plugin names, connection profiles and endpoints in examples are illustrative; they do not identify bundled plugins or live services.
+
+## Run Gerber locally
+
+Build and import the module, then start the multitool:
+
+```powershell
+Invoke-NovaBuild
+Import-Module ./dist/Gerber/Gerber.psd1 -Force
+Invoke-Gerber
+```
+
+If aliases are available in the imported session, you can also start it with:
+
+```powershell
+gerber
+```
+
+Gerber targets PowerShell `7.4` and is designed to work on macOS, Windows, and Linux terminals without any extra TUI library.
+
+### Runtime dependencies
+
+Gerber requires **NovaModuleTools** for its plugin-development functionality
+(creation, build, packaging and local publication) and **PSModuleUpdate** for
+integrated update management. Both are declared in `project.json` `RequiredModules`;
+Nova build/package/publish operations do not run at startup. Gerber now performs a
+bounded, notification-only Core update check when `Invoke-Gerber` starts, and
+`/update` checks afresh and installs only after explicit confirmation;
+no repository setup is required. Core always uses the official **PSGallery**
+repository; user settings, environment variables and plugins cannot override it,
+and there is no fallback. Gerber Core has not yet been published there.
+Plugin updates remain planned. See [Core update policy](docs/core-updates.md).
+[Disposable build/import qualification](docs/architecture/G-4A6-runtime-dependency-qualification.md)
+passed on macOS/PowerShell 7.4.21 and 7.6.6; normal Nova builds now regenerate both
+requirements in the ignored local manifest. See the
+[runtime dependency and update contract](docs/architecture/G-4A5-update-architecture.md).
+
+## Interactive commands
+
+Gerber opens as a minimal prompt with inline root guidance:
+
+```text
+Gerber - DevOps Multitool
+
+❯
+
+/ commands · esc back
+```
+
+Type `/` to reveal the available root commands, or start typing plain text directly to search executable leaf action commands without a slash:
+
+Root commands and completion suggestions show `/exit`, `/help`, `/plugins`, and `/update` first, in that order, followed by all remaining Core and active plugin root commands alphabetically. Submenu ordering is unchanged.
+
+| Command | Purpose |
+| --- | --- |
+| `/exit` | Exit the interactive session cleanly |
+| `/help` | Show the built-in command help |
+| `/plugins` | Inspect, enable or disable plugins, or generate a working plugin with `/plugins create` |
+| `/update` | Check Gerber Core in PSGallery and confirm installation of an eligible stable update |
+| `/branch` | Open an inline submenu for repository branch operations such as `find` and `set-searchable` |
+| `/list` | Open an inline submenu for read-only list/report actions such as `ado-agents` and `ado-team-members`; plugins may contribute more beneath the same root |
+| `/pipelines` | Open an inline submenu for pipeline workflows such as `release common-data-model`, `release approve-environment`, `tags update`, and `tags delete` |
+| `/repository` | Open an inline submenu for built-in repository actions such as `create`; installed plugins may contribute more beneath the same root |
+| `/secrets` | Manage Gerber credentials through Gerber secure credential storage |
+| `/tools` | Open an inline submenu for interactive tools such as `create-uuid` and `base-64` |
+
+Autocomplete is available directly in the slash-command prompt:
+
+- type `/` to reveal the available Gerber commands
+- type plain text such as `uuid`, `base`, `ado`, or `help` at the root prompt to search matching leaf action commands without a leading slash
+- the empty root prompt shows `/ commands · esc back` so the first move is visible without opening help
+- press `Tab` to complete a matching command such as `/to` -> `/tools`
+- use `Up` and `Down` to browse matching commands and subcommands
+- press `Enter` to accept the highlighted suggestion and execute it when the selected command is complete, whether you started with `/` or plain root action-search text
+- the currently selected arrow-key suggestion is visually highlighted to stay readable across terminal themes, and chooser prompts such as the root `/` list, `/tools`, and `/secrets` now keep the visible default action highlighted immediately
+- bare submenu commands such as `/tools`, `/list`, and `/secrets` open an inline submenu prompt with the available subcommands shown on the command line
+- `/tools` previews `create-uuid` first, so bare `Enter` at the chooser generates a UUID immediately
+- nested tool prompts such as `/tools` and `/tools base-64` use the same arrow-key submenu behavior as the existing slash menus
+- after you choose `/tools base-64 encode` or `/tools base-64 decode`, Gerber reopens that same action after `Press Enter to continue` so repeated conversions stay fast
+- `/tools create-uuid` generates one UUID immediately, then lets you press `Enter` to generate another or `Esc` to go back to `/tools`
+- `/secrets list` returns to the `/secrets` chooser after `Press Enter to continue`, while the input-driven `/secrets` actions reopen their selected flow
+- press `Esc` from an interactive prompt or continue screen to go back one Gerber menu level at a time; backing out of a top-level submenu returns to the visible root `/` chooser before the blank home prompt
+- press `Esc` twice within 200 ms from shared Gerber prompts, menus, and continue screens to return directly to the root prompt without exiting Gerber
+- type `/tools` to preview `create-uuid`, `base-64` and `/tools base-64` previews `encode` and `decode`
+- type `/list` to preview `ado-agents` and `ado-team-members`, plus any installed plugin-provided list actions
+- type `/pipelines` to preview `release common-data-model`, `release approve-environment`, `release application`, `tags delete`, and `tags update`
+- type `/branch` to preview `find` and `set-searchable`
+- type `/repository` to preview `review` and `create`
+- type `/plugins` to preview `create`, `disable`, `enable`, `info` and `list`
+- type `/secrets` to preview `list`, `get`, `test`, `set`, and `remove`
+- the selected suggestion shows a short help preview before you submit it
+
+Examples inside the palette:
+
+```text
+/tools create-uuid
+/tools base-64 encode
+/tools base-64 decode
+/list ado-agents
+/pipelines release common-data-model
+/pipelines tags delete
+/pipelines tags update
+/pipelines release approve-environment
+/branch find
+/branch set-searchable
+/repository create
+/plugins
+/plugins list
+/plugins info Gerber.Example
+/plugins create
+/update
+/help
+/secrets list
+/secrets test
+/secrets set
+```
+
+### `/update`
+
+`/update` shows Core's installed and available versions, PSGallery and
+discovery status. **Cancel is the default**; installation delegates to PSModuleUpdate,
+reports verification/recovery outcomes and tells you when to restart PowerShell.
+An unreachable repository is not reported as "up to date". Startup checks never
+install, request installation consent or access native credential storage.
+An unpublished package is reported without inventing an available version.
+
+See [Core updates](docs/core-updates.md) for the fixed repository binding,
+stable-only prerelease policy and separation from future per-plugin repositories.
+
+### `/tools create-uuid`
+
+Gerber includes a UUID generator under `/tools`:
+
+- `/tools create-uuid` generates a standard hyphenated UUID with no braces
+- the UUID is shown in the terminal and copied to the clipboard when possible
+- after each UUID, `Enter` generates another and `Esc` returns to the `/tools` chooser
+
+### `/tools base-64`
+
+Gerber now includes a text-focused Base64 utility under `/tools`:
+
+- `/tools base-64 encode` reads one line of UTF-8 text and returns its Base64 value
+- `/tools base-64 decode` reads one line of Base64 text, ignores surrounding whitespace and line breaks, and returns decoded UTF-8 text
+- results are shown in the terminal and copied to the clipboard when Gerber finds a supported clipboard command
+- invalid decode input stays inside Gerber and shows a recoverable in-app error
+- `Esc` backs out one level and `Esc Esc` within 200 ms returns straight to the Gerber root prompt
+
+### `/list ado-agents`
+
+Gerber includes an Azure DevOps agent report under `/list`:
+
+- `/list ado-agents` shows BUILD pools first and DEPLOY pools second
+- Azure DevOps connection settings come from the user configuration file under `ado.defaultProfile` and `ado.profiles`
+- when no suitable profile exists, Gerber can configure one inline, continue the same command, and store the chosen project URL under a named profile
+- when exactly one profile exists without a default, Gerber offers to use it now; when multiple profiles exist without a default, Gerber lets you choose one and optionally save it as the default
+- Gerber retrieves the PAT only when the report needs authentication, using the credential identifier derived from the active profile, such as `gerber:ado:example:pat`
+- when the profile exists but the PAT is missing, Gerber prompts for the token without re-asking for the project URL or profile name
+- Gerber stores Azure DevOps PATs only in secure credential storage; it does not read PATs from environment variables or `config.json`
+- pools and agents are sorted for predictable scanning
+- pools with no agents still appear with an explicit empty-pool message
+- missing BUILD or DEPLOY pool sections are called out explicitly
+- agent versions are color-coded consistently per run and followed by a version legend
+- after `Press Enter to continue`, Gerber returns to the main menu
+
+### `/list ado-team-members`
+
+Gerber includes an Azure DevOps team membership report under `/list`:
+
+- `/list ado-team-members` shows all projects and their teams with member counts in a compact summary
+- drill-in navigation lets you explore project → team → members without leaving the Gerber session
+- export the full report as JSON, CSV, or HTML to the current directory with a timestamped file name (e.g. `gerber-ado-team-members-20250101-120000.json`)
+- the HTML export includes a browser-side input that filters all rows in real time
+- export can be triggered at the summary level or after viewing a team's members; multiple formats can be exported in a single session
+- Azure DevOps connection settings come from the user configuration file under `ado.defaultProfile` and `ado.profiles`
+- Gerber retrieves the active profile's PAT from secure credential storage only when the report needs authentication
+- first use follows the same inline Azure DevOps setup flow as the other authenticated ADO commands
+- non-interactive runs do not prompt; they fail with guidance to configure the profile and native credential first
+- after `Press Enter to continue`, Gerber returns to the main menu
+
+### `/pipelines`
+
+Gerber Core owns the generic `/pipelines` root plus built-in tag-maintenance commands.
+Installed plugins may contribute additional pipeline workflows beneath that same root when
+their organization-specific behavior does not belong in Core.
+
+### `/pipelines tags delete`
+
+Gerber includes a build-tag deletion flow under `/pipelines`:
+
+- `/pipelines tags delete` asks for the current tag, finds every Azure DevOps build/run that still carries that tag, and shows those matches in one checkbox selector grouped by pipeline name
+- each tagged run starts selected, so you can delete the tag from one, many, or all matching runs in the same batch
+- the confirm step shows both the runs that will be changed and the runs that will be skipped before Gerber removes anything
+- apply removes the current tag from each selected run; failures are collected per run while the rest of the selected batch continues
+- after `Press Enter to continue`, Gerber returns to the `/pipelines tags delete` flow so another tag batch can be cleaned up without leaving the submenu
+
+### `/pipelines tags update`
+
+Gerber includes a build-tag replacement flow under `/pipelines`:
+
+- `/pipelines tags update` asks for the current tag and the replacement tag, finds every Azure DevOps build/run that currently carries the old tag, and shows those matches in one checkbox selector grouped by pipeline name
+- each tagged run starts selected, so you can update one, many, or all matching runs in the same batch
+- the confirm step shows both the runs that will be updated and the runs that will be skipped before Gerber changes anything
+- apply removes the old tag and adds the new tag on each selected run; failures are collected per run while the rest of the selected batch continues
+- after `Press Enter to continue`, Gerber returns to the `/pipelines tags update` flow so another tag batch can be updated without leaving the submenu
+
+### `/repository review`
+
+Gerber Core no longer owns the DevOps review implementation. The sibling **Gerber.ExampleOrg** plugin contributes `/repository review` beneath the shared `/repository` root when that plugin is installed:
+
+- `/repository review` stays on the same public command path, but the full workflow now lives in Gerber.ExampleOrg
+- Gerber.ExampleOrg uses the public Gerber Plugin API for Azure DevOps access, UI rendering, clipboard copy, and prompt flow
+- plugin calls can now open either the default Azure DevOps connection or an explicit named profile through the same Gerber-owned first-use profile/PAT readiness flow as Core commands
+- the active review rules live in `Gerber.ExampleOrg/src/resources/Properties.json`
+- without Gerber.ExampleOrg installed, `/repository` keeps the built-in `create` action and does not expose `review`
+
+### `/plugins`
+
+Gerber includes a plugin administration surface under `/plugins`:
+
+- `/plugins` shows one overview table for all plugin identities known to Gerber
+- `/plugins list` shows discovered manifest data plus persisted lifecycle records in one merged inventory; generated plugins show their known name/version even before installation
+- `/plugins info <plugin>` shows detailed metadata and lifecycle state for one plugin, looked up by manifest GUID or unique module name
+- `/plugins enable` approves and enables an installed inactive plugin (including declined ones) and loads its commands immediately
+- `/plugins disable` disables an active plugin, keeps its approval, and removes its commands immediately; it never uninstalls the module
+- `/plugins create` asks for a module suffix (fixed `Gerber.` prefix), description, collision-free command namespace and destination parent (current directory by default), then generates and validates a working Plugin API v1 Nova project
+- successful creation approves, associates and enables the new manifest GUID without installing/loading the module; run `Publish-NovaModule -Local` from the generated project, restart Gerber and try its `/mycompany hello` example
+- creation never overwrites a destination; invalid input can be corrected and `Esc` cancels without approval. The creation handler retains a Nova availability check and consent-based installation fallback; that on-demand safeguard does not make Nova optional in `RequiredModules`
+- explained, separated creation fields show the actual cwd and project-child defaults; completion shows name/version/namespace/location and explicitly says Installed: No
+- generated projects include a complete Unreleased changelog and agent-first development resources, with AGENTS.md as the canonical self-contained guide and thin Claude/Copilot bridges
+- selecting a plugin to enable is explicit approval; there is no additional approval prompt
+- enable and disable decisions persist across sessions, and menus, completion, and dispatch update without restarting Gerber
+- `list` and `info` remain read-only
+- opening `/plugins` does not trigger plugin approval prompts and does not import unknown, declined, or disabled plugins just to inspect them
+- declined plugins remain visible even when they were never associated or are no longer discovered on disk
+- missing associated plugins remain visible through persisted configuration; cached generated name/version are display-only fallback, installed manifest metadata takes precedence, and older associations retain their GUID-only fallback. Gerber never invents publisher or path metadata
+
+`/plugins` keeps four lifecycle concepts separate in the terminal output:
+
+- **Approval** — `Approved`, `Declined`, or `Unknown`
+- **Association** — whether Gerber tracks the plugin in `plugins.associated`
+- **Enabled state** — whether an associated plugin is enabled or disabled
+- **Loaded state** — whether this Gerber session actually imported and registered the plugin
+
+Current read-only commands also keep these terms distinct:
+
+- **Declined** means Gerber persisted a decision not to load the plugin automatically
+- **Disabled** means the plugin is still approved and associated, but its commands are unavailable until `/plugins enable` activates it again
+- **Revoked** is a future security-management concept and is not the same as declined or disabled
+
+If multiple discovered plugins share the same module name, `/plugins info` requires the manifest GUID instead of guessing. Gerber rejects activation of a different GUID that conflicts with an active plugin's module name. Plugins can add commands beneath Core commands or their own commands, but not beneath another plugin's commands.
+
+See [Create a Gerber plugin](docs/plugins-create.md) for the exact generated tree,
+validation/rollback behavior, isolated local publish and the working hello example.
+
+Plugin authors can validate an uninstalled project with
+`Test-GerberPluginBoundary -Path ./Gerber.MyCompany` from installed Gerber.
+The result includes `IsValid`, deterministic source diagnostics and a `PublicApi`
+operation inventory. Generated projects run `./scripts/Test-PluginBoundary.ps1`
+before the normal Nova workflow, and creation checks staged source before
+execution/approval. This is a development-time architecture check, not a sandbox
+or a change to installed-plugin permissions. See the
+[detection contract and limits](docs/architecture/plugin-api-v1-capabilities.md#development-time-boundary-validation).
+
+### `/secrets`
+
+Gerber includes a credential-management surface backed by secure credential storage:
+
+- `/secrets list` shows Gerber-managed credential identifiers without reading secret values
+- `/secrets get` shows the stored Gerber keys first, copies the selected secret to the clipboard when possible, and then asks for explicit confirmation before revealing the value in the terminal
+- `/secrets test` reports whether an identifier exists without retrieving its value
+- `/secrets set` reads a value without terminal echo, stores it under a Gerber-owned identifier, and asks before overwriting an existing value
+- `/secrets remove` shows the stored Gerber keys first, then removes a stored Gerber-owned credential with Gerber-owned confirmation and messaging
+- secure storage remains OS-backed and never falls back to plaintext files or environment variables
+- when secure credential storage is unavailable, Gerber fails with actionable guidance and never falls back to plaintext storage
+- pressing `Enter` at the bare `/secrets` chooser opens `list`
+
+Gerber restricts identifiers to the case-insensitive `gerber:<scope>:<name>` namespace. Azure DevOps profiles use `gerber:ado:<profile>:pat`; plugin credentials use `gerber:plugin:<plugin-guid>:<path>`. This naming prevents accidental collisions but is not a process-isolation security boundary.
+
+See [Credential service architecture](docs/architecture/credential-service.md) and [Native credential-store verification](docs/credential-store-verification.md) for backend prerequisites, packaging details, and manual cross-platform checks.
+
+## Plugin approval and lifecycle
+
+Gerber identifies plugins by the GUID in their PowerShell module manifest. Before an unknown plugin is imported, Gerber shows its name, GUID, version, publisher metadata, and manifest location, then asks whether to approve it. Decline is the default and leaves the module installed without registering its commands.
+
+Gerber persists three separate lifecycle concepts:
+
+- **Approved** — the plugin GUID is allowed to run
+- **Associated** — Gerber tracks that plugin as part of the user's Gerber environment
+- **Enabled** — Gerber may import the module and register its commands
+
+Approved GUIDs and associated plugin state are stored in the existing user configuration:
+
+```json
+{
+  "schemaVersion": 1,
+  "plugins": {
+    "approved": [
+      "977537c5-b7f5-4f2f-9dd4-5ec0e28d2618"
+    ],
+    "declined": [
+      "11111111-2222-3333-4444-555555555555"
+    ],
+    "associated": {
+      "977537c5-b7f5-4f2f-9dd4-5ec0e28d2618": {
+        "enabled": true
+      }
+    }
+  }
+}
+```
+
+Approvals survive ordinary plugin updates because identity is GUID-based rather than version- or content-hash-based. The first successful approval also associates and enables the plugin without a second confirmation prompt. Existing approved plugins without an explicit association record remain usable and pick up the associated+enabled record the next time Gerber discovers them. Declined GUIDs are also persisted, so Gerber does not ask again for the same unknown plugin on the next startup; `/plugins enable` lets users explicitly change that decision. During noninteractive startup, Gerber loads approved and enabled plugins, skips unknown plugins without prompting or autoapproving them, and keeps associated disabled-plugin records even when the module is temporarily unavailable. GUID approval records user intent for a plugin identity; it does not prove publisher identity or code authenticity.
+
+The read-only `/plugins list` and `/plugins info` commands surface those persisted states directly:
+
+- approved + enabled + loaded plugins appear as available and loaded
+- approved + disabled plugins remain visible but not loaded
+- declined plugins remain visible and inspectable, even without an association record
+- associated plugins that are currently missing from disk remain visible through their persisted GUID record
+
+Use `/plugins enable` to approve and activate a previously declined plugin, or `/plugins disable` to deactivate an approved plugin without revoking approval.
+
+## Azure DevOps first-use setup
+
+Gerber now prepares Azure DevOps access lazily, only when a command actually needs a connection or PAT.
+
+- startup, `/help`, `/secrets`, plugin discovery, and unrelated commands do not trigger Azure DevOps setup
+- if no profile exists, Gerber offers to create one inline by asking only for the Azure DevOps project URL, connection name, optional default-profile choice, and PAT when the command needs authentication
+- if a named profile is requested and missing, Gerber offers to configure that exact profile instead of silently switching to another one
+- plugin ADO operations keep the selected connection context explicit, so multiple named profiles can coexist in one session without switching a global current connection
+- Azure DevOps Services and Server both use the existing URL parser; when a Server URL needs an explicit root, Gerber asks for the minimum extra server-root input and still applies the existing HTTP safety rules
+- PAT entry uses a non-echoing prompt and stores the token through the native credential service under `gerber:ado:<profile>:pat`
+- Gerber resolves PATs lazily for plugin ADO operations; metadata-only plugin calls do not trigger PAT lookup or PAT setup prompts
+- cancellation leaves existing configuration unchanged and stops the pending command cleanly
+- if configuration saves but credential storage fails, Gerber reports the incomplete state clearly so the same command can be retried safely
+- if Azure DevOps rejects a stored token later, Gerber distinguishes an invalid/rejected PAT from insufficient PAT permissions instead of treating every 401/403 as "missing PAT"
+
+## Public PowerShell commands
+
+Gerber exposes the interactive entry point as a PowerShell command:
+
+- `Invoke-Gerber`
+
+Command help for each entry point lives under `docs/Gerber/en-US/`.
+
+## Test strategy
+
+Gerber uses source-mirrored Pester tests under `tests/` plus a shared test helper in `tests/TestHelpers/`.
+Interactive terminal regressions live under `tests/terminal/` and run the real built app through a PTY-backed Python harness that reconstructs ANSI screens, answers cursor-position requests, and writes sanitized failure artifacts.
+
+The current suite covers:
+
+- command parsing and invalid commands
+- interactive menu behavior
+- Azure DevOps reporting
+- secret-management flows
+- tool-specific interactions such as Base64 flows
+- PTY-backed prompt rendering and cursor movement
+- generic Plugin API discovery, dispatch, credential, clipboard, ADO, and recovery contracts through `Gerber.TerminalFixture`
+- error formatting and prompt behavior
+
+Run the zero-finding validation flow with:
+
+```powershell
+./scripts/build/Invoke-ScriptAnalyzerCI.ps1
+Invoke-NovaBuild
+Invoke-NovaTest
+Test-NovaBuild
+./scripts/build/Invoke-TerminalRegressionCI.ps1 -Category core
+./scripts/build/Invoke-TerminalRegressionCI.ps1 -Category synthetic
+```
+
+Or run the repository quality loop in the same order:
+
+```powershell
+pwsh -NoLogo -NoProfile -File ./run.ps1
+```
+
+Run the tracked PTY regression suite explicitly with:
+
+```powershell
+pwsh -NoLogo -NoProfile -File ./scripts/build/Invoke-TerminalRegressionCI.ps1
+```
+
+Gerber's terminal suite inventories and covers Gerber Core commands only. The bundled
+`Gerber.TerminalFixture` separately verifies the generic Plugin API contract; product plugins own
+their command and workflow regressions in their own repositories.
+
+## Prompt tracing
+
+If slash-command autocomplete still behaves differently in your terminal, enable prompt tracing before you start Gerber:
+
+```powershell
+$env:GERBER_PROMPT_TRACE = '1'
+Invoke-Gerber
+```
+
+Gerber writes JSON trace lines to `.gerber/prompt-debug.log` in the current working directory. The trace records:
+
+- whether Gerber used the interactive prompt or fell back to `Read-Host`
+- each key read from the terminal
+- suggestion refreshes and applied completions
+
+Clear the environment variable when you are done tracing:
+
+```powershell
+Remove-Item Env:GERBER_PROMPT_TRACE
+```
+
+## Known limitations
+
+- The UI uses simple terminal rendering with `Clear-Host`; it is not a full-screen TUI framework.
+- `/tools base-64` is text-focused in v1 and does not cover file or arbitrary binary workflows.
+- slash-command autocomplete focuses on the built-in Gerber commands and their known subcommands.
+- Linux credential operations require a desktop Secret Service session, D-Bus, and `libsecret`; headless systems without that backend fail clearly.

@@ -1,0 +1,70 @@
+# {{Name}}
+
+A Gerber Plugin API v1 module targeting PowerShell 7.4. No Azure, PAT,
+customer configuration, or private Core API is required.
+
+## Develop
+
+Read [AGENTS.md](AGENTS.md) for the canonical plugin development guide, public
+API contract and agent-resource hierarchy. `CLAUDE.md` and GitHub Copilot
+instructions point there; scoped instructions, a plugin developer agent and
+three actionable skills live under `.github/`.
+
+Install the development dependency only if missing:
+
+```powershell
+Install-Module -Name NovaModuleTools
+```
+
+From this directory:
+
+```powershell
+./scripts/Test-PluginBoundary.ps1
+Invoke-NovaBuild
+Invoke-NovaTest
+Test-NovaBuild
+Publish-NovaModule -Local
+```
+
+The boundary script uses the installed Gerber public command without starting
+Gerber or installing this plugin. Inspect current capabilities with
+`(Test-GerberPluginBoundary -Path .).PublicApi`. Fix diagnostics using that
+public contract; request a new capability when none fits. Do not import private
+Core files as a workaround. This static development check is not a sandbox and
+cannot prove computed command targets safe.
+
+Nova generates `dist/{{Name}}/{{Name}}.psd1` and `.psm1` from
+`project.json`, `src/public/` and `src/private/`. Do not hand-author those artifacts.
+Keep the manifest GUID `{{Guid}}` stable when updating this plugin.
+`Manifest.PrivateData.Gerber` declares API v1 and the minimum Core version.
+
+Local publish builds/tests and copies the module into your PowerShell module
+directory, replacing that module there. To isolate a test installation, use
+`Publish-NovaModule -Local -ModuleDirectoryPath <isolated-directory>`.
+It does not publish to a remote repository.
+
+## Use
+
+Restart Gerber after local publish, then enter:
+
+```text
+/{{Namespace}} hello
+```
+
+Expected screen: `Hello from {{Name}}!`
+
+Gerber already approved, associated and enabled this generated manifest GUID.
+Generation itself does not install or load the plugin. A separate Gerber user
+configuration will request approval on first discovery.
+
+## Tests and ownership
+
+`tests/public/Get-GerberPlugin.Tests.ps1` tests source behavior.
+`tests/public/Get-GerberPlugin.Integration.Tests.ps1` imports the built module,
+checks its public entry point and metadata, and executes the registered hello
+handler through supplied public UI operations. Core separately validates actual
+registry registration before creation succeeds.
+
+Gerber owns these initial plugin templates and the public API. Nova owns the
+build, test, package and publish lifecycle. Add your own domain commands without
+calling private Core functions.

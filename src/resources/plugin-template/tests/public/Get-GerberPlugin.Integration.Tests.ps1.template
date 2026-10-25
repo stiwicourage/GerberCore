@@ -1,0 +1,27 @@
+BeforeAll {
+    $root = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
+    $manifestPath = Join-Path $root 'dist/{{Name}}/{{Name}}.psd1'
+    $module = Import-Module $manifestPath -Force -PassThru
+    $null = $module
+}
+
+Describe 'Get-GerberPlugin public API registration integration' {
+    It 'exports the entry point with the project manifest GUID and API metadata' {
+        $module.Guid.ToString('D') | Should -Be '{{Guid}}'
+        $module.PrivateData.Gerber.ApiVersion | Should -Be '1'
+        $module.ExportedFunctions.Keys | Should -Contain 'Get-GerberPlugin'
+    }
+
+    It 'executes hello using only the supplied public UI operations' {
+        $api = [pscustomobject]@{ UI = @{
+            ShowTextBlock = { param($Title, $Text) "$Title|$Text" }
+            WaitForContinue = {}
+        } }
+        $entryPoint = Get-Command Get-GerberPlugin -Module '{{Name}}'
+        $definition = & $entryPoint -Gerber $api
+        $definition.Guid | Should -Be $module.Guid.ToString('D')
+        $result = @(& $definition.Commands[1].Handler ([pscustomobject]@{ Arguments = @() }))
+        $result[0] | Should -Be '/{{Namespace}} hello|Hello from {{Name}}!'
+        $result[1] | Should -BeFalse
+    }
+}

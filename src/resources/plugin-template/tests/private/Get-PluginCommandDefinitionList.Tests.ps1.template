@@ -1,0 +1,11 @@
+BeforeAll {
+    . (Join-Path $PSScriptRoot '../PluginTestSupport.ps1')
+}
+
+Describe 'Get-PluginCommandDefinitionList' {
+    It 'declares both the namespace parent and hello leaf' {
+        $commands = @(Get-PluginCommandDefinitionList -Gerber (Get-PluginTestContext))
+        $commands.Name | Should -Be @('{{Namespace}}', '{{Namespace}} hello')
+        $commands[0].Handler | Should -BeOfType ([scriptblock])
+    }
+}

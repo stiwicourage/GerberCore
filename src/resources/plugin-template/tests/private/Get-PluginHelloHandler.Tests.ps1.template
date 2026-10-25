@@ -1,0 +1,12 @@
+BeforeAll {
+    . (Join-Path $PSScriptRoot '../PluginTestSupport.ps1')
+}
+
+Describe 'Get-PluginHelloHandler' {
+    It 'shows observable output and returns to Gerber' {
+        $handler = Get-PluginHelloHandler -Gerber (Get-PluginTestContext)
+        $result = @(& $handler ([pscustomobject]@{ Arguments = @() }))
+        $result[0] | Should -Be '/{{Namespace}} hello|Hello from {{Name}}!'
+        $result[1] | Should -BeFalse
+    }
+}

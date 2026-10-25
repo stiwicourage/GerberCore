@@ -1,0 +1,24 @@
+---
+name: plugin-command-development
+description: Add or modify a Gerber slash command, handler, registration and menu with behavior tests
+---
+
+# Develop a plugin command
+
+Read [AGENTS.md](../../../AGENTS.md), especially command development and the
+public API contract. Use this workflow for a new leaf or changed command.
+
+1. Inspect `Get-PluginCommandDefinitionList`, `Get-PluginMenuHandler` and
+   `Get-PluginHelloHandler`; identify direct and menu routes under `{{Namespace}}`.
+2. Define observable success, invalid arguments, Escape and failure outcomes.
+   Add source-mirrored tests using the supplied API fixture; run
+   `Invoke-NovaTest` and confirm the intended changed-behavior failure.
+3. Add the cohesive handler factory, capture `$Gerber` with `.GetNewClosure()`,
+   register the leaf and wire the parent's action table and dispatch.
+4. Extend the built-module public integration test to execute the handler and
+   verify manifest identity. Run `Invoke-NovaBuild`, `Invoke-NovaTest` and
+   `Test-NovaBuild`; preserve the coverage gate.
+5. Update README and Unreleased changelog, run analyzer/CodeScene checks as
+   described in AGENTS.md and report evidence. Only when authorized, use an
+   isolated local publication and fresh Gerber host to verify the actual slash
+   command. Do not equate registration with installation.

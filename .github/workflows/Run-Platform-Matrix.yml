@@ -1,0 +1,158 @@
+name: Run platform matrix
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+      - develop
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-${{ github.run_id }}-${{ github.run_attempt }}
+  cancel-in-progress: false
+
+jobs:
+  native-credentials:
+    name: native-credentials (${{ matrix.platform }}/${{ matrix.architecture }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Windows
+            architecture: X64
+            runner: windows-2025
+          - platform: Linux
+            architecture: X64
+            runner: ubuntu-24.04
+          - platform: macOS
+            architecture: ARM64
+            runner: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Log runner and PowerShell versions
+        shell: pwsh
+        run: |
+          . ./scripts/build/ci/Invoke-NativeCredentialPlatformCI.ps1
+          Assert-NativeCredentialRunner
+          $PSVersionTable | Format-List
+          Write-Host "Runner: $env:RUNNER_OS/$env:RUNNER_ARCH; image: $env:ImageOS $env:ImageVersion"
+          Write-Host "Profile: $env:USERNAME $env:USERPROFILE; home: $env:HOME"
+          if ($PSVersionTable.PSVersion -lt [version]'7.4') { throw 'PowerShell >= 7.4 is required.' }
+          if ($env:RUNNER_OS -ne '${{ matrix.platform }}' -or $env:RUNNER_ARCH -ne '${{ matrix.architecture }}') {
+              throw 'Runner does not match the pinned platform/architecture lane.'
+          }
+
+      - name: Install required CI PowerShell modules
+        shell: pwsh
+        run: ./scripts/build/ci/Install-CiPowerShellModules.ps1
+
+      - name: Install Linux native Secret Service prerequisites
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y dbus dbus-user-session gnome-keyring libsecret-1-0 libsecret-tools libglib2.0-bin xvfb xauth
+
+      - name: Run Linux native credentials in a disposable D-Bus session
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Keep the installed CI modules visible after isolating keyring data.
+          PSModulePath="$(pwsh -NoLogo -NoProfile -Command '$env:PSModulePath')"
+          export PSModulePath
+          export XDG_DATA_HOME="$(mktemp -d "$RUNNER_TEMP/gerber-native-data.XXXXXX")"
+          trap 'rm -rf -- "$XDG_DATA_HOME"' EXIT
+          xvfb-run -a dbus-run-session -- pwsh -NoLogo -NoProfile -Command '
+            $ErrorActionPreference = "Stop"
+            $PSNativeCommandUseErrorActionPreference = $true
+            $daemonId = $null
+            try {
+                $password = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+                $password | gnome-keyring-daemon --unlock --components=secrets | Out-Null
+                Remove-Variable password
+                $owner = gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus --method org.freedesktop.DBus.NameHasOwner org.freedesktop.secrets
+                if ($owner.Trim() -ne "(true,)") { throw "Secret Service provider is unavailable." }
+                $ownerPid = gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus --method org.freedesktop.DBus.GetConnectionUnixProcessID org.freedesktop.secrets
+                $daemonId = [int][regex]::Match($ownerPid, "(?<=uint32 )[0-9]+").Value
+                $alias = gdbus call --session --dest org.freedesktop.secrets --object-path /org/freedesktop/secrets --method org.freedesktop.Secret.Service.ReadAlias default
+                $collection = [regex]::Match($alias, "/org/freedesktop/secrets/collection/[A-Za-z0-9_]+").Value
+                if (-not $collection) { throw "No default Secret Service collection." }
+                $locked = gdbus call --session --dest org.freedesktop.secrets --object-path $collection --method org.freedesktop.DBus.Properties.Get org.freedesktop.Secret.Collection Locked
+                if ($locked.Trim() -ne "(<false>,)") { throw "Default Secret Service collection is locked." }
+                ./scripts/build/ci/Invoke-NativeCredentialPlatformCI.ps1
+            } finally {
+                if ($daemonId) { Stop-Process -Id $daemonId -ErrorAction SilentlyContinue }
+            }
+          '
+
+      - name: Run macOS native credentials with a disposable default keychain
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          original_default="$(security default-keychain -d user | sed 's/^[[:space:]]*"//;s/"[[:space:]]*$//')"
+          original_search=()
+          while IFS= read -r keychain_path; do
+            original_search+=("$keychain_path")
+          done < <(security list-keychains -d user | sed 's/^[[:space:]]*"//;s/"[[:space:]]*$//')
+          owned_directory="$(mktemp -d "$RUNNER_TEMP/gerber-native-keychain.XXXXXX")"
+          keychain="$owned_directory/native.keychain-db"
+          cleanup() {
+            status=$?
+            trap - EXIT
+            set +e
+            security default-keychain -d user -s "$original_default"
+            default_status=$?
+            security list-keychains -d user -s "${original_search[@]}"
+            search_status=$?
+            if [[ -f "$keychain" ]]; then
+              security delete-keychain "$keychain"
+              delete_status=$?
+            else
+              delete_status=0
+            fi
+            rm -rf -- "$owned_directory"
+            if (( status != 0 || default_status != 0 || search_status != 0 || delete_status != 0 )); then
+              exit 1
+            fi
+          }
+          trap cleanup EXIT
+          password="$(openssl rand -base64 32)"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          unset password
+          security default-keychain -d user -s "$keychain"
+          security list-keychains -d user -s "$keychain"
+          pwsh -NoLogo -NoProfile -File ./scripts/build/ci/Invoke-NativeCredentialPlatformCI.ps1
+
+      - name: Run Windows native Credential Manager round trips
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/build/ci/Invoke-NativeCredentialPlatformCI.ps1
+
+      - name: Upload native credential summary
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: native-credentials-${{ matrix.platform }}-${{ matrix.architecture }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/TestResults.xml
+          retention-days: 14
+          if-no-files-found: warn

@@ -1,0 +1,14 @@
+[
+  {
+    "command": "repository fixture-api",
+    "categories": ["error-recovery"],
+    "classification": "deterministic-plugin-contract",
+    "reason": "The shared-capability contract performs isolated credential and clipboard lifecycle checks; controlled Plugin API ADO and handler failures cover recovery."
+  },
+  {
+    "command": "repository fixture-status",
+    "categories": ["error-recovery"],
+    "classification": "deterministic-plugin-contract",
+    "reason": "The fixture status command is a deterministic successful Plugin API UI contract; controlled plugin failure recovery is covered by repository explode."
+  }
+]

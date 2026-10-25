@@ -1,0 +1,227 @@
+# {{Name}} development guide
+
+## Product and boundaries
+
+{{Name}} is an independently developed PowerShell plugin for **Gerber Core**,
+the host application. Integrate only through **Gerber Plugin API v1**, supplied
+to `Get-GerberPlugin -Gerber $Gerber`. Never call private Core implementation
+functions, import Core source, or depend on another product plugin.
+
+This guide is canonical for every coding agent. `CLAUDE.md` and
+`.github/copilot-instructions.md` are bridges; `.github/instructions/` contains
+file-scoped rules, `.github/agents/` defines a development role, and
+`.github/skills/` contains task workflows. Read the matching scoped guidance
+without maintaining another copy of this guide.
+
+## Automated API boundary check
+
+Run `./scripts/Test-PluginBoundary.ps1` before the normal Nova build/test flow.
+It imports installed Gerber and invokes its public `Test-GerberPluginBoundary`
+command on this project; it needs neither a Core checkout nor an active Gerber
+session or plugin installation. Inspect the implemented public operation inventory
+with `(Test-GerberPluginBoundary -Path .).PublicApi` and use the contract below
+for signatures. If no operation fits, request a public API capability; never
+dot-source private Core files, enter Core module scope or import implementation
+modules to work around a diagnostic.
+
+The AST check reports deterministic file/line/dependency/reason/resolution
+diagnostics for known private calls and explicit implementation imports. It
+respects plugin-owned function declarations and ignores ordinary strings/comments.
+Computed names, aliases, arbitrary dataflow and external code still need review.
+Passing is architecture evidence, not permissions, runtime isolation or a sandbox.
+No user approval, discovery, enable/disable or execution policy is changed.
+
+## Authored source versus generated output
+
+| Path | Ownership |
+| --- | --- |
+| `project.json` | Authored NovaModuleTools project configuration: name, description, version, manifest, coverage and packaging settings. |
+| `src/public/Get-GerberPlugin.ps1` | Authored public registration entry point; one exported function per matching file. |
+| `src/private/` | Authored command definitions and handler factories; not exported. |
+| `tests/public/` | Source unit tests and built-module `.Integration.Tests.ps1` tests. |
+| `tests/private/` | Source-mirrored unit tests of definitions and handlers. |
+| `tests/PluginTestSupport.ps1` | Shared source-loading/test support. |
+| `scripts/Test-PluginBoundary.ps1` | Development boundary gate using installed Gerber's public validator. |
+| `README.md`, `CHANGELOG.md` | Authored user guidance and unreleased changes. |
+| `AGENTS.md`, `CLAUDE.md`, `.github/` | Authored agent guidance, not module runtime dependencies. |
+| `dist/{{Name}}/` | Nova-generated `.psm1` root module, `.psd1` manifest and packaged resources. Do not hand-edit. |
+| `docs/schema/v0/project.json` | Nova-generated project schema. Do not treat it as authored configuration. |
+| `artifacts/` | Generated test results, JaCoCo coverage and package output when configured. |
+
+PowerShell **7.4** is the minimum in `Manifest.PowerShellHostVersion`; do not
+introduce syntax or APIs requiring a newer runtime without an explicit support
+change. Nova generates exports from `src/public/`; same-file sibling functions
+are not language-enforced private. Shared helpers belong in `src/private/`.
+
+## Identity and lifecycle
+
+`project.json` **Manifest.GUID** is the permanent identity: `{{Guid}}`.
+Keep it stable across versions. Changing it creates a new approval and secret
+identity, not an update. Nova propagates it into the built module manifest.
+The public plugin definition's `Guid` must match that manifest GUID.
+
+`Manifest.PrivateData.Gerber` contains `Plugin: true`, `ApiVersion: "1"` and
+`MinimumGerberVersion: "0.1.0-preview"`. Do not add a second GUID there.
+The module name has the fixed `Gerber.` prefix; the command namespace
+`/{{Namespace}}` is a separate registration path, not an approval identity.
+
+Gerber approves GUIDs and persists association/enabled state. Successful
+creation approved, associated and enabled this GUID in the creating user's
+configuration, but did **not** install or load it. `/plugins list` and
+`/plugins info` are read-only; known name/version metadata can appear while the
+state is `Missing` and `Loaded` is `No`. Installed manifest metadata takes
+precedence. After installation, restart Gerber for discovery.
+Another user's configuration requires its own approval. `/plugins disable`
+preserves approval and association but prevents next-startup loading;
+`/plugins enable` also supports a previously declined plugin. Do not invent
+removal/revocation workflows or edit Core's configuration directly.
+
+## Implement and register a command
+
+Use the working `/{{Namespace}} hello` example, not a private Core repository:
+
+1. Inspect `Get-GerberPlugin.ps1`, `Get-PluginCommandDefinitionList.ps1`,
+   `Get-PluginHelloHandler.ps1` and `Get-PluginMenuHandler.ps1`.
+2. Add a small handler factory under `src/private/`, returning a scriptblock
+   with `param($Command)`. Capture `$Gerber` with `.GetNewClosure()` as in
+   `Get-PluginHelloHandler`. Return `$false` to stay in Gerber, not `$true`
+   (which requests application exit). Do not leak incidental pipeline output.
+3. Register a leaf such as `{{Namespace}} status` in
+   `Get-PluginCommandDefinitionList`. Definitions have `Name`, `Description`,
+   `Handler` (scriptblock) and `Subcommands` (dictionary). Names omit `/`.
+   Reuse `Get-PluginCommandDefinition`; preserve the namespace parent and
+   avoid collisions with Core or another plugin.
+4. Wire the parent menu's ordered action table and dispatch in
+   `Get-PluginMenuHandler`; adding a leaf does not automatically update this
+   hand-authored menu. Use `UI.ReadSubcommand` so direct slash invocation and
+   interactive navigation stay consistent. Escape/back is not success.
+5. Add source-mirrored unit tests for the factory, definition and menu routing.
+   Stub the supplied API operations as the existing tests do. Test arguments,
+   output, cancellation and recoverable failures before implementation.
+6. Extend `tests/public/Get-GerberPlugin.Integration.Tests.ps1`: import the
+   built plugin, check entry point/manifest identity and execute the handler
+   using a supplied public API fixture. No real credentials are needed.
+7. Run the Nova validation below, update README examples and the appropriate
+   `[Unreleased]` changelog category. Locally publish only with authorization,
+   restart Gerber and invoke `/{{Namespace}} status` in a test-owned host.
+
+## Public Plugin API v1 contract
+
+The injected context has `ApiVersion`, `PluginId`, `UI`, `Ado`, `Secrets` and
+`Clipboard`. Operations are **scriptblocks**, invoked with `&`, not cmdlets
+or object methods. The example needs only:
+
+```powershell
+& $Gerber.UI.ShowTextBlock '/{{Namespace}} hello' 'Hello from {{Name}}!'
+$null = & $Gerber.UI.WaitForContinue
+$action = & $Gerber.UI.ReadSubcommand '{{Namespace}}' $Command ([ordered]@{ hello = 'Say hello' })
+```
+
+Available capability families (signatures show positional argument order):
+
+| Capability | Supported operations |
+| --- | --- |
+| `UI` | `ReadSubcommand(name, command, table)`, `ShowTextBlock(title, text)`, `ShowScreenLines(title, lines)`, `StartScreen(name)`, `WriteScreenLine(text)`, `WaitForContinue()`. |
+| `UI` input | `ReadCommand(prompt, suggestionMode, inputMode, promptContext, trimResult)`, `ReadSecretText(prompt)`, `ReadNumberedMenuSelection(prompt, title, text, items)`, `ReadNumberedMenuPrompt(prompt, title, text, items)`, `ReadCheckboxMenuPrompt(request)`, `ReadConfirmationPrompt(prompt, title, text, options)`. |
+| `UI` feedback | `WriteProgressBar(current, total, prefix, overwritePreviousRender)`, `WritePromptTrace(eventName, data)`. |
+| `Ado` connection/GET | `OpenConnection(commandLabel, profileName = '')`, `NewProjectUri(connection, relativePath, queryMap)`, `InvokeGet(connection, uri, requestLabel)`. |
+| `Ado` pull requests | `ResolvePullRequestReference(connection, inputText)`, `GetPullRequest(connection, reference)`, `GetPullRequestChangedFileList(connection, pullRequest)`, `GetPullRequestFileContent(connection, pullRequest, path, allowMissing = false)`, `GetPullRequestBuildValidationStatus(connection, pullRequest)`. |
+| `Ado` pipelines | `GetPendingApprovalList(connection, environmentId)`, `GetEnvironmentList(connection)`, `ResolvePipelineDefinitionFromUrl(connection, pipelineUrl)`, `GetPipelineRunList(request)`, `StartPipelineRun(request)`, `WaitPipelineRunCompletion(request)`, `ApprovePipelineApproval(connection, approvalId, comment)`, `StopPipelineRun(connection, buildId)`. |
+| `Ado` build metadata | `GetBuildTagList(connection, buildId)`, `AddBuildTagIfMissing(connection, buildId, tag)`, `RemoveBuildTag(connection, buildId, tag)`, `AddBuildRetentionLeaseIfMissing(connection, definitionId, buildId)`, `GetBuildRunUrl(connection, buildId)`. |
+| `Ado` work items | `GetWorkItemIdFromUrl(url)`, `GetWorkItemFieldMap(request)`, `UpdateWorkItemFields(request)`. |
+| `Secrets` | `EnsureReady(actionLabel, screenTitle)`, `Test(pathSegments)`, `GetText(pathSegments)`, `Set(pathSegments, secret)`, `Remove(pathSegments)`. |
+| `Clipboard` | `CopyText(value)`. |
+
+For an optional ADO command:
+
+```powershell
+$connection = & $Gerber.Ado.OpenConnection '/{{Namespace}} status'
+$uri = & $Gerber.Ado.NewProjectUri $connection '_apis/build/definitions' ([ordered]@{})
+$definitions = & $Gerber.Ado.InvokeGet $connection $uri 'Read build definitions'
+```
+
+`OpenConnection` without a profile uses the default/readiness flow; an explicit
+profile selects only that profile, never silently falls back. The returned
+connection exposes non-sensitive metadata such as `ProfileName`, `ServerUri`,
+`CollectionUri`, `ProjectName` and `ProjectUri`; it contains no PAT/token.
+GET and mutations obtain authentication lazily inside Core. Request-object
+operations bind a `Connection`; their additional operation-specific fields
+must be verified against the host's public API reference before use. Do not
+guess request fields or treat this capability inventory as a request schema.
+
+Secrets use logical string-array paths owned by this manifest GUID:
+`& $Gerber.Secrets.GetText @('service', 'key')`. Never access Core config,
+Keychain/Credential Manager, PAT storage or credentials directly. Do not log
+secret values. Plugins execute in the host process; this API is not a sandbox.
+Mock network, secrets and destructive operations in tests. New external-system
+features need their own reviewed public contract; do not invent capabilities.
+Use `& $Gerber.Clipboard.CopyText $value` for clipboard output rather than
+platform-specific clipboard commands.
+
+## Verified NovaModuleTools workflow
+
+NovaModuleTools 3.4.1 provides the commands below. Install it explicitly only if
+missing (`Install-Module -Name NovaModuleTools`), then run from the project root:
+
+```powershell
+Import-Module NovaModuleTools
+Get-NovaProjectInfo
+Invoke-NovaBuild
+Invoke-NovaTest
+Test-NovaBuild
+```
+
+`Get-NovaProjectInfo` loads/validates project configuration; build additionally
+validates source/export layout. Unit tests use Pester and the project-configured
+**90%** source coverage gate. Integration tests validate the built module.
+Do not bypass Nova by running Pester directly or disabling coverage to get green.
+Pester and PSScriptAnalyzer are development tools, not plugin runtime dependencies.
+
+Before handoff, inspect the installed PSScriptAnalyzer and run it on authored
+PowerShell sources/tests (no analyzer wrapper or CI workflow is generated):
+
+```powershell
+Invoke-ScriptAnalyzer -Path ./src -Recurse
+Invoke-ScriptAnalyzer -Path ./tests -Recurse
+```
+
+Resolve findings, don't suppress them. Keep units short/cohesive, interfaces
+small, branches shallow and business/test logic nonduplicated (SIG). Where
+CodeScene is available, record pre/post `code_health_review` and
+`code_health_score`, target 10.0 for all touched supported source/tests/helpers,
+and run `pre_commit_code_health_safeguard` before a commit. Missing tooling is
+unverified, not a passing check. No CI/CodeScene integration is preconfigured.
+
+With explicit permission to install, isolate automated publication:
+
+```powershell
+Publish-NovaModule -Local -ModuleDirectoryPath '/path/to/test-owned/modules'
+```
+
+For the developer's normal local module directory:
+
+```powershell
+Publish-NovaModule -Local
+```
+
+Local publication builds/tests and replaces an existing same-name module at
+its destination; use a separate process from a Pester host. Add an isolated
+module root to the fresh host's `PSModulePath`, keep its Gerber config separate,
+restart Gerber and run `/{{Namespace}} hello`. Generation alone is not install.
+
+For **separately authorized** version/package/release work, verify installed
+help first (`Get-Command <command> -Syntax`, `Get-Help <command> -Full`):
+
+- `Update-NovaModuleVersion -Path . -WhatIf` previews the changelog/branch-aware
+  version workflow; `-Preview` selects prerelease behavior. Do not hand-bump a
+  stable version on a development branch or execute versioning without consent.
+- `New-NovaModulePackage` builds/tests and packages according to `project.json`
+  `Package` settings. Configure/review those settings for the intended format.
+- `Invoke-NovaRelease -Local -ModuleDirectoryPath '/path/to/test-owned/modules'`
+  combines the version/release and local publish lifecycle; it is not needed
+  for normal development and is not permission to release.
+
+Never commit, push, tag, publish remotely, install in a user's module directory
+or run release/version mutations merely to finish a coding task. Update
+`README.md` and `CHANGELOG.md` when behavior changes, keep only real unreleased
+entries until release, and normalize edited text to one trailing newline.

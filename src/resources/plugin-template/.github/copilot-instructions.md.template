@@ -1,0 +1,12 @@
+# {{Name}} Copilot instructions
+
+This is a Gerber PowerShell plugin, not Gerber Core.
+Read [AGENTS.md](../AGENTS.md) first; it owns the development contract.
+
+Use only the public Gerber Plugin API v1 supplied to `Get-GerberPlugin`.
+Command changes require source unit tests and built-module integration tests.
+Use the NovaModuleTools build/test/local-publication workflow in AGENTS.md.
+
+Scoped file rules live in `.github/instructions/`, the implementation role in
+`.github/agents/`, and reusable task workflows in `.github/skills/`.
+Do not duplicate the canonical guide here.

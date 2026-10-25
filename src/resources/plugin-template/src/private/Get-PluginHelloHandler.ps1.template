@@ -1,0 +1,12 @@
+function Get-PluginHelloHandler {
+    param([pscustomobject]$Gerber)
+
+    $null = $Gerber
+    return {
+        param($Command)
+        $null = $Command
+        & $Gerber.UI.ShowTextBlock '/{{Namespace}} hello' 'Hello from {{Name}}!'
+        $null = & $Gerber.UI.WaitForContinue
+        return $false
+    }.GetNewClosure()
+}

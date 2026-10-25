@@ -1,0 +1,28 @@
+---
+name: nova-development
+description: Validate and locally exercise a Nova-managed Gerber plugin without mutating user installations
+---
+
+# Nova plugin lifecycle
+
+Read [AGENTS.md](../../../AGENTS.md) for ownership, command semantics and release
+authorization. Use this workflow for build/test/publication validation.
+
+1. Inspect `project.json`, its PowerShell target, manifest GUID and coverage
+   paths. Check installed command syntax; the generated guide was verified with
+   NovaModuleTools 3.4.1. Do not invent a project-validation or package cmdlet.
+2. From the project root run `./scripts/Test-PluginBoundary.ps1`, then
+   `Get-NovaProjectInfo`, `Invoke-NovaBuild`,
+   `Invoke-NovaTest`, then `Test-NovaBuild`. Record assertions and coverage
+   separately; a narrow tag selection still enforces project-wide coverage.
+3. Run the analyzer commands in AGENTS.md and fix findings. Do not add
+   suppressions or skip tests to manufacture success.
+4. If local installation is authorized, run in a separate process:
+   `Publish-NovaModule -Local -ModuleDirectoryPath '/path/to/test-owned/modules'`.
+   Keep Gerber configuration isolated, expose the module root to a fresh host,
+   restart Gerber, invoke `/{{Namespace}} hello` and inspect `/plugins list`.
+   The GUID must match; known metadata alone must never imply loaded/installed.
+5. For version/package/release requests only, inspect `Update-NovaModuleVersion`,
+   `New-NovaModulePackage` or `Invoke-NovaRelease` help and the branch/changelog.
+   Use `-WhatIf` first and obtain explicit authorization for mutation. Do not
+   commit, tag, push or remotely publish as an implicit validation step.

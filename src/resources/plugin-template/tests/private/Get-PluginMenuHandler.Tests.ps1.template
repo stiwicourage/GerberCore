@@ -1,0 +1,20 @@
+BeforeAll {
+    . (Join-Path $PSScriptRoot '../PluginTestSupport.ps1')
+}
+
+Describe 'Get-PluginMenuHandler' {
+    It 'routes the shared submenu selection to hello' {
+        $api = Get-PluginTestContext
+        $handler = Get-PluginMenuHandler -Gerber $api -HelloHandler (Get-PluginHelloHandler -Gerber $api)
+        $result = @(& $handler ([pscustomobject]@{ Arguments = @() }))
+        $result[0] | Should -Be '/{{Namespace}} hello|Hello from {{Name}}!'
+        $result[1] | Should -BeFalse
+    }
+
+    It 'returns cleanly when the public submenu operation is cancelled' {
+        $api = Get-PluginTestContext
+        $api.UI.ReadSubcommand = { '' }
+        $handler = Get-PluginMenuHandler -Gerber $api -HelloHandler { throw 'Must not run' }
+        (& $handler ([pscustomobject]@{ Arguments = @() })) | Should -BeFalse
+    }
+}

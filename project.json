@@ -1,0 +1,55 @@
+{
+  "ProjectName": "Gerber",
+  "Description": "DevOps Multitool",
+  "Version": "0.1.0-preview",
+  "Preamble": [
+    "Set-StrictMode -Version Latest",
+    "$ErrorActionPreference = 'Stop'"
+  ],
+  "Manifest": {
+    "Author": "Stiwi Gabriel Courage",
+    "Copyright": "Copyright (c) 2026 Stiwi Gabriel Courage",
+    "PowerShellHostVersion": "7.4",
+    "GUID": "ec5ae6fe-540b-48c2-a6d1-cb39aac6c444",
+    "RequiredModules": [
+      {
+        "ModuleName": "NovaModuleTools",
+        "ModuleVersion": "3.4.2"
+      },
+      {
+        "ModuleName": "PSModuleUpdate",
+        "ModuleVersion": "0.1.0"
+      }
+    ],
+    "Tags": [],
+    "ProjectUri": ""
+  },
+  "Package": {
+    "Types": [
+      "NuGet"
+    ],
+    "OutputDirectory": {
+      "Path": "artifacts/packages",
+      "Clean": true
+    }
+  },
+  "Pester": {
+    "CodeCoverage": {
+      "Enabled": true,
+      "Path": [
+        "src/public/*.ps1",
+        "src/private/**/*.ps1"
+      ],
+      "CoveragePercentTarget": 90,
+      "OutputPath": "artifacts/coverage.xml",
+      "OutputFormat": "JaCoCo"
+    },
+    "TestResult": {
+      "Enabled": true,
+      "OutputFormat": "NUnitXml"
+    },
+    "Output": {
+      "Verbosity": "Detailed"
+    }
+  }
+}

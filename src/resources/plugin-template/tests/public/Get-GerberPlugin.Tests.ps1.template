@@ -1,0 +1,19 @@
+BeforeAll {
+    . (Join-Path $PSScriptRoot '../PluginTestSupport.ps1')
+    . (Join-Path $PSScriptRoot '../../src/public/Get-GerberPlugin.ps1')
+}
+
+Describe 'Get-GerberPlugin' {
+    It 'registers a functional namespaced hello through Plugin API v1' {
+        $api = [pscustomobject]@{ UI = @{
+            ShowTextBlock = { param($Title, $Text) "$Title|$Text" }
+            WaitForContinue = {}
+        } }
+        $definition = Get-GerberPlugin -Gerber $api
+        $definition.Guid | Should -Be '{{Guid}}'
+        $definition.Commands.Name | Should -Be @('{{Namespace}}', '{{Namespace}} hello')
+        $result = @(& $definition.Commands[1].Handler ([pscustomobject]@{ Arguments = @() }))
+        $result[0] | Should -Be '/{{Namespace}} hello|Hello from {{Name}}!'
+        $result[1] | Should -BeFalse
+    }
+}

@@ -1,0 +1,20 @@
+function Get-GerberPlugin {
+    <#
+    .SYNOPSIS
+    Registers {{Name}} commands through Gerber Plugin API v1.
+    .PARAMETER Gerber
+    The Plugin API context supplied by Gerber Core.
+    .EXAMPLE
+    Get-GerberPlugin -Gerber $pluginContext
+    Returns command definitions. Gerber supplies the context during discovery.
+    #>
+    [OutputType([pscustomobject])]
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][pscustomobject]$Gerber)
+
+    return [pscustomobject]@{
+        Name = '{{Name}}'
+        Guid = '{{Guid}}'
+        Commands = @(Get-PluginCommandDefinitionList -Gerber $Gerber)
+    }
+}

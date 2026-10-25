@@ -1,0 +1,86 @@
+[
+  {
+    "command": "tools",
+    "categories": ["error-recovery"],
+    "classification": "menu-container",
+    "reason": "The root tools menu delegates failures to executable leaf workflows; Base64 recovery is covered separately."
+  },
+  {
+    "command": "list",
+    "categories": ["error-recovery"],
+    "classification": "menu-container",
+    "reason": "The root list menu delegates failures to executable leaf workflows."
+  },
+  {
+    "command": "branch",
+    "categories": ["error-recovery"],
+    "classification": "menu-container",
+    "reason": "The root branch menu has no independent failure behavior beyond leaf dispatch."
+  },
+  {
+    "command": "repository",
+    "categories": ["error-recovery"],
+    "classification": "menu-container",
+    "reason": "The root repository menu has no independent failure behavior beyond leaf dispatch."
+  },
+  {
+    "command": "plugins",
+    "categories": ["error-recovery"],
+    "classification": "menu-container",
+    "reason": "The root plugins menu has no independent failure behavior beyond its read-only child commands."
+  },
+  {
+    "command": "pipelines",
+    "categories": ["error-recovery"],
+    "classification": "menu-container",
+    "reason": "The root pipelines menu has no independent failure behavior beyond leaf dispatch."
+  },
+  {
+    "command": "secrets",
+    "categories": ["error-recovery"],
+    "classification": "menu-container",
+    "reason": "The root secrets menu has no independent failure behavior beyond leaf dispatch."
+  },
+  {
+    "command": "tools base-64",
+    "categories": ["error-recovery"],
+    "classification": "menu-container",
+    "reason": "The Base64 menu delegates validation failures to encode and decode; invalid decode recovery is covered."
+  },
+  {
+    "command": "pipelines tags",
+    "categories": ["error-recovery"],
+    "classification": "menu-container",
+    "reason": "The tags menu has no independent failure behavior beyond delete and update dispatch."
+  },
+  {
+    "command": "exit",
+    "categories": ["navigation", "error-recovery"],
+    "classification": "terminal-action",
+    "reason": "Exit intentionally terminates the process and has no back-navigation or recoverable error path."
+  },
+  {
+    "command": "help",
+    "categories": ["navigation", "error-recovery"],
+    "classification": "information-screen",
+    "reason": "Help is a read-only information screen with no nested navigation or expected failure path."
+  },
+  {
+    "command": "tools create-uuid",
+    "categories": ["error-recovery"],
+    "classification": "deterministic-local-action",
+    "reason": "UUID generation has no expected product error path; clipboard unavailability is handled as a successful degraded result."
+  },
+  {
+    "command": "plugins list",
+    "categories": ["error-recovery"],
+    "classification": "deterministic-local-action",
+    "reason": "Plugin list is a local read-only inventory view with no distinct recoverable failure path beyond shared command dispatch."
+  },
+  {
+    "command": "tools base-64 encode",
+    "categories": ["error-recovery"],
+    "classification": "deterministic-local-action",
+    "reason": "UTF-8 text encoding accepts empty and Unicode text and has no expected validation failure path."
+  }
+]

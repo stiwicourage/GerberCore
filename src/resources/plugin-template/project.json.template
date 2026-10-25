@@ -1,0 +1,33 @@
+{
+  "ProjectName": "{{Name}}",
+  "Description": "",
+  "Version": "0.1.0",
+  "Preamble": [
+    "Set-StrictMode -Version Latest",
+    "$ErrorActionPreference = 'Stop'"
+  ],
+  "Manifest": {
+    "GUID": "{{Guid}}",
+    "Author": "",
+    "PowerShellHostVersion": "7.4",
+    "RequiredModules": [],
+    "PrivateData": {
+      "Gerber": {
+        "Plugin": true,
+        "ApiVersion": "1",
+        "MinimumGerberVersion": "0.1.0-preview"
+      }
+    }
+  },
+  "Pester": {
+    "CodeCoverage": {
+      "Enabled": true,
+      "Path": ["src/public/*.ps1", "src/private/*.ps1"],
+      "CoveragePercentTarget": 90,
+      "OutputPath": "artifacts/coverage.xml",
+      "OutputFormat": "JaCoCo"
+    },
+    "TestResult": { "Enabled": true, "OutputFormat": "NUnitXml" },
+    "Output": { "Verbosity": "Normal" }
+  }
+}

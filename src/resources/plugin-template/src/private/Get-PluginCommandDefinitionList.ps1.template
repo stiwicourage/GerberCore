@@ -1,0 +1,21 @@
+function Get-PluginCommandDefinitionList {
+    param([pscustomobject]$Gerber)
+
+    $hello = Get-PluginHelloHandler -Gerber $Gerber
+    $menu = Get-PluginMenuHandler -Gerber $Gerber -HelloHandler $hello
+    return @(
+        Get-PluginCommandDefinition -Name '{{Namespace}}' -Description 'Open {{Name}} commands' -Handler $menu
+        Get-PluginCommandDefinition -Name '{{Namespace}} hello' -Description 'Say hello from {{Name}}' -Handler $hello
+    )
+}
+
+function Get-PluginCommandDefinition {
+    param([string]$Name, [string]$Description, [scriptblock]$Handler)
+
+    return [pscustomobject]@{
+        Name = $Name
+        Description = $Description
+        Handler = $Handler
+        Subcommands = [ordered]@{}
+    }
+}

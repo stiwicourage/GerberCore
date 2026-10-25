@@ -1,0 +1,37 @@
+# Cross-cutting guardrail: proves the PMU/Nova boundary across startup and update source files.
+BeforeAll {
+    $root = Split-Path -Parent $PSScriptRoot
+    $script:updateFiles = Get-ChildItem "$root/src/private/update" -Filter '*.ps1'
+}
+
+Describe 'Core update architecture' -Tag 'G4A7' {
+    It 'has one PMU discovery boundary and one PMU install boundary, with no alternate updater' {
+        $calls = foreach ($file in $updateFiles) {
+            $tokens = $null
+            $errors = $null
+            $ast = [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors)
+            $ast.FindAll({ param($node) $node -is [System.Management.Automation.Language.CommandAst] }, $true) |
+                ForEach-Object { $_.GetCommandName() }
+        }
+        @($calls | Where-Object { $_ -eq 'Get-PSModuleUpdate' }).Count | Should -Be 1
+        @($calls | Where-Object { $_ -eq 'Install-PSModuleUpdate' }).Count | Should -Be 1
+        $calls | Should -Not -Contain 'Update-Module'
+        $calls | Should -Not -Contain 'Install-Module'
+        $calls | Should -Not -Contain 'Install-PSResource'
+    }
+
+    It 'never performs Nova build or packaging operations in application startup or Core updates' {
+        $paths = @("$root/src/public/Invoke-Gerber.ps1") + @($updateFiles.FullName)
+        $text = ($paths | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n"
+        $text | Should -Not -Match 'Invoke-NovaBuild|New-NovaPackage|Publish-Nova|Test-NovaBuild'
+        $text | Should -Not -Match 'Register-PSRepository|Register-PSResourceRepository'
+    }
+
+    It 'keeps Core independent of user environment and plugin update configuration' {
+        $text = ($updateFiles | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n"
+        $text | Should -Not -Match 'Get-GerberUserConfiguration|Get-GerberCredential|updates\.modules|Unconfigured|CredentialRequired'
+        $bindingFiles = $updateFiles | Where-Object BaseName -NE 'Test-GerberUpdateInteractive'
+        $bindingText = ($bindingFiles | ForEach-Object { Get-Content -LiteralPath $_ -Raw }) -join "`n"
+        $bindingText | Should -Not -Match '\$env:|GetEnvironmentVariable'
+    }
+}

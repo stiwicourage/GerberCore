@@ -1,0 +1,8 @@
+# Claude Development Instructions
+
+This repository contains {{Name}}, a Gerber PowerShell plugin.
+
+Read and follow [AGENTS.md](AGENTS.md) before making changes.
+
+Task-specific instructions, the plugin developer role and reusable skills are
+available under `.github/`. AGENTS.md is the canonical development guide.

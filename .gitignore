@@ -1,0 +1,13 @@
+# CI/local test artifacts
+testResults.xml
+coverage.xml
+artifacts/
+dist/
+reload.ps1
+.gerber/**
+__pycache__/
+*.pyc
+
+# Runtime assemblies packaged with the module
+!src/resources/lib/
+!src/resources/lib/*.dll

@@ -1,0 +1,13 @@
+function Get-PluginMenuHandler {
+    param([pscustomobject]$Gerber, [scriptblock]$HelloHandler)
+
+    $null = $Gerber, $HelloHandler
+    return {
+        param($Command)
+        $action = & $Gerber.UI.ReadSubcommand '{{Namespace}}' $Command ([ordered]@{ hello = 'Say hello' })
+        if ($action -eq 'hello') {
+            return & $HelloHandler $Command
+        }
+        return $false
+    }.GetNewClosure()
+}
