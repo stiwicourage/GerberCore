@@ -28,7 +28,8 @@
   install or request credentials. No Core repository setup or override is
   supported; old Core update settings are ignored. `/update policy` saves
   **Stable only** (the default) or **Include prereleases** for both startup and
-  manual checks. Changing it installs nothing; installation still defaults to Cancel.
+  manual checks. Changing it installs nothing; Enter after saving returns to the
+  `/update` menu. Installation still defaults to Cancel.
   Stable promotion from an installed preview remains supported. Core is not
   published to PSGallery yet, so no matching package is a legitimate result.
   See [Core updates](docs/core-updates.md). Plugin updates are not included yet.

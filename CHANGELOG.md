@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   and ignored legacy bindings, and clears stale startup notifications.
   `/update` now opens the shared **list**/**policy** submenu; `/update list`
   performs the fresh check and returns to that chooser after results.
+  Continuing after a policy selection also returns to `/update`, with
+  `/update list` highlighted, instead of reopening the policy chooser.
 
 ### Changed
 

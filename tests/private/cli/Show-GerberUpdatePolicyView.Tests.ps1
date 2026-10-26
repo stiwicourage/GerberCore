@@ -29,17 +29,23 @@ Describe 'Show-GerberUpdatePolicyView' -Tag 'CoreUpdatePolicy' {
             Should -Invoke Invoke-GerberCoreUpdateInstall -Times 0
         }
 
-        It 'returns to the chooser after continue with the saved channel preselected' {
+        It 'returns to the parent menu after continuing with <Channel>' -ForEach @(
+            @{ Channel = 'Stable' }
+            @{ Channel = 'IncludePrerelease' }
+        ) {
             $script:reads = 0
-            Mock Resolve-GerberCoreUpdatePolicy { @{ Channel = 'IncludePrerelease' } }
+            $expectedChannel = $Channel
+            Mock Resolve-GerberCoreUpdatePolicy { @{ Channel = $Channel } }
             Mock Read-GerberNumberedMenuPrompt {
                 $script:reads++
-                if ($script:reads -gt 1) { throw [OperationCanceledException]::new('test escape') }
-                'IncludePrerelease'
+                if ($script:reads -gt 1) { throw 'Policy chooser reopened after continue' }
+                $Channel
             }
             Mock Wait-GerberContinue {}
-            { Show-GerberUpdatePolicyView } | Should -Throw '*test escape*'
-            Should -Invoke Read-GerberNumberedMenuPrompt -Times 2 -ParameterFilter { $MenuItemList[0].Value -ceq 'IncludePrerelease' }
+            { Show-GerberUpdatePolicyView } | Should -Not -Throw
+            Should -Invoke Read-GerberNumberedMenuPrompt -Times 1 -Exactly
+            Should -Invoke Set-GerberCoreUpdateChannel -Times 1 -ParameterFilter { $Channel -ceq $expectedChannel }
+            Should -Invoke Wait-GerberContinue -Times 1 -Exactly
         }
 
         It 'does not save when Escape cancels the chooser' {

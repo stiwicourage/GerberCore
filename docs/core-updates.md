@@ -67,7 +67,7 @@ Run `/update policy` to choose **Stable only** or **Include prereleases**.
 The latter passes PMU's `IncludePrerelease` channel, making both stable releases
 and eligible previews available. The current choice is displayed and preselected;
 use arrow keys to choose, `Enter` to save, or `Esc` to return without changes.
-After saving, `Enter` returns to the policy chooser. Reselecting the same channel
+After saving, `Enter` returns to the `/update` submenu. Reselecting the same channel
 does not write configuration.
 
 The choice persists in the existing user configuration (schema version 1):

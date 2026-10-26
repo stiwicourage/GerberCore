@@ -4,15 +4,13 @@ function Show-GerberUpdatePolicyView {
         Write-GerberScreenLine -Text 'Open /update policy in an interactive Gerber session to change the Core update channel.'
         return
     }
-    while ($true) {
-        $policy = Resolve-GerberCoreUpdatePolicy
-        $label = Get-GerberCoreUpdateChannelLabel $policy.Channel
-        $items = @(Get-GerberCoreUpdatePolicyMenuItemList $policy.Channel)
-        $selected = Read-GerberNumberedMenuPrompt -Prompt 'Core update channel (Esc to go back)' `
-            -ScreenTitle '/update policy' -ScreenText "Current Core update policy: $label." -MenuItemList $items
-        Save-GerberCoreUpdatePolicySelection $selected
-        Wait-GerberContinue
-    }
+    $policy = Resolve-GerberCoreUpdatePolicy
+    $label = Get-GerberCoreUpdateChannelLabel $policy.Channel
+    $items = @(Get-GerberCoreUpdatePolicyMenuItemList $policy.Channel)
+    $selected = Read-GerberNumberedMenuPrompt -Prompt 'Core update channel (Esc to go back)' `
+        -ScreenTitle '/update policy' -ScreenText "Current Core update policy: $label." -MenuItemList $items
+    Save-GerberCoreUpdatePolicySelection $selected
+    Wait-GerberContinue
 }
 
 function Get-GerberCoreUpdatePolicyMenuItemList {

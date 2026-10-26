@@ -160,7 +160,8 @@ channel selection and separation from future per-plugin repositories.
 your user configuration. Startup and manual `/update list` checks use the same choice.
 The current choice is preselected: `Enter` saves it, and `Esc` leaves it unchanged.
 Changing the policy performs no update check or installation, clears any old
-startup notification and takes effect on the next `/update list`.
+startup notification and takes effect on the next `/update list`. After saving,
+press `Enter` to return to the `/update` submenu.
 
 ### `/tools create-uuid`
 

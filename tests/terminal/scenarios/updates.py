@@ -239,11 +239,25 @@ def update_unsupported_installation(context) -> None:
 
 
 def _open_policy(context) -> None:
-    context.app.type("/update pol")
+    context.app.type("/update ")
+    _choose_policy(context)
+
+
+def _choose_policy(context) -> None:
+    context.app.type("pol")
     context.app.expect_suggestion("/update policy")
     context.app.press("TAB")
     context.app.press("ENTER")
     context.app.wait_for_text("Core update channel (Esc to go back)")
+
+
+def _continue_to_update_menu(context) -> None:
+    context.app.press("ENTER")
+    context.app.wait_for_prompt()
+    context.app.expect_input("/update ")
+    context.app.wait_for_text("[list|policy]")
+    context.app.expect_selected_suggestion_highlighted("/update list")
+    context.app.expect_text_absent("Core update channel (Esc to go back)")
 
 
 @scenario(
@@ -270,15 +284,12 @@ def update_policy_persistence_and_navigation(context) -> None:
     config = context.app.runtime_paths.scenario_root / "config.json"
     assert json.loads(config.read_text())["coreUpdates"]["channel"] == "IncludePrerelease"
     assert _update_state(context)["discoveryCount"] == before["discoveryCount"]
-    context.app.press("ENTER")
+    _continue_to_update_menu(context)
+    _choose_policy(context)
     context.app.wait_for_text("Current Core update policy: Include prereleases")
     context.app.press("ENTER")
     context.app.wait_for_text("Core update policy unchanged: Include prereleases")
-    context.app.press("ENTER")
-    context.app.wait_for_text("Core update channel (Esc to go back)")
-    context.app.press("ESCAPE")
-    context.app.wait_for_prompt()
-    context.app.expect_input("/update ")
+    _continue_to_update_menu(context)
     context.app.press("ESCAPE")
     context.app.wait_for_prompt()
     context.app.expect_input("")
@@ -300,16 +311,18 @@ def update_policy_persistence_and_navigation(context) -> None:
     context.app.wait_for_text("Core update cancelled")
     state = _update_state(context)
     assert state["channel"] == "IncludePrerelease" and state["installCount"] == 0, state
-    _assert_trace_order(context, "numbered-submit", "update-policy-saved", "numbered-open",
+    _assert_trace_order(context, "numbered-submit", "update-policy-saved", "screen-transition",
+                        "numbered-open", "numbered-submit", "update-policy-saved", "screen-transition",
+                        "numbered-open",
                         "numbered-cancel", "update-discovery", "update-confirmation")
 
 
 @scenario(
     "update-policy-save-error-recovers",
-    title="Failed Core channel save preserves configuration and retries in the chooser",
+    title="Failed Core channel save preserves configuration and retries from the update menu",
     categories=("core", "updates", "policy", "recovery"),
     metadata=ScenarioMetadata(
-        commands=("update policy",), workflows=("command:update policy",),
+        commands=("update policy", "update"), workflows=("command:update policy", "command:update"),
         coverage=("dispatch", "workflow", "navigation", "rendering", "error-recovery"),
     ),
 )
@@ -325,15 +338,17 @@ def update_policy_save_error_recovers(context) -> None:
     context.app.expect_text_absent("Core update policy saved:")
     config = context.app.runtime_paths.scenario_root / "config.json"
     assert "coreUpdates" not in json.loads(config.read_text())
-    context.app.press("ENTER")
+    _continue_to_update_menu(context)
+    _choose_policy(context)
     context.app.wait_for_text("Current Core update policy: Stable only")
     context.app.press("DOWN")
     context.app.press("ENTER")
     context.app.wait_for_text("Core update policy saved: Include prereleases")
     assert json.loads(config.read_text())["coreUpdates"]["channel"] == "IncludePrerelease"
     assert _update_state(context)["installCount"] == 0
-    _assert_trace_order(context, "numbered-submit", "update-policy-save-failed", "numbered-open",
-                        "numbered-submit", "update-policy-saved")
+    _continue_to_update_menu(context)
+    _assert_trace_order(context, "numbered-submit", "update-policy-save-failed", "screen-transition",
+                        "numbered-open", "numbered-submit", "update-policy-saved", "screen-transition")
 
 
 @scenario(
