@@ -5,11 +5,9 @@
 ### Changed
 
 - Gerber now requires numeric PSModuleUpdate `0.1.1` for corrected mixed-layout
-  discovery. PMU `0.1.1-preview` is not yet published; dependency bootstrap is a
-  separate approved action, not automatic installation or cleanup of local
-  Gerber. An up-to-date `0.1.0` remains visible in Available with no install offer.
-  The separate upstream `PackageNotFound` issue remains; live installation is
-  not fully qualified.
+  discovery. Dependency bootstrap is a separate approved action, not automatic
+  installation or cleanup of local Gerber. An up-to-date `0.1.0` remains visible
+  in Available with no install offer.
 
 ### Fixed
 
@@ -17,6 +15,9 @@
   directory/restart guidance instead of a PSGallery/connection diagnosis.
   No automatic migration, installation or rollback is implied. An existing
   installed Gerber copy needs a separate update to receive this message.
+- Locally copied or published Core installations that lack native provider
+  metadata now specifically instruct users to reinstall the current Gerber
+  version from PSGallery before retrying `/update list`.
 
 ### Added
 

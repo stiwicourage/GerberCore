@@ -26,8 +26,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   for upstream mixed-layout installed-copy discovery, without changing Gerber's
   version or its PMU-owned update decisions. Added built-module and terminal
   contracts preserving Available `0.1.0` / `UpToDate` when installed equals
-  available, with no installation offer. PMU `0.1.1-preview` is not yet
-  published; dependency bootstrap requires a separate approved action.
+  available, with no installation offer. `/update` does not bootstrap PMU;
+  dependency installation remains a separate approved action.
   No automatic local Gerber migration or cleanup is performed. The separate
   upstream `PackageNotFound` issue and complete live-install qualification remain.
 
@@ -45,6 +45,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   nor assumes every unsupported installation is flat-only, and claims no
   installation or rollback success. Flat-only migration remains unsupported;
   existing installed Gerber copies need a separate update for the diagnostic.
+- A Core installation missing native provider metadata now gets explicit
+  locally-copied/published diagnosis and PSGallery reinstall guidance instead of
+  incorrect numeric-directory guidance. Other unsupported layouts keep the
+  generic safe message; provider secrets remain hidden.
 
 ### Security
 

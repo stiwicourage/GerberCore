@@ -156,6 +156,38 @@ def update_install_error_recovers(context) -> None:
 
 
 @scenario(
+    "update-missing-provider-metadata-recovers",
+    title="Locally copied Core installation receives actionable recovery guidance",
+    categories=("core", "updates", "recovery"),
+    metadata=ScenarioMetadata(
+        commands=("update", "update list"), workflows=("command:update", "command:update list"),
+        coverage=("dispatch", "workflow", "navigation", "error-recovery", "rendering"),
+    ),
+)
+def update_missing_provider_metadata_recovers(context) -> None:
+    _seed_update(
+        context, installError="PMU.UnsupportedInstallation",
+        installErrorMessage="The selected installation has no native provider metadata.",
+    )
+    context.app.start()
+    context.app.wait_for_prompt()
+    _open_update(context)
+    context.app.wait_for_text("Install Core update?")
+    context.app.press("DOWN")
+    context.app.press("ENTER")
+    context.app.wait_for_text("no native provider metadata")
+    context.app.wait_for_text("locally copied or published")
+    context.app.wait_for_text("Press Enter to continue")
+    screen = context.app.visible_text().replace("\n", "")
+    assert "Reinstall the current Gerber version from PSGallery" in screen, screen
+    context.app.expect_text_absent("supported numeric-version module directory")
+    context.app.expect_text_absent("raw-update-token")
+    context.app.press("ENTER")
+    context.app.wait_for_text("Gerber - DevOps Multitool")
+    _assert_trace_order(context, "update-discovery", "update-confirmation", "update-install-complete", "screen-transition")
+
+
+@scenario(
     "update-no-update-overview",
     title="Core equal-version overview preserves PMU availability without an install offer",
     categories=("core", "updates"),

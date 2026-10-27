@@ -29,6 +29,19 @@ Describe 'Get-GerberUpdateFailureMessage' -Tag 'G4A7' {
             $message | Should -Not -Match 'PSGallery|connection|flat-only|raw-layout|user:secret|No files were changed'
         }
 
+        It 'distinguishes a local copy that lacks native provider metadata' -Tag 'UnsupportedInstallation' {
+            $record = [System.Management.Automation.ErrorRecord]::new(
+                [System.InvalidOperationException]::new('The selected installation has no native provider metadata.'),
+                'PMU.UnsupportedInstallation', [System.Management.Automation.ErrorCategory]::NotSpecified, $null
+            )
+
+            $message = Get-GerberUpdateFailureMessage -ErrorRecord $record
+
+            $message | Should -Match 'provider metadata.*locally copied or published.*reinstall.*PSGallery.*retry /update'
+            $message | Should -Match 'No success or rollback is assumed'
+            $message | Should -Not -Match 'supported numeric-version module directory'
+        }
+
         It 'uses error identifiers only, never credential-bearing provider text' -ForEach @(
             @{ id = 'PMU.PackageNotFound'; expected = 'No eligible.*PSGallery' },
             @{ id = 'PMU.RollbackFailed,Install-PSModuleUpdate'; expected = 'rollback.*recovery' },

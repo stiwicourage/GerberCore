@@ -15,6 +15,12 @@ function script:Get-GerberTerminalUpdateState {
     Get-Content -LiteralPath $path -Raw | ConvertFrom-Json -AsHashtable
 }
 
+function script:Get-GerberTerminalUpdateErrorMessage {
+    param([hashtable]$Fixture)
+    if ($Fixture.Contains('installErrorMessage')) { return $Fixture.installErrorMessage }
+    'raw-update-token'
+}
+
 function script:Write-GerberTerminalUpdateState {
     param([hashtable]$State)
     $path = Join-Path (Split-Path $script:GerberTerminalUpdateFixturePath -Parent) 'update-state.json'
@@ -105,6 +111,8 @@ function script:Install-PSModuleUpdate {
     $state.installCount++
     Write-GerberTerminalUpdateState $state
     $fixture = Get-GerberTerminalUpdateFixture
-    if ($fixture.Contains('installError')) { Write-Error -ErrorId $fixture.installError -Message 'raw-update-token' -ErrorAction Stop }
+    if ($fixture.Contains('installError')) {
+        Write-Error -ErrorId $fixture.installError -Message (Get-GerberTerminalUpdateErrorMessage $fixture) -ErrorAction Stop
+    }
     [pscustomobject]@{ Outcome = 'Installed'; VerificationStatus = 'Verified'; RecoveryStatus = 'NotRequired'; RestartRequired = $true }
 }
