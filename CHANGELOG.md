@@ -8,6 +8,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Added
+
+### Fixed
+
+### Security
+
+## [0.2.0] - 2026-10-27
+
+### Added
+
 - Added `/update policy` with persistent **Stable only** (default) and
   **Include prereleases** channels in optional `coreUpdates.channel` user
   configuration. Startup and manual discovery share the validated PMU policy;
@@ -31,12 +47,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   No automatic local Gerber migration or cleanup is performed. The separate
   upstream `PackageNotFound` issue and complete live-install qualification remain.
 
-### Deprecated
-
-### Removed
-
-### Added
-
 ### Fixed
 
 - Core update discovery now maps structured `PMU.UnsupportedInstallation` to
@@ -49,8 +59,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   locally-copied/published diagnosis and PSGallery reinstall guidance instead of
   incorrect numeric-directory guidance. Other unsupported layouts keep the
   generic safe message; provider secrets remain hidden.
-
-### Security
 
 ## [0.1.0] - 2026-10-25
 
@@ -277,3 +285,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Single `Esc` from `/plugins list` and `/plugins info` now returns to `/plugins`, while single `Esc` from plugin details opened through `/plugins list` still returns to the list view first.
   - Double `Esc` within 200 milliseconds still returns directly to the root prompt from nested plugin-management views.
   - Direct `/plugins list` and `/plugins info` execution continues to use Gerber's existing command-resolution behavior without inventing a separate navigation history.
+
