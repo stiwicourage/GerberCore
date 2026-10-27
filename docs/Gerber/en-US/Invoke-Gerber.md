@@ -4,7 +4,7 @@ external help file: Gerber-Help.xml
 HelpUri: ''
 Locale: en-US
 Module Name: Gerber
-ms.date: 10/24/2026
+ms.date: 10/25/2026
 PlatyPS schema version: 2024-05-01
 title: Invoke-Gerber
 ---
@@ -34,9 +34,10 @@ This cmdlet has the following aliases,
 `Invoke-Gerber` opens the interactive Gerber terminal workflow for the current working directory.
 Startup attempts a bounded Gerber Core update check through PSModuleUpdate using
 the fixed official PSGallery repository. An eligible available-version notification
-refers to `/update`; startup never installs, asks to install or requests credentials.
+refers to `/update list`; startup never installs, asks to install or requests credentials.
 Offline, timed-out or no-matching-package checks leave the session usable without
-claiming it is up to date. Gerber Core has not yet been published to PSGallery.
+claiming it is up to date. A read-only public PMU check on 2026-10-25 returned
+installed/target 0.1.0 and UpToDate from PSGallery; no installation was attempted.
 The session starts with a minimal prompt-first home screen and reveals matching root commands as you type `/`, or matching executable leaf action commands as you type plain text such as `uuid`, `base`, `ado`, or `help`.
 The root prompt supports interactive autocomplete with `Tab`, `Up`, and `Down`, including help previews for matching commands.
 Root browsing and completion show `/exit`, `/help`, `/plugins`, and `/update` first, in that order, followed by all remaining Core and active plugin root commands alphabetically. Submenu ordering is unchanged.
@@ -50,11 +51,41 @@ Root slash browsing includes `/exit`, `/help`, `/plugins`, `/update`, `/branch`,
 
 `/plugins enable` lists installed inactive plugins, including previously declined or approved-but-disabled plugins. Selecting a plugin counts as explicit approval without an additional approval prompt. `/plugins disable` removes an active plugin's commands while preserving its approval and leaving its PowerShell module installed. Both actions update menus, completion, and dispatch immediately without restarting Gerber.
 
-`/update` performs fresh Core discovery and shows installed/available versions,
+`/update` opens the shared list/policy submenu, consistent with other slash menus.
+`/update list` performs fresh Core discovery and shows installed/available versions,
 repository and status. Installation requires explicit confirmation with Cancel
 as the default. PMU performs installation and reports verification, recovery and
 restart requirements; Gerber never hot reloads Core. Failed discovery is not
-"up to date". Plugin updates remain planned.
+"up to date". `/update policy` selects Stable only (default) or Include prereleases
+for startup and manual discovery. The current choice is preselected; Enter saves,
+Esc cancels, and continue returns to the chooser. Selection performs no discovery
+or installation and clears an old startup notification only after a channel change.
+Esc returns to the update submenu; continuing after list results returns there too.
+Plugin updates remain planned.
+
+Gerber requires numeric PSModuleUpdate 0.1.1 or later; upstream source
+0.1.1-preview corrects mixed-layout installed-copy discovery. PMU 0.1.1 is not
+yet published, and dependency bootstrap remains a separate explicitly approved
+action. Gerber does not automatically migrate or clean up local Gerber copies.
+When PMU reports installed and available 0.1.0 with disposition UpToDate,
+the Available column shows 0.1.0 and no installation is offered. PMU remains
+the sole discovery and version-selection authority, using the fixed official
+PSGallery endpoint, selected channel and CurrentUser scope. The separate upstream
+PackageNotFound classification issue remains unresolved; the layout correction
+does not establish complete live-install qualification.
+Building this checkout does not replace installed or loaded PMU for an existing
+`gerber` launcher. The read-only 0.1.0 probe does not establish currency for a
+local 0.1.1-preview session; a failed check remains Available `-` / Unavailable.
+PMU does not select or migrate flat-only Gerber copies as versioned
+installations. The later flat-only 0.1.1-preview launch returned
+PMU.UnsupportedInstallation even with corrected PMU; this is an unsupported
+installation layout, not a PSGallery failure.
+Structured PMU.UnsupportedInstallation errors now receive generic supported
+numeric-version module directory guidance: restart PowerShell after arranging
+a supported installation, then retry `/update list`. Gerber does not parse provider
+text, assume every such error is flat-only, or claim installation/rollback success.
+An existing installed Gerber copy needs a separate update to receive this
+source diagnostic; no automatic installation migration is performed.
 
 `/plugins create` asks for a module suffix behind a fixed `Gerber.` prefix,
 description, unused command namespace, and existing destination parent (current
@@ -154,7 +185,7 @@ Review Core updates in PSGallery inside Gerber; no repository setup is needed. C
 the default; no installation occurs without acceptance.
 
 ```text
-/update
+/update list
 ```
 
 ## PARAMETERS
@@ -185,10 +216,17 @@ This application-owned repository cannot be overridden by user settings,
 environment variables or plugin configuration and has no fallback or chooser.
 Obsolete `updates.modules.Gerber` settings are ignored without rewriting
 unrelated configuration. Core never reports Unconfigured or retrieves credentials.
-PMU's explicit Stable/CurrentUser policy handles installed prerelease metadata:
-stable `0.1.0` can supersede `0.1.0-preview`; newer prereleases are excluded.
-Gerber Core has not yet been published to PSGallery. No matching package is not
-a configuration error, a currency claim or permission to install.
+The channel is saved as optional `coreUpdates.channel` in existing user
+configuration: Stable by default, or IncludePrerelease for stable releases and
+previews. Startup's child process uses the same file, including GERBER_CONFIG_PATH.
+Missing values do not create configuration; explicit invalid values are errors.
+Save failures and noninteractive policy dispatch do not change the channel.
+Changed-policy installation plans require a new `/update list` check.
+PMU handles installed prerelease metadata: stable `0.1.0` can supersede
+`0.1.0-preview`; Stable excludes newer prereleases.
+No matching package is not a configuration error, a currency claim or
+permission to install. The 2026-10-25 read-only PMU check found stable 0.1.0;
+that lookup is not live installation qualification.
 Startup retains a 2,000 ms child-process budget with no persistent cache.
 Noninteractive update views do not prompt or install.
 Module import alone performs no update check or Nova lifecycle operation.
@@ -206,4 +244,4 @@ The `/secrets` menu uses secure credential storage, accepts case-insensitive Ger
 
 ## RELATED LINKS
 
-- [Gerber overview](../../../README.md)
+- [Gerber project](https://github.com/stiwicourage/GerberCore)

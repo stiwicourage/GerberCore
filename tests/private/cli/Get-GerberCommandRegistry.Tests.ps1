@@ -28,7 +28,9 @@ Describe 'Get-GerberCommandRegistry' {
             'plugins enable',
             'plugins disable',
             'plugins create',
-            'pipelines tags'
+            'pipelines tags',
+            'update list',
+            'update policy'
         )
     }
 

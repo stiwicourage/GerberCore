@@ -8,7 +8,7 @@ Describe 'Import-GerberTerminalRuntimeDependency' -Tag 'G4A7' {
             Mock Import-PowerShellDataFile {
                 @{ RequiredModules = @(
                     @{ ModuleName = 'NovaModuleTools'; ModuleVersion = '3.4.2' }
-                    @{ ModuleName = 'PSModuleUpdate'; ModuleVersion = '0.1.0' }
+                    @{ ModuleName = 'PSModuleUpdate'; ModuleVersion = '0.1.1' }
                 ) }
             }
             Mock Import-Module {}

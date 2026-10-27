@@ -59,12 +59,7 @@ function Get-GerberCoreRootCommandDefinitionList {
             Handler     = { param([pscustomobject]$Command) Show-GerberSecretsView -Command $Command; return $false }
             Subcommands = Get-GerberSecretsCommandCatalog
         }
-        [pscustomobject][ordered]@{
-            Name        = 'update'
-            Description = 'Check and install Gerber Core updates'
-            Handler     = { Show-GerberUpdateView; return $false }
-            Subcommands = [ordered]@{}
-        }
+        Get-GerberCoreUpdateCommandDefinition
         [pscustomobject][ordered]@{
             Name        = 'help'
             Description = 'Show the built-in command help'
@@ -147,6 +142,7 @@ function Get-GerberCoreLeafCommandDefinitionList {
             Handler     = { param([pscustomobject]$Command) Show-GerberPipelinesTagsView -Command $Command; return $false }
             Subcommands = Get-GerberPipelinesTagsCommandCatalog
         }
+        Get-GerberCoreUpdateLeafCommandDefinitionList
     )
 }
 
@@ -155,6 +151,38 @@ function Get-GerberCorePluginCreateCommandDefinition {
         Name        = 'plugins create'
         Description = 'Create and validate a working Gerber plugin project'
         Handler     = { param([pscustomobject]$Command) Invoke-GerberPluginsCreateCommand -Command $Command; return $false }
+        Subcommands = [ordered]@{}
+    }
+}
+
+function Get-GerberCoreUpdateCommandDefinition {
+    [pscustomobject][ordered]@{
+        Name = 'update'
+        Description = 'Open the Core update menu'
+        Handler = { param([pscustomobject]$Command) Show-GerberUpdateMenu -Command $Command; return $false }
+        Subcommands = [ordered]@{}
+    }
+}
+
+function Get-GerberCoreUpdateLeafCommandDefinitionList {
+    Get-GerberCoreUpdateListCommandDefinition
+    Get-GerberCoreUpdatePolicyCommandDefinition
+}
+
+function Get-GerberCoreUpdateListCommandDefinition {
+    [pscustomobject][ordered]@{
+        Name = 'update list'
+        Description = 'Check and install Gerber Core updates'
+        Handler = { Show-GerberUpdateView; return $false }
+        Subcommands = [ordered]@{}
+    }
+}
+
+function Get-GerberCoreUpdatePolicyCommandDefinition {
+    [pscustomobject][ordered]@{
+        Name = 'update policy'
+        Description = 'Choose the persistent Core update channel'
+        Handler = { Show-GerberUpdatePolicyView; return $false }
         Subcommands = [ordered]@{}
     }
 }

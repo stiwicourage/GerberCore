@@ -2,15 +2,36 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Gerber now requires numeric PSModuleUpdate `0.1.1` for corrected mixed-layout
+  discovery. Dependency bootstrap is a separate approved action, not automatic
+  installation or cleanup of local Gerber. An up-to-date `0.1.0` remains visible
+  in Available with no install offer.
+
+### Fixed
+
+- Unsupported Core installation layouts now get supported numeric-version
+  directory/restart guidance instead of a PSGallery/connection diagnosis.
+  No automatic migration, installation or rollback is implied. An existing
+  installed Gerber copy needs a separate update to receive this message.
+- Locally copied or published Core installations that lack native provider
+  metadata now specifically instruct users to reinstall the current Gerber
+  version from PSGallery before retrying `/update list`.
+
 ### Added
 
-- `/update` checks Gerber Core in its fixed official PSGallery repository and shows
+- `/update` opens the shared **list**/**policy** submenu. `/update list`
+  checks Gerber Core in its fixed official PSGallery repository and shows
   installed/available versions before asking whether to install. Cancel is the
   default; results explain verification, recovery and when to restart PowerShell.
   Startup can notify about an available version but never installs or asks to
   install or request credentials. No Core repository setup or override is
-  supported; old Core update settings are ignored. Only stable targets are
-  eligible, including stable promotion from an installed preview. Core is not
+  supported; old Core update settings are ignored. `/update policy` saves
+  **Stable only** (the default) or **Include prereleases** for both startup and
+  manual checks. Changing it installs nothing; Enter after saving returns to the
+  `/update` menu. Installation still defaults to Cancel.
+  Stable promotion from an installed preview remains supported. Core is not
   published to PSGallery yet, so no matching package is a legitimate result.
   See [Core updates](docs/core-updates.md). Plugin updates are not included yet.
 

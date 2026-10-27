@@ -9,6 +9,8 @@ BeforeAll {
             $report.SelectSingleNode('//test-suite').SetAttribute($Attribute, $Value)
         }
         $report.Save($Path)
+        # Coarse filesystem timestamps can predate the runner's start time on Linux.
+        (Get-Item -LiteralPath $Path).LastWriteTimeUtc = [datetime]::UtcNow.AddSeconds(5)
     }
 
     function Get-NativeCredentialLinuxShell {
@@ -187,9 +189,30 @@ Describe 'Native credential platform lane' -Tag 'BuildTooling' {
         $env:GCM_CREDENTIAL_STORE | Should -BeNullOrEmpty
     }
 
+    It 'imports the PMU minimum from project metadata after a version change' {
+        $script:expectedMinimum = '2.3.4'
+        Mock Assert-NativeCredentialRunner {}
+        Mock Invoke-NovaBuild {}
+        Mock Invoke-NativeCredentialTest {}
+        Mock Get-Content {
+            @{ Manifest = @{ RequiredModules = @(@{ ModuleName = 'PSModuleUpdate'; ModuleVersion = $script:expectedMinimum }) } } |
+                ConvertTo-Json -Depth 5
+        }
+        $script:pmuImport = $null
+        Mock Import-Module {
+            $script:pmuImport = @{ Name = $Name; MinimumVersion = $MinimumVersion }
+        }
+
+        Invoke-NativeCredentialPlatformCI
+
+        $script:pmuImport.Name | Should -Be 'PSModuleUpdate'
+        $script:pmuImport.MinimumVersion | Should -Be $script:expectedMinimum
+    }
+
     It 'builds before opting in and restores the working directory on failure' {
         $originalLocation = Get-Location
         Mock Assert-NativeCredentialRunner {}
+        Mock Import-Module {}
         Mock Invoke-NovaBuild {
             $env:GERBER_RUN_NATIVE_CREDENTIAL_TESTS | Should -Be 'previous-opt-in'
         }

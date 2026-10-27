@@ -56,6 +56,12 @@ Describe 'Read-GerberCommand' {
 }
 
 Describe 'Read-GerberCommand helpers' {
+    It 'enters the shared update submenu with list and policy choices' -Tag 'CoreUpdatePolicy' {
+        $resolution = Resolve-GerberCommand -InputText '/update'
+        $resolution.IsValid | Should -BeTrue
+        (Test-GerberPromptSubcommandEntry -Resolution $resolution) | Should -BeTrue
+        (Get-GerberRegisteredCommand -Name update).Subcommands.Keys | Should -Be @('list', 'policy')
+    }
     It 'uses Gerber prompt formatting for host fallback input and can start on a fresh line' {
         Mock Write-GerberConsoleLineBreak {}
         Mock Write-GerberHostPrompt {}

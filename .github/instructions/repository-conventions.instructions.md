@@ -63,6 +63,27 @@ For changes that affect Gerber's interactive CLI, command registry, plugin integ
 - exclusions must be exact command/category records with a narrow classification and reason; do not exclude whole plugins, network commands, credential commands, or interactive menus
 - generic Core/Plugin API integration coverage must import and execute the built Gerber module plus `Gerber.TerminalFixture` rather than source-dot-sourcing across the module boundary
 
+## CI parity and readiness
+
+- Before changing code or tests, inspect the active `.github/workflows/` definitions and their owning `scripts/build/ci/` helpers. Identify the required OS, architecture, PowerShell versions, dependency provisioning and checks affected by the change; shared tests can break a platform even when production code did not change.
+- Run the focused checks and the required local quality loop. Local `run.ps1` success is not matrix qualification. Use the configured lane entrypoint on a matching host/runtime where available, preserving dependency isolation and failure semantics; never spoof runner identity or bypass host guards.
+- Review changed tests for portability, including path separators, casing, filesystem ordering and platform-specific commands. Build expected filesystem paths with `Join-Path` and compare the intended path contract, not a string containing the development host's separator. Preserve exact identity and side-effect assertions.
+- Before raising a dependency minimum, verify that CI's configured provider and version-selection rules can supply a compatible artifact. Record the actual imported version and path in the test process, not just the launcher's installed-module inventory; a locally built or installed sibling module does not prove availability on a clean runner. An unavailable dependency blocks consumer readiness until an upstream release or explicit CI artifact-delivery change is separately authorized. Do not lower the minimum, add fallback imports, publish packages or modify global module installations to hide the gap.
+- Report local and hosted evidence separately: tested revision/content state, OS/architecture, actual PowerShell and dependency versions, exact commands, test/coverage results and relevant run/job URLs. Mark unavailable hosts/runtimes, skipped required tests, interrupted commands and missing artifacts as unverified, not passed.
+- Inspect every required hosted job for the exact revision and run attempt before claiming CI or PR readiness. An earlier revision's green run, passing unit tests or local PTY results cannot qualify unexecuted native-credential lanes. Uncommitted fixes remain pending hosted verification; a local handoff must say so.
+- Trace failures to the first failing assertion or provisioning step before changing code. Keep regression assertions and thresholds intact; do not skip platform tests, weaken comparisons, retry until green without diagnosis, or treat downstream missing-artifact errors as the primary defect.
+
+For Gerber, inspect both `.github/workflows/Tests.yml` and
+`.github/workflows/Run-Platform-Matrix.yml`. The latter exercises native
+credentials on Windows, Linux and macOS; it does not replace the full local
+quality loop or PTY coverage. Never execute its guarded native-credential
+entrypoint against a workstation vault. Before changing
+`project.json` `Manifest.RequiredModules`, check
+`scripts/build/ci/Install-CiPowerShellModules.ps1` and all explicit imports,
+including `Invoke-NativeCredentialPlatformCI.ps1`. A local PMU prerelease can
+satisfy the numeric manifest minimum while PSGallery provisioning still cannot;
+report that delivery gap instead of claiming a clean-runner import was proven.
+
 ## Documentation review
 
 - Review `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, and `RELEASE_NOTE.md` after any change that adds, removes, or alters public-facing behavior, commands, parameters, or documented workflows.

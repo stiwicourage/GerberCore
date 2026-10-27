@@ -1,7 +1,7 @@
 function Invoke-GerberCoreUpdateInstall {
     param([object]$State)
     try {
-        Assert-GerberCoreInstallPlan $State.Plan
+        Assert-GerberCoreInstallPlan $State
         $result = Install-PSModuleUpdate -Update $State.Plan -Confirm:$false `
             -TrustRepository:$State.Plan.RequiresRepositoryTrust -AcceptLicense:$State.Plan.RequiresLicenseAcceptance `
             -ErrorAction Stop -WarningAction SilentlyContinue -InformationAction SilentlyContinue -Verbose:$false -Debug:$false
@@ -14,13 +14,17 @@ function Invoke-GerberCoreUpdateInstall {
 }
 
 function Assert-GerberCoreInstallPlan {
-    param([object]$Plan)
+    param([object]$State)
+    $policy = Resolve-GerberCoreUpdatePolicy
+    if ($State.Channel -cne $policy.Channel) {
+        throw [System.InvalidOperationException]::new('Core update policy changed. Run /update list again for a fresh plan.')
+    }
     $expected = @{
         ModuleName = 'Gerber'; RepositoryName = 'PSGallery'; RepositoryUri = 'https://www.powershellgallery.com/api/v2'
-        Channel = 'Stable'; Scope = 'CurrentUser'
+        Channel = $policy.Channel; Scope = $policy.Scope
     }
     foreach ($key in $expected.Keys) {
-        if ([string]$Plan.$key -cne $expected[$key]) {
+        if ([string]$State.Plan.$key -cne $expected[$key]) {
             throw [System.InvalidOperationException]::new('Core installation requires a fresh official update plan.')
         }
     }
@@ -35,7 +39,7 @@ function Format-GerberCoreUpdateResult {
         WhatIf = 'WhatIf (no installation)'
     }
     $outcome = $messages[$Result.Outcome]
-    if (-not $outcome) { return 'PMU returned an unknown installation outcome. Inspect the selected installation before retrying /update.' }
+    if (-not $outcome) { return 'PMU returned an unknown installation outcome. Inspect the selected installation before retrying /update list.' }
     $text = "$outcome. Verification: $($Result.VerificationStatus). Recovery: $($Result.RecoveryStatus)."
     if ($Result.RestartRequired) { $text += ' Restart PowerShell before using Gerber again; this session has not reloaded Core.' }
     $text

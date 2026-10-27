@@ -37,6 +37,10 @@ Describe 'Test-GerberUserConfiguration' {
 
     It 'delegates feature sections to their validators' -ForEach @(
         @{
+            Configuration = @{ schemaVersion = 1; coreUpdates = @{ channel = 'Preview' } }
+            ErrorMessage = '*coreUpdates.channel*Stable*IncludePrerelease*'
+        }
+        @{
             Configuration = @{
                 schemaVersion = 1
                 ado = @{

@@ -32,6 +32,7 @@ Describe 'Show-GerberUpdateView' -Tag 'G4A7' {
             Show-GerberUpdateView
             Should -Invoke Get-GerberCoreUpdateState -Times 2
             Should -Invoke Read-GerberConfirmationPrompt -Times 2 -ParameterFilter {
+                $ScreenTitle -eq '/update list' -and
                 $PromptOptionSet.DefaultOption -eq 'cancel' -and $ScreenText -match 'trust' -and $ScreenText -match 'license'
             }
             Should -Invoke Invoke-GerberCoreUpdateInstall -Times 0

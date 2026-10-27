@@ -61,7 +61,9 @@ Describe 'New-GerberPluginProject isolated lifecycle integration' -Tag 'PluginCr
             ($output -join "`n") | Should -Match 'Hello from Gerber.MyCompany!'
             ($output -join "`n") | Should -Match 'Gerber.MyCompany\s+0.1.0\s+'
             (Get-Content $env:GERBER_CONFIG_PATH -Raw) | Should -Be $before
-            $manifest = Import-PowerShellDataFile (Join-Path $moduleRoot 'Gerber.MyCompany/Gerber.MyCompany.psd1')
+            $publishedManifestPath = Join-Path $moduleRoot "$($created.Name)/$($created.Version)/$($created.Name).psd1"
+            $publishedManifestPath | Should -Exist
+            $manifest = Import-PowerShellDataFile -LiteralPath $publishedManifestPath -ErrorAction Stop
             $manifest.GUID.ToString() | Should -Be $created.Guid
             $manifest.PrivateData.Gerber.Keys | Should -Not -Contain 'Guid'
         } finally {

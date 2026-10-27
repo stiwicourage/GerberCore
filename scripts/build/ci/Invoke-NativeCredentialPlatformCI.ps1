@@ -111,7 +111,9 @@ function Invoke-NativeCredentialPlatformCI {
     Push-Location -LiteralPath $script:NativeCredentialRepositoryRoot
     try {
         Import-Module NovaModuleTools -MinimumVersion 3.4.2 -ErrorAction Stop
-        Import-Module PSModuleUpdate -MinimumVersion 0.1.0 -ErrorAction Stop
+        $project = Get-Content -LiteralPath (Join-Path $script:NativeCredentialRepositoryRoot 'project.json') -Raw | ConvertFrom-Json
+        $requirement = $project.Manifest.RequiredModules | Where-Object ModuleName -EQ 'PSModuleUpdate'
+        Import-Module PSModuleUpdate -MinimumVersion $requirement.ModuleVersion -ErrorAction Stop
         Invoke-NovaBuild
         Invoke-NativeCredentialTest -ReportPath (Join-Path $script:NativeCredentialRepositoryRoot 'artifacts/TestResults.xml')
     } finally {

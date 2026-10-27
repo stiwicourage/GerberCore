@@ -1,7 +1,7 @@
 {
   "ProjectName": "Gerber",
   "Description": "DevOps Multitool",
-  "Version": "0.1.0",
+  "Version": "0.1.1-preview06",
   "Preamble": [
     "Set-StrictMode -Version Latest",
     "$ErrorActionPreference = 'Stop'"
@@ -18,7 +18,7 @@
       },
       {
         "ModuleName": "PSModuleUpdate",
-        "ModuleVersion": "0.1.0"
+        "ModuleVersion": "0.2.0"
       }
     ],
     "Tags": [],
@@ -38,9 +38,10 @@
       "Enabled": true,
       "Path": [
         "src/public/*.ps1",
-        "src/private/**/*.ps1"
+        "src/private/**/*.ps1",
+        "src/classes/*.ps1"
       ],
-      "CoveragePercentTarget": 90,
+      "CoveragePercentTarget": 95,
       "OutputPath": "artifacts/coverage.xml",
       "OutputFormat": "JaCoCo"
     },
