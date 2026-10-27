@@ -1,7 +1,7 @@
 {
   "ProjectName": "Gerber",
   "Description": "DevOps Multitool",
-  "Version": "0.2.1-preview01",
+  "Version": "0.2.1-preview02",
   "Preamble": [
     "Set-StrictMode -Version Latest",
     "$ErrorActionPreference = 'Stop'"
