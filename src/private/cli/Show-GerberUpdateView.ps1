@@ -7,7 +7,9 @@ function Show-GerberUpdateView {
     Show-GerberCoreUpdateSummary -State $state
     Write-GerberPromptTrace -EventName 'update-discovery' -Data @{ Status = $state.Status }
     if (-not $interactive) { return }
-    if ($state.Status -eq 'Available') { Invoke-GerberUpdateConfirmation $state }
+    $restartText = if ($state.Status -eq 'Available') { Invoke-GerberUpdateConfirmation $state
+    } elseif ($state.Status -eq 'RestartRequired') { $state.Message }
+    if ($restartText) { return Show-GerberCoreUpdateRestartChoice -Text $restartText }
     Wait-GerberContinue
 }
 
@@ -23,8 +25,23 @@ function Invoke-GerberUpdateConfirmation {
         return
     }
     Write-GerberScreenLine -Text 'Installing Core update...'
-    Write-GerberScreenLine -Text (Invoke-GerberCoreUpdateInstall -State $State)
+    Complete-GerberUpdateInstallation -State $State
+}
+
+function Complete-GerberUpdateInstallation {
+    param([object]$State)
+    $result = Invoke-GerberCoreUpdateInstall -State $State -PassThru
+    $text = if ($result -is [string]) { $result } else { Format-GerberCoreUpdateResult $result }
+    Write-GerberScreenLine -Text $text
     Write-GerberPromptTrace -EventName 'update-install-complete' -Data @{ Component = 'Core' }
+    if (Test-GerberUpdateRestartRequired -Result $result) { return $text }
+}
+
+function Test-GerberUpdateRestartRequired {
+    param([object]$Result)
+    if ($Result -is [string]) { return $false }
+    if ($Result.Outcome -notin @('Installed', 'AlreadyInstalled')) { return $false }
+    return $Result.VerificationStatus -eq 'Verified' -and $Result.RestartRequired
 }
 
 function Get-GerberUpdateConsentText {

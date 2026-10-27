@@ -19,7 +19,15 @@ Describe 'Show-GerberUpdateMenu' -Tag 'CoreUpdatePolicy' {
             Should -Invoke Show-GerberRegisteredSubcommandMenu -Times 1 -ParameterFilter {
                 $CommandName -eq 'update' -and $AutoSelectFirstSuggestionOnSubmit
             }
+
             Should -Invoke Show-GerberUpdateView -Times 0
+        }
+
+        It 'propagates the shared menu exit signal without extra output' {
+            Mock Test-GerberUpdateInteractive { $true }
+            Mock Show-GerberRegisteredSubcommandMenu { $true }
+            @(Show-GerberUpdateMenu ([pscustomobject]@{ Arguments = @('list') })) | Should -Be @($true)
+            Should -Invoke Show-GerberRegisteredSubcommandMenu -ParameterFilter { $PropagateExit }
         }
 
         It 'does not open a parent chooser after noninteractive policy dispatch' {

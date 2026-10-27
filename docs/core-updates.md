@@ -139,9 +139,19 @@ do not prompt, access native credentials or install.
 After acceptance, Gerber passes the original live PSGallery-bound PMU plan to
 `Install-PSModuleUpdate`; it does not implement its own installer, locks or rollback.
 Results show verification/recovery status and restart guidance when required.
-Core is never hot reloaded. On failure, follow the displayed recovery guidance;
+After a verified successful installation requiring restart, or discovery status
+`RestartRequired` for a newer Core already installed, the standard chooser offers
+**Continue with current version** (default) and **Exit Gerber**. Bare Enter or
+Esc continues to the `/update` menu with a restart reminder retained on home-screen
+redraws. Exit returns from Gerber only: it does not restart or close PowerShell,
+spawn another shell, or reload Core/plugins. **Restart PowerShell, then run
+`gerber`** to use the installed Core.
+
+Core is never hot reloaded. Cancelled, unverified, failed, no-package and up-to-date
+outcomes do not offer this exit chooser. On failure, follow the displayed recovery guidance;
 do not assume installation or rollback succeeded. Run `/update list` again to recheck.
-`Press Enter to continue` returns to the `/update` chooser. Esc from policy
+For outcomes without the restart chooser, `Press Enter to continue` returns to
+the `/update` chooser. Esc from policy
 selection also returns to that chooser; a further Esc goes back toward home.
 
 ## Qualification and remaining scope

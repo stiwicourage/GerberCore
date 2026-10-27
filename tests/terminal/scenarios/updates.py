@@ -58,11 +58,100 @@ def update_accept_and_startup_notification(context) -> None:
     context.app.press("DOWN")
     context.app.press("ENTER")
     context.app.wait_for_text("Restart PowerShell")
-    context.app.wait_for_text("Press Enter to continue")
+    context.app.wait_for_text("Continue with current version")
+    context.app.wait_for_text("Exit Gerber")
+    context.app.wait_for_text("does not restart PowerShell")
+    context.app.wait_for_text("Verification: Verified. Recovery: NotRequired.")
     assert _update_state(context)["installCount"] == 1
     context.app.press("ENTER")
-    context.app.wait_for_text("0.2.0 is available. Run /update")
-    _assert_trace_order(context, "update-discovery", "update-confirmation", "update-install-complete", "screen-transition")
+    context.app.wait_for_prompt()
+    context.app.expect_input("/update ")
+    context.app.wait_for_text("Restart PowerShell, then run gerber")
+    context.app.expect_text_absent("0.2.0 is available")
+    context.app.press("ESCAPE")
+    context.app.wait_for_prompt()
+    context.app.expect_input("")
+    context.app.wait_for_text("Restart PowerShell, then run gerber")
+    _assert_trace_order(context, "update-discovery", "update-confirmation", "update-install-complete", "numbered-submit", "update-restart-choice", "screen-transition")
+
+
+def _accept_restart_exit(context, *, install: bool) -> None:
+    if install:
+        context.app.wait_for_text("Install Core update?")
+        context.app.press("DOWN")
+        context.app.press("ENTER")
+    context.app.wait_for_text("Continue with current version")
+    context.app.wait_for_text("Exit Gerber")
+    context.app.wait_for_text("does not restart PowerShell")
+    context.app.press("DOWN")
+    context.app.press("ENTER")
+    context.app.wait_for_exit()
+    assert _update_state(context)["installCount"] == int(install)
+    _assert_trace_order(context, "update-discovery", "numbered-submit", "update-restart-choice")
+    assert '"Selection":"exit"' in context.app.prompt_trace_text()
+    assert "Restart PowerShell, then run gerber" in context.app.raw_output()
+
+
+@scenario(
+    "update-verified-install-exit",
+    title="Verified Core update exits Gerber through the nested menu contract",
+    categories=("core", "updates", "navigation"),
+    metadata=ScenarioMetadata(
+        commands=("update", "update list"), workflows=("command:update", "command:update list"),
+        coverage=("dispatch", "workflow", "navigation", "rendering"),
+    ),
+)
+def update_verified_install_exit(context) -> None:
+    _seed_update(context)
+    context.app.start()
+    context.app.wait_for_prompt()
+    context.app.type("/update")
+    context.app.press("ENTER")
+    context.app.wait_for_prompt()
+    context.app.expect_input("/update ")
+    context.app.press("ENTER")
+    _accept_restart_exit(context, install=True)
+
+
+@scenario(
+    "update-restart-required-exit",
+    title="Previously installed Core update offers exit without installing again",
+    categories=("core", "updates", "navigation"),
+    metadata=ScenarioMetadata(
+        commands=("update", "update list"), workflows=("command:update", "command:update list"),
+        coverage=("dispatch", "workflow", "navigation", "rendering"),
+    ),
+)
+def update_restart_required_exit(context) -> None:
+    _seed_update(context, disposition="AlreadyInstalledRestartRequired", startupStatus="RestartRequired")
+    context.app.start()
+    context.app.wait_for_prompt()
+    _open_update(context)
+    _accept_restart_exit(context, install=False)
+    assert "update-confirmation" not in context.app.prompt_trace_text()
+
+
+@scenario(
+    "update-restart-required-escape",
+    title="Escape safely continues the current Core with restart guidance retained",
+    categories=("core", "updates", "navigation"),
+    metadata=ScenarioMetadata(
+        commands=("update", "update list"), workflows=("command:update", "command:update list"),
+        coverage=("dispatch", "workflow", "navigation", "rendering"),
+    ),
+)
+def update_restart_required_escape(context) -> None:
+    _seed_update(context, disposition="AlreadyInstalledRestartRequired", startupStatus="RestartRequired")
+    context.app.start()
+    context.app.wait_for_prompt()
+    _open_update(context)
+    context.app.wait_for_text("Continue with current version")
+    context.app.press("ESCAPE")
+    context.app.wait_for_prompt()
+    context.app.expect_input("/update ")
+    context.app.wait_for_text("Restart PowerShell, then run gerber")
+    assert _update_state(context)["installCount"] == 0
+    _assert_trace_order(context, "update-discovery", "numbered-cancel", "update-restart-choice", "screen-transition")
 
 
 @scenario(
@@ -82,6 +171,7 @@ def update_default_cancel_and_escape(context) -> None:
     context.app.wait_for_text("Install Core update?")
     context.app.press("ENTER")
     context.app.wait_for_text("Core update cancelled")
+    context.app.expect_text_absent("Continue with current version")
     context.app.press("ENTER")
     context.app.wait_for_prompt()
     context.app.expect_input("/update ")
@@ -148,6 +238,7 @@ def update_install_error_recovers(context) -> None:
     context.app.press("ENTER")
     context.app.wait_for_text("Installation and rollback failed")
     context.app.wait_for_text("Preserve PMU journals")
+    context.app.expect_text_absent("Continue with current version")
     context.app.expect_text_absent("raw-update-token")
     context.app.press("ENTER")
     context.app.wait_for_text("Gerber - DevOps Multitool")
@@ -212,6 +303,7 @@ def update_no_update_overview(context) -> None:
     row = next(line for line in context.app.visible_text().splitlines() if "PSGallery" in line)
     assert row.split() == ["Core", "Gerber", "0.1.0", "0.1.0", "PSGallery", "UpToDate"], row
     context.app.expect_text_absent("Install Core update?")
+    context.app.expect_text_absent("Continue with current version")
     assert _update_state(context)["installCount"] == 0
     _assert_trace_order(context, "update-discovery")
     assert "update-confirmation" not in context.app.prompt_trace_text()

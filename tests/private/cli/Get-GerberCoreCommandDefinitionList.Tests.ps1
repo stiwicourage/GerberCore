@@ -54,6 +54,16 @@ Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
         Should -Invoke Show-GerberUpdateView -Times 1
     }
 
+    It 'carries the update exit signal through leaf, update and root menu dispatch' {
+        Mock Show-GerberUpdateView { $true }
+        Mock Read-GerberSubcommandPrompt { throw 'Exit must not reopen the submenu' }
+        $leaf = Get-GerberRegisteredCommand -Name 'update list'
+        @(Invoke-GerberRegisteredCommand -CommandDefinition $leaf `
+            -Command ([pscustomobject]@{ Arguments = @() })) | Should -Be @($true)
+        $command = Resolve-GerberCommand -InputText '/update list' -ActionList (Get-GerberActionList)
+        @(Invoke-GerberMenuCommand -Command $command) | Should -Be @($true)
+    }
+
     It 'dispatches policy through a discoverable leaf' {
         $definition = Get-GerberCoreCommandDefinitionList | Where-Object Name -EQ 'update policy'
         $definition | Should -Not -BeNullOrEmpty

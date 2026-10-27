@@ -25,6 +25,11 @@
   checks Gerber Core in its fixed official PSGallery repository and shows
   installed/available versions before asking whether to install. Cancel is the
   default; results explain verification, recovery and when to restart PowerShell.
+  Verified success requiring restart, or discovery of a newer Core already
+  installed, now offers **Exit Gerber** or **Continue with current version**.
+  Continue is the default; Esc also continues with the restart reminder retained.
+  Exiting Gerber does not restart PowerShell: restart PowerShell yourself, then
+  run `gerber`. Core and plugins are not reloaded in-process.
   Startup can notify about an available version but never installs or asks to
   install or request credentials. No Core repository setup or override is
   supported; old Core update settings are ignored. `/update policy` saves

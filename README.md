@@ -147,6 +147,11 @@ Examples inside the palette:
 `/update list` shows Core's installed and available versions, PSGallery and
 discovery status. **Cancel is the default**; installation delegates to PSModuleUpdate,
 reports verification/recovery outcomes and tells you when to restart PowerShell.
+After a verified successful update requiring restart, or discovery of an
+already-installed newer Core, choose **Exit Gerber** or **Continue with current
+version** (the default; Esc also continues). Exiting Gerber does not restart
+PowerShell: restart PowerShell yourself, then run `gerber`. Continuing retains
+the restart reminder; Core and plugins are not reloaded in this session.
 An unreachable repository is not reported as "up to date". Startup checks never
 install, request installation consent or access native credential storage.
 An unpublished package is reported without inventing an available version.

@@ -159,7 +159,7 @@ function Get-GerberCoreUpdateCommandDefinition {
     [pscustomobject][ordered]@{
         Name = 'update'
         Description = 'Open the Core update menu'
-        Handler = { param([pscustomobject]$Command) Show-GerberUpdateMenu -Command $Command; return $false }
+        Handler = { param([pscustomobject]$Command) return [bool](Show-GerberUpdateMenu -Command $Command) }
         Subcommands = [ordered]@{}
     }
 }
@@ -173,7 +173,7 @@ function Get-GerberCoreUpdateListCommandDefinition {
     [pscustomobject][ordered]@{
         Name = 'update list'
         Description = 'Check and install Gerber Core updates'
-        Handler = { Show-GerberUpdateView; return $false }
+        Handler = { return [bool](Show-GerberUpdateView) }
         Subcommands = [ordered]@{}
     }
 }

@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Core update completion now offers **Exit Gerber** or **Continue with current
+  version** after verified success requiring restart, or discovery of an
+  already-installed newer Core. Continue is the default and Esc also continues.
+  Restart guidance remains visible; exiting Gerber does not restart PowerShell.
+  Restart PowerShell, then run `gerber`; Core/plugins are not hot reloaded.
+
 ### Deprecated
 
 ### Removed
@@ -285,4 +291,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Single `Esc` from `/plugins list` and `/plugins info` now returns to `/plugins`, while single `Esc` from plugin details opened through `/plugins list` still returns to the list view first.
   - Double `Esc` within 200 milliseconds still returns directly to the root prompt from nested plugin-management views.
   - Direct `/plugins list` and `/plugins info` execution continues to use Gerber's existing command-resolution behavior without inventing a separate navigation history.
-
