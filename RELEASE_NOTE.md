@@ -4,8 +4,8 @@
 
 ### Changed
 
-- Gerber now requires numeric PSModuleUpdate `0.1.1` for corrected mixed-layout
-  discovery. Dependency bootstrap is a separate approved action, not automatic
+- Gerber requires numeric PSModuleUpdate `0.2.0`, available from PSGallery.
+  Dependency installation is a separate approved action, not automatic
   installation or cleanup of local Gerber. An up-to-date `0.1.0` remains visible
   in Available with no install offer.
 
@@ -36,8 +36,8 @@
   **Stable only** (the default) or **Include prereleases** for both startup and
   manual checks. Changing it installs nothing; Enter after saving returns to the
   `/update` menu. Installation still defaults to Cancel.
-  Stable promotion from an installed preview remains supported. Core is not
-  published to PSGallery yet, so no matching package is a legitimate result.
+  Stable promotion from an installed preview remains supported. No eligible
+  matching package remains a legitimate result and does not prove Core is current.
   See [Core updates](docs/core-updates.md). Plugin updates are not included yet.
 
 - Plugin authors can run `Test-GerberPluginBoundary -Path <project>` from

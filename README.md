@@ -33,19 +33,20 @@ bounded, notification-only Core update check when `Invoke-Gerber` starts, and
 no repository setup is required. Core always uses the official **PSGallery**
 repository; user settings, environment variables and plugins cannot override it,
 and there is no fallback.
-The minimum PMU dependency is numeric **0.1.1** (upstream source
-`0.1.1-preview`), which corrects installed-copy discovery for mixed layouts.
-Dependency bootstrap is a separate, explicitly approved action; `/update` does
+The minimum PMU dependency is numeric **0.2.0**, available from PSGallery.
+Dependency installation is a separate, explicitly approved action; `/update` does
 not bootstrap PMU or automatically migrate or clean up local Gerber
 installations. When PMU reports installed and available `0.1.0` as `UpToDate`,
 the overview retains available `0.1.0` and offers no installation.
 The scan ignores legacy resource directories beside numeric installations;
 it does not select a flat-only copy as a versioned installation.
-A read-only public PMU probe on 2026-10-25 returned installed/target `0.1.0`
-and `UpToDate` from the actual PSGallery feed; no installation was attempted.
-That probe does not qualify a local `0.1.1-preview` launcher. A source build
-does not replace installed/loaded PMU; failed checks remain `Unavailable`, not
-an inferred currency result.
+A source build does not replace installed/loaded PMU; failed checks remain
+`Unavailable`, not an inferred currency result. A user-confirmed live Core update
+on 2026-10-27 completed with verified installation; this does not qualify every
+platform or recovery path. Published PMU 0.2.0 still reports provider
+`PackageNotFound` exceptions as a generic discovery failure. Gerber shows
+`NoMatchingPackage` only when PMU supplies the explicit `PMU.PackageNotFound`
+identifier; neither result offers installation or proves Core is up to date.
 `PMU.UnsupportedInstallation` normally gives generic supported
 numeric-version layout/restart guidance without claiming installation or
 rollback success. When the selected numeric installation specifically lacks

@@ -46,8 +46,9 @@ Neither the workflow definition nor mocked/local tooling tests qualify a platfor
 
 The pinned lanes are Windows 2025/x64, Ubuntu 24.04/x64 and macOS 15/ARM64,
 using PowerShell >= 7.4. They install the existing CI module prerequisites and
-build with `Invoke-NovaBuild`. NovaModuleTools >= 3.4.2 and PSModuleUpdate >= 0.1.1
-remain required. The only selected tests are the two existing
+build with `Invoke-NovaBuild`. Runtime dependency requirements come from
+`project.json`: currently NovaModuleTools >= 3.4.2 and PSModuleUpdate >= 0.2.0.
+The only selected tests are the two existing
 `NativeCredentialStore` scenarios in
 `tests/public/CredentialService.Integration.Tests.ps1`: Core and external Plugin
 API native credential create/read/update/remove round trips.

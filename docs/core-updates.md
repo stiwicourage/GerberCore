@@ -8,16 +8,15 @@ modules; Nova's plugin-development operations are unrelated to update installati
 
 ## PMU dependency and deployment
 
-Gerber requires numeric PMU **0.1.1** or later. The corrected upstream source is
-`0.1.1-preview`; its manifest version is numeric `0.1.1`, not a prerelease string.
-This minimum selects the installed-copy scan correction without adding a Gerber
-version comparator or changing Gerber's version.
+Gerber requires numeric PMU **0.2.0** or later, as declared in `project.json`.
+PMU 0.2.0 is published on PSGallery and includes the earlier installed-copy
+scan correction. Gerber does not add its own version comparator.
 
-**PMU 0.1.1 is not yet published.** Bootstrapping that dependency is a separate,
-explicitly approved deployment action, not part of `/update` or this change.
-An installation with only PMU 0.1.0 cannot satisfy the new minimum. Local
-qualification uses the built PMU artifact on an isolated session module path,
-never edits to installed modules. Gerber does not automatically migrate,
+The historical unpublished-dependency blocker is resolved. Installing or updating
+the dependency remains a separate, explicitly approved deployment action, not part
+of `/update`. An installation with only an older PMU cannot satisfy the current
+minimum. Local qualification may use a built PMU artifact on an isolated session
+module path, never edits to installed modules. Gerber does not automatically migrate,
 delete or clean up local Gerber copies or module directories.
 Updating this checkout or building Gerber does not replace an installed or
 already-loaded PMU. The actual `gerber` launcher must resolve the new dependency
@@ -156,12 +155,21 @@ selection also returns to that chooser; a further Esc goes back toward home.
 
 ## Qualification and remaining scope
 
-Core behavior is exercised using mocked PMU boundaries, disposable child
-processes, built-module import and PTY terminal scenarios on macOS/PowerShell
-7.4.21. This is **not** live Gerber installation qualification against PSGallery,
-Azure Artifacts or Nexus, nor Gerber Windows/Linux qualification. A read-only
-package lookup is not installation qualification. PMU's own
-provider/platform results do not establish Gerber integration support.
+Core behavior has automated coverage using mocked PMU boundaries, disposable child
+processes, built-module import and PTY terminal scenarios. Earlier local
+qualification used macOS/PowerShell 7.4.21. On 2026-10-27, a user-reported live
+PSGallery update from Gerber `0.2.0` to `0.2.1-preview` completed with
+`Verification: Verified` and `Recovery: NotRequired`; the next check correctly
+reported `RestartRequired`. This is happy-path evidence, not complete
+installation/recovery qualification or live-update qualification on Windows/Linux,
+Azure Artifacts or Nexus. A read-only lookup and PMU's own provider/platform
+results are not substitutes for Gerber integration evidence.
+
+Hosted tests at revision `d599443` passed on 2026-10-29 with 1,858 unit tests,
+17 integration tests and 96.54% coverage; two native credential scenarios were
+opt-in skips in that run. The separate Windows/Linux/macOS matrix passed both
+credential scenarios per platform, not live Core updates. See
+[G-4A7R evidence](../PLAN.md#g-4a7r-closure-evidence-and-remaining-work).
 
 The earlier installed PMU `0.1.0-preview` exposed two separate limitations:
 
@@ -173,15 +181,17 @@ The earlier installed PMU `0.1.0-preview` exposed two separate limitations:
   numeric version installations are ignored, while genuine invalid candidates
   are still rejected. A flat-only copy is not selected as a versioned
   installation or migrated. Gerber consumes that correction through its
-  numeric `0.1.1` minimum; PMU owns the layout regression tests.
-- When PSResourceGet throws `PackageNotFound`, PMU currently replaces that
+  current numeric `0.2.0` minimum, which includes the correction; PMU owns the
+  layout regression tests.
+- When PSResourceGet throws `PackageNotFound`, published PMU 0.2.0 replaces that
   identifier with `PMU.DiscoveryFailed` and withholds the original diagnostics.
   Gerber cannot safely classify that failure as successful no-package discovery.
   `NoMatchingPackage` is used only for PMU's explicit `PMU.PackageNotFound`.
   Gerber does not add a second package query or parse error text to guess.
 
-The unpublished dependency and the separate `PackageNotFound` issue remain
-deployment/live-qualification blockers, not passing integration checks.
+The upstream `PackageNotFound` correction and broader live-update/recovery
+qualification remain open. A local correction must not be presented as a
+published or deployed fix, and the dependency minimum is not raised speculatively.
 Historically, a read-only PSResourceGet lookup returned no Gerber package in
 PSGallery and direct PMU lookup stopped at the identity issue before the correction.
 Those earlier observations are not current feed state.

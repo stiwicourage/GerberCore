@@ -2,6 +2,12 @@
 
 > Reconstructed 2026-10-10. This roadmap preserves both the original product-phase names and the more granular G-1A implementation IDs. **Statuses distinguish user-reported progress from verified completion.** Do not rename historical phases to make a new plan.
 
+## TL;DR
+- G-4A7R Core distribution and ordering are implemented. PMU 0.2.0 is published and satisfies the current dependency minimum; dependency delivery is no longer blocked.
+- A live Core update was user-confirmed on 2026-10-27. Current-revision hosted tests pass, but the native credential matrix does not qualify live updates on Windows/Linux.
+- Next step: review and separately commit the validated PMU cleanup, then implement the provider `PackageNotFound` correction and verify Gerber's existing no-package integration contract. Functional implementation is paused at that user-owned commit boundary; G-4A7R remains open.
+- Plugin updates remain the separate G-4A9 task; do not start them as part of this closure.
+
 ## Vision
 Free, proprietary, cross-platform, agent-first PowerShell DevOps product. Standalone Core; independent plugins; private source and eventual PowerShell Gallery distribution; documentation planned for Gerber.ps. Pre-1.0 breaking changes allowed, without legacy migrations.
 
@@ -45,10 +51,27 @@ The original plan explicitly allowed reordering and prioritized plugin creation 
 | G-4A6 | Runtime dependency and generated manifest qualification | [Historical report](docs/architecture/G-4A6-runtime-dependency-qualification.md): exact Nova 3.4.2 builds both requirements; PMU 0.1.0-preview imports offline under numeric 0.1.0 on macOS/PowerShell 7.4.21 and 7.6.6. Missing/old dependencies rejected. G-4A7 refreshes the original ignored artifact; wider qualification remains |
 | G-4A7 | Gerber Core update integration | Core startup notification and fresh `/update` discovery/confirmed PMU installation implemented; [configuration/limits](docs/core-updates.md). Full unit run: 1,674 passed, two unchanged baseline failures (analyzer/`project.json` EOF), 96.25% coverage; integration: 11 passed, two existing opt-in skips; final full PTY run: all 75 scenarios passed. Earlier transient process-start timeouts passed unchanged on isolated reruns. CodeScene: 43 scorable files at 10.0, safeguard passed. Quality readiness was blocked at the G-4A7 handoff by the analyzer/EOF baseline; G-4A8 resolves that baseline below. Live-provider and Gerber Windows/Linux qualification remain unverified |
 | G-4A8 | Resolve remaining quality gate failures | Complete: sole owner-approved `PSAvoidUsingWriteHost` exclusion, two named-parameter CI path fixes and newline-only `project.json` correction. Unit: 1,679 passed, zero failed; integration: 11 passed, two existing opt-in skips; full PTY: 75 passed with zero coverage issues. Analyzer: zero findings across 518 files. `run.ps1` passed the complete pipeline with 95.92% coverage against 90%; standalone unit coverage was 96.25%. All four changed PowerShell files remain Code Health 10.0; safeguard passed. Core update behavior and required dependencies unchanged |
-| G-4A7R | Correct Core update distribution and ordering | Permanent application-owned PSGallery binding, independent of plugin/user/environment configuration; PMU Stable/CurrentUser policy, obsolete Core configuration ignored and `/update` fourth after `/exit`, `/help`, `/plugins`. Current minimum is numeric PMU 0.1.1 for upstream mixed-layout discovery; equal installed/available 0.1.0 retains Available 0.1.0 and UpToDate without an install offer. PMU 0.1.1 is not yet published; dependency bootstrap is a separate approved action, with no automatic local Gerber migration/cleanup. The separate PackageNotFound issue and complete live-install qualification remain; no publication or live installation authorized |
+| G-4A7R | Correct Core update distribution and ordering | Implemented, closure incomplete; status reviewed 2026-10-30. Permanent application-owned PSGallery binding, CurrentUser scope, Stable default with persisted prerelease opt-in, obsolete Core binding ignored and `/update` fourth after `/exit`, `/help`, `/plugins`. Equal installed/available versions retain PMU's target and UpToDate without an install offer. Published PMU 0.2.0 satisfies the current numeric 0.2.0 minimum; the old unpublished-dependency blocker is resolved. Live happy-path installation is user-confirmed. Remaining: upstream PackageNotFound classification, broader live-update/recovery qualification and stale documentation; see closure evidence below. No automatic local migration/cleanup |
 | G-4A9 | Plugin update integration in `/update`: overview, per-plugin selection, repository association, activation qualification | Planned after corrected Core integration. Gerber owns independently configurable per-plugin repositories; the fixed Core resolver must not inherit those settings. Both paths use PMU. Previously assigned provisional G-4A6; separate from the owner's current G-4A6 qualification |
 | G-4B | Versioned documentation | Planned |
 | G-4C | 1.0.0 readiness | Planned |
+
+## G-4A7R closure evidence and remaining work
+
+Status reviewed 2026-10-30 against revision `d599443`. Earlier G-4A7/G-4A8 rows preserve their historical handoff evidence; the following supersedes their outstanding dependency/live-update claims only within the stated scope.
+
+| Area | Status and evidence |
+|---|---|
+| Dependency delivery | Passed: PSGallery lists PMU 0.2.0, its package was inspected read-only, and current-revision CI installed it from PSGallery. `project.json` requires numeric 0.2.0. No new bootstrap/publication is needed to resolve the historical missing-artifact blocker |
+| Hosted unit/integration checks | Passed: [Run Tests, attempt 1](https://github.com/stiwicourage/GerberCore/actions/runs/40851789440), 2026-10-29, revision `d599443`: 1,858 unit passes, 17 integration passes, two native-credential opt-in skips and 96.54% coverage against 95%. This is not a fresh local full-quality/PTY run |
+| Native credential platforms | Passed for credentials only: [platform matrix, attempt 1](https://github.com/stiwicourage/GerberCore/actions/runs/40847421840), 2026-10-29, revision `d599443`: Windows/X64, Linux/X64 and macOS/ARM64 each passed both selected credential scenarios using Gallery PMU 0.2.0. These jobs do not exercise live Core installation or recovery |
+| Live Core happy path | User-reported verification, 2026-10-27: `/update list` installed `0.2.0` to `0.2.1-preview` with `Verification: Verified` and `Recovery: NotRequired`; a subsequent check returned `RestartRequired`. This is not a newly executed qualification of revision `d599443` or every platform/channel/recovery path |
+| No-package classification | Unresolved: published PMU 0.2.0 `Find-ProviderResource` still routes provider exceptions through `Write-ProviderError` with `PMU.DiscoveryFailed`; the latter does not preserve structured `PackageNotFound`. Gerber correctly maps explicit `PMU.PackageNotFound` to `NoMatchingPackage`, but cannot classify the wrapped provider error. Fix and test the provider boundary in PMU; do not add another Gallery query or text-based version/error inference in Gerber |
+| Classification prerequisite cleanup | Validated locally on 2026-10-30, uncommitted at PMU HEAD `e6dfe68`: behavior-preserving request-parameter extraction reduces `Find-ProviderResource` from 19 to 12 whole-declaration lines; new helper has 15. Characterization passed before/after. PMU `run.ps1` passed on macOS ARM64/PowerShell 7.6.9: 854 unit passes, one Windows-only skip; six integration passes, three opt-in live-feed skips; 98.09% coverage; zero analyzer findings. Four supported files measured 10.0 and the cleanup safeguard passed. A newline-only changelog repair is included. Await the user's separate cleanup commit before adding the functional regression or classification fix; PowerShell 7.4 and hosted lanes remain unverified |
+| Remaining qualification | Unverified: live Core update on Windows/Linux and complete failure/recovery flows through Gerber. Define the bounded acceptance scope and retain platform/channel evidence before claiming broader completion. A passing credential matrix or PMU-only qualification is not a substitute |
+| Documentation follow-up | Current dependency availability and dated qualification evidence reconciled in `README.md`, `CONTRIBUTING.md`, `docs/core-updates.md` and applicable unreleased release text. Historical release entries are preserved. Document the upstream classification fix only after its implementation and qualification; a local build is not publication or deployment |
+
+Closure work does not authorize upstream edits, publication, installed-module repair, live installation, commits or pushes. Scope and authorize each subsequent task separately.
 
 ## Completed separate quality stream
 - G-PTY1: permanent terminal regression framework — reported complete.
@@ -73,6 +96,7 @@ The original plan explicitly allowed reordering and prioritized plugin creation 
 - Report files changed, tests actually run, limits, unresolved issues and exact stop reason.
 
 ## Next review checklist
+- Close the G-4A7R upstream no-package issue and document the remaining live-update qualification scope before treating Core integration as fully qualified; then proceed to G-4A9 as a separate task.
 - Compare `PLAN.md`, `ARCHITECTURE.md`, `DECISIONS.md` to source and existing project documentation.
 - Confirm G-2A/G-2B and credential abstraction current state.
 - Verify G-3A1/G-3A2 against the current loader and persistent configuration tests before adding `/plugins` management commands.

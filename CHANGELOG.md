@@ -24,6 +24,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Corrected Core update documentation to match the declared PSModuleUpdate
+  0.2.0 minimum and its Gallery availability. Recorded user-confirmed live
+  installation separately from outstanding provider error classification and
+  broader platform/recovery qualification; no dependency or runtime behavior
+  changes are included in this documentation correction.
+
 ### Security
 
 ## [0.2.0] - 2026-10-27
