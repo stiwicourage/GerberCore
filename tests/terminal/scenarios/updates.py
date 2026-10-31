@@ -1,8 +1,300 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 
 from framework.scenario_registry import ScenarioMetadata, scenario
+
+
+def _write_batch_plugin(root, name: str, guid: str) -> None:
+    directory = root / name / "1.0.0"
+    directory.mkdir(parents=True)
+    (directory / f"{name}.psm1").write_text(
+        "function Get-GerberPlugin {\n"
+        "    param($Gerber)\n"
+        "    [pscustomobject]@{\n"
+        "        Commands = @()\n"
+        "    }\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    _write_batch_plugin_manifest(directory, name, guid)
+
+
+def _write_batch_plugin_manifest(directory, name: str, guid: str) -> None:
+    (directory / f"{name}.psd1").write_text(
+        "@{\n"
+        f"    RootModule = '{name}.psm1'; ModuleVersion = '1.0.0'; GUID = '{guid}'\n"
+        "    FunctionsToExport = @('Get-GerberPlugin')\n"
+        "    PrivateData = @{\n"
+        "        Gerber = @{\n"
+        "            Plugin = $true; ApiVersion = '1'; MinimumGerberVersion = '0.1.0-preview'\n"
+        "        }\n"
+        "    }\n"
+        "}\n",
+        encoding="utf-8",
+    )
+
+
+def _seed_batch_update(context, **options) -> None:
+    original = context.app._options
+    root = original.runtime_paths.scenario_root
+    data_root = root / "module-data"
+    _seed_update(context, moduleDataRoot=str(data_root), **options)
+    modules = data_root / "powershell" / "Modules"
+    modules.mkdir(parents=True)
+    (modules / "Gerber.TerminalFixture").symlink_to(original.synthetic_plugin_root / "Gerber.TerminalFixture", target_is_directory=True)
+    plugins = _batch_plugin_identities()
+    for name, guid in plugins.items():
+        _write_batch_plugin(modules, name, guid)
+    _seed_batch_associations(root, plugins)
+    context.app._options = replace(original, synthetic_plugin_root=modules)
+
+
+def _batch_plugin_identities() -> dict[str, str]:
+    return {
+        f"Gerber.Batch{index}": f"01b01b01-0000-0000-0000-00000000000{index}"
+        for index in range(1, 4)
+    }
+
+
+def _seed_batch_associations(root, plugins: dict) -> None:
+    config = {
+        "schemaVersion": 1,
+        "plugins": {
+            "approved": list(plugins.values()),
+            "declined": ["7dd21b37-e080-4240-b05f-ec727389035e"],
+            "associated": _batch_plugin_associations(plugins),
+        },
+    }
+    (root / "config.json").write_text(json.dumps(config), encoding="utf-8")
+
+
+def _batch_plugin_associations(plugins: dict) -> dict:
+    return {
+        guid: {
+            "name": name,
+            "version": "1.0.0",
+            "enabled": True,
+        }
+        for name, guid in plugins.items()
+    }
+
+
+def _open_batch_selection(context) -> None:
+    context.app.start(enable_synthetic_plugin=True)
+    context.app.wait_for_prompt()
+    _open_update(context)
+    context.app.wait_for_text("Select updates")
+    context.app.wait_for_text("Gerber.Batch1: 1.0.0 -> 2.0.0")
+    context.app.wait_for_text("Gerber.Batch3: 1.0.0 -> 2.0.0")
+
+
+def _select_batch_plugins(context, *, include_core: bool = False) -> None:
+    if include_core:
+        context.app.press("SPACE")
+    for _ in range(3):
+        context.app.press("DOWN")
+        context.app.press("SPACE")
+    context.app.press("ENTER")
+
+
+def _accept_batch(context) -> None:
+    context.app.wait_for_text("Install selected updates?")
+    context.app.press("DOWN")
+    context.app.press("ENTER")
+
+
+def _assert_batch_plan_identity(context, expected: list[str]) -> None:
+    state = _update_state(context)
+    assert state["installOrder"] == expected, state
+    assert state["planIdentityVerified"] is True, state
+    assert state["pluginRepositoryUris"] == ["https://www.powershellgallery.com/api/v2"] * 3, state
+    assert state["startupDiscoveryCount"] == 1, state
+    assert state["startupPluginDiscoveryCount"] == 0, state
+
+
+def _seed_batch_core_requirement(context, minimum: str, **options) -> None:
+    _seed_batch_update(context, pluginMinimumCore={
+        "Gerber.Batch1": minimum,
+    }, **options)
+
+
+def _assert_batch_core_confirmation(context) -> None:
+    context.app.wait_for_text("automatically added this required Core")
+    context.app.wait_for_text("Scope: CurrentUser")
+    context.app.wait_for_text("https://www.powershellgallery.com/api/v2")
+
+
+def _assert_batch_blocked_plugin_continuation(context, expected: list[str]) -> None:
+    context.app.wait_for_text("Gerber.Batch1: Blocked")
+    context.app.wait_for_text("Gerber.Batch3: Installed")
+    _assert_batch_plan_identity(context, expected)
+
+
+def _assert_batch_default_cancel(context) -> None:
+    context.app.wait_for_text("Install selected updates?")
+    context.app.press("ENTER")
+    context.app.wait_for_text("Nothing was installed")
+    assert _update_state(context)["installCount"] == 0
+
+
+def _assert_batch_selection_escape(context) -> None:
+    context.app.press("ESCAPE")
+    context.app.wait_for_prompt()
+    _open_update(context)
+    context.app.wait_for_text("Select updates")
+    context.app.press("ESCAPE")
+    context.app.wait_for_prompt()
+    assert _update_state(context)["installCount"] == 0
+
+
+def _assert_batch_plugin_failure_results(context) -> None:
+    context.app.wait_for_text("Gerber.Batch1: Installed")
+    context.app.wait_for_text("Gerber.Batch2: Failed")
+    context.app.wait_for_text("Gerber.Batch3: Installed")
+    _assert_batch_plan_identity(context, ["Gerber.Batch1", "Gerber.Batch2", "Gerber.Batch3"])
+
+
+def _assert_noninteractive_batch_overview(context) -> None:
+    state = _update_state(context)
+    assert state["installCount"] == 0, state
+    for name in ("Gerber.Batch1", "Gerber.Batch2", "Gerber.Batch3"):
+        assert name in context.app.raw_output(), name
+    events = [json.loads(line)["Event"] for line in context.app.prompt_trace_text().splitlines()]
+    assert "update-discovery" in events, events
+    assert "checkbox-open" not in events and "update-confirmation" not in events, events
+
+
+@scenario(
+    "update-batch-selection-core-autoaddition",
+    title="Plugin multi-selection visibly adds required Core before combined consent",
+    categories=("core", "updates", "batch-updates"),
+    metadata=ScenarioMetadata(commands=("update list",), workflows=("command:update list",), coverage=("workflow", "rendering")),
+)
+def update_batch_selection_core_autoaddition(context) -> None:
+    _seed_batch_core_requirement(context, "0.2.0")
+    _open_batch_selection(context)
+    _select_batch_plugins(context)
+    _assert_batch_core_confirmation(context)
+    _accept_batch(context)
+    context.app.wait_for_text("Gerber.Batch3: Installed")
+    _assert_batch_plan_identity(context, ["Gerber", "Gerber.Batch1", "Gerber.Batch2", "Gerber.Batch3"])
+    _assert_trace_order(context, "checkbox-submit", "update-confirmation", "update-install-complete")
+
+
+@scenario(
+    "update-batch-partial-failure-continuation",
+    title="Failed Core blocks its dependent plugin while independent plugins continue",
+    categories=("core", "updates", "batch-updates"),
+    metadata=ScenarioMetadata(commands=("update list",), workflows=("command:update list",), coverage=("workflow", "error-recovery")),
+)
+def update_batch_partial_failure_continuation(context) -> None:
+    _seed_batch_core_requirement(context, "0.2.0", failModules=["Gerber"])
+    _open_batch_selection(context)
+    _select_batch_plugins(context)
+    _accept_batch(context)
+    context.app.wait_for_text("Gerber: Failed")
+    _assert_batch_blocked_plugin_continuation(context, ["Gerber", "Gerber.Batch2", "Gerber.Batch3"])
+    _assert_trace_order(context, "update-confirmation", "update-install-complete")
+
+
+@scenario(
+    "update-batch-activation-failure-truthful-install",
+    title="Fresh-process activation failure does not relabel an installed package",
+    categories=("core", "updates", "batch-updates"),
+    metadata=ScenarioMetadata(commands=("update list",), workflows=("command:update list",), coverage=("workflow", "error-recovery")),
+)
+def update_batch_activation_failure_truthful_install(context) -> None:
+    _seed_batch_update(context, activationFailures=["Gerber.Batch2"])
+    _open_batch_selection(context)
+    _select_batch_plugins(context, include_core=True)
+    _accept_batch(context)
+    context.app.wait_for_text("Gerber.Batch2: Installed")
+    context.app.wait_for_text("Activation: Failed")
+    context.app.wait_for_text("Gerber.Batch3: Installed")
+    _assert_batch_plan_identity(context, ["Gerber", "Gerber.Batch1", "Gerber.Batch2", "Gerber.Batch3"])
+
+
+@scenario(
+    "update-batch-default-cancel-and-escape",
+    title="Combined confirmation defaults to Cancel and checkbox Escape returns locally",
+    categories=("core", "updates", "batch-updates"),
+    metadata=ScenarioMetadata(commands=("update list",), workflows=("command:update list",), coverage=("workflow", "navigation")),
+)
+def update_batch_default_cancel_and_escape(context) -> None:
+    _seed_batch_update(context)
+    _open_batch_selection(context)
+    _select_batch_plugins(context)
+    _assert_batch_default_cancel(context)
+    context.app.press("ENTER")
+    context.app.wait_for_prompt()
+    _assert_batch_selection_escape(context)
+    _assert_trace_order(context, "checkbox-submit", "update-confirmation", "checkbox-cancel")
+
+
+@scenario(
+    "update-batch-unsatisfied-core-requirement",
+    title="Unsatisfied Core requirement stays visible as Blocked and independent plugins install",
+    categories=("core", "updates", "batch-updates"),
+    metadata=ScenarioMetadata(commands=("update list",), workflows=("command:update list",), coverage=("workflow", "error-recovery")),
+)
+def update_batch_unsatisfied_core_requirement(context) -> None:
+    _seed_batch_core_requirement(context, "9.0.0")
+    _open_batch_selection(context)
+    _select_batch_plugins(context)
+    context.app.wait_for_text("no permitted Core target")
+    context.app.wait_for_text("Blocked")
+    _accept_batch(context)
+    _assert_batch_blocked_plugin_continuation(context, ["Gerber.Batch2", "Gerber.Batch3"])
+
+
+@scenario(
+    "update-batch-plugin-failure-continuation",
+    title="A failed plugin does not prevent later independent installations",
+    categories=("core", "updates", "batch-updates"),
+    metadata=ScenarioMetadata(commands=("update list",), workflows=("command:update list",), coverage=("workflow", "error-recovery")),
+)
+def update_batch_plugin_failure_continuation(context) -> None:
+    _seed_batch_update(context, failModules=["Gerber.Batch2"])
+    _open_batch_selection(context)
+    _select_batch_plugins(context)
+    _accept_batch(context)
+    _assert_batch_plugin_failure_results(context)
+    assert "raw-update-token" not in context.app.raw_output()
+    _assert_trace_order(context, "update-confirmation", "update-install-complete")
+
+
+@scenario(
+    "update-batch-noninteractive-no-install",
+    title="Noninteractive update boundary renders every component without prompts or installation",
+    categories=("core", "updates", "batch-updates"),
+    metadata=ScenarioMetadata(commands=("update list",), workflows=("command:update list",), coverage=("workflow", "rendering")),
+)
+def update_batch_noninteractive_no_install(context) -> None:
+    _seed_batch_update(context, nonInteractiveUpdates=True)
+    context.app.start(enable_synthetic_plugin=True)
+    context.app.wait_for_prompt()
+    _open_update(context)
+    context.app.wait_for_prompt()
+    _assert_noninteractive_batch_overview(context)
+
+
+@scenario(
+    "update-batch-cancellation-stops-future",
+    title="User cancellation retains earlier successes and stops later attempts",
+    categories=("core", "updates", "batch-updates"),
+    metadata=ScenarioMetadata(commands=("update list",), workflows=("command:update list",), coverage=("workflow", "navigation")),
+)
+def update_batch_cancellation_stops_future(context) -> None:
+    _seed_batch_update(context, cancelModules=["Gerber.Batch2"])
+    _open_batch_selection(context)
+    _select_batch_plugins(context)
+    _accept_batch(context)
+    context.app.wait_for_text("Gerber.Batch1: Installed")
+    context.app.wait_for_text("Gerber.Batch2: Cancelled")
+    context.app.wait_for_text("Gerber.Batch3: Cancelled")
+    _assert_batch_plan_identity(context, ["Gerber.Batch1", "Gerber.Batch2"])
 
 
 def _seed_update(context, **options) -> None:

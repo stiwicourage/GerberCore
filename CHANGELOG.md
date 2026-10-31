@@ -8,6 +8,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Added G-4A9 installed-plugin update selection to `/update list`, using the
+  existing shared channel and per-plugin `PrivateData.Gerber.RepositoryUri`
+  (official Gallery only when absent, invalid values never fall back).
+  Only installed, associated, approved, enabled plugins participate; startup
+  remains Core-only. Shared checkbox selection, separately confirmed
+  trust/license-gated package inspection and a default-Cancel combined install
+  preview show versions, source, scope and visibly auto-added required Core.
+  PMU installs the original plans sequentially, Core first; dependency failures
+  block dependent items while independent updates continue, and cancellation
+  stops future attempts. Results separate installation, verification, recovery
+  and fresh-process activation, retaining Installed when activation fails.
+  Credentials are operation-only; no first install, hot reload or batch rollback.
+  Added mirrored UI tests, disposable PTY regression fixtures and affected help.
+  The new PMU target-manifest inspection API remains locally implemented,
+  unpublished and undeployed; numeric minimum stays 0.2.0. No hosted/live
+  qualification implied.
+
 ### Changed
 
 - Core update completion now offers **Exit Gerber** or **Continue with current
@@ -26,9 +43,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Corrected Core update documentation to match the declared PSModuleUpdate
   0.2.0 minimum and its Gallery availability. Recorded user-confirmed live
-  installation separately from outstanding provider error classification and
-  broader platform/recovery qualification; no dependency or runtime behavior
-  changes are included in this documentation correction.
+  installation separately from the locally corrected, unpublished provider
+  error classification and outstanding platform/recovery qualification; no
+  Gerber dependency or runtime behavior changes are included in this
+  documentation correction.
 
 ### Security
 

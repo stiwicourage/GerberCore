@@ -175,3 +175,11 @@ Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
         Should -Invoke Show-GerberPipelinesTagsView -Times 1 -ParameterFilter { $Command.Arguments[0] -eq 'delete' }
     }
 }
+Describe 'Shared update command descriptions' -Tag 'G4A9UI' {
+    It 'describes Core and plugin updates and their shared policy without implying startup plugin discovery' {
+        $definitions = @(Get-GerberCoreCommandDefinitionList)
+        ($definitions | Where-Object Name -EQ 'update').Description | Should -Match 'Core and plugin'
+        ($definitions | Where-Object Name -EQ 'update list').Description | Should -Match 'Core and.*plugin'
+        ($definitions | Where-Object Name -EQ 'update policy').Description | Should -Match 'shared.*update channel'
+    }
+}

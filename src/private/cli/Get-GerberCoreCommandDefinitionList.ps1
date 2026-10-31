@@ -158,7 +158,7 @@ function Get-GerberCorePluginCreateCommandDefinition {
 function Get-GerberCoreUpdateCommandDefinition {
     [pscustomobject][ordered]@{
         Name = 'update'
-        Description = 'Open the Core update menu'
+        Description = 'Open the Core and plugin update menu'
         Handler = { param([pscustomobject]$Command) return [bool](Show-GerberUpdateMenu -Command $Command) }
         Subcommands = [ordered]@{}
     }
@@ -172,7 +172,7 @@ function Get-GerberCoreUpdateLeafCommandDefinitionList {
 function Get-GerberCoreUpdateListCommandDefinition {
     [pscustomobject][ordered]@{
         Name = 'update list'
-        Description = 'Check and install Gerber Core updates'
+        Description = 'Check and install Core and eligible plugin updates'
         Handler = { return [bool](Show-GerberUpdateView) }
         Subcommands = [ordered]@{}
     }
@@ -181,7 +181,7 @@ function Get-GerberCoreUpdateListCommandDefinition {
 function Get-GerberCoreUpdatePolicyCommandDefinition {
     [pscustomobject][ordered]@{
         Name = 'update policy'
-        Description = 'Choose the persistent Core update channel'
+        Description = 'Choose the persistent shared update channel'
         Handler = { Show-GerberUpdatePolicyView; return $false }
         Subcommands = [ordered]@{}
     }

@@ -38,7 +38,18 @@
   `/update` menu. Installation still defaults to Cancel.
   Stable promotion from an installed preview remains supported. No eligible
   matching package remains a legitimate result and does not prove Core is current.
-  See [Core updates](docs/core-updates.md). Plugin updates are not included yet.
+  `/update list` also checks eligible installed plugins and offers checkbox
+  selection, with a visibly added Core update when required. Plugin manifests
+  declare `PrivateData.Gerber.RepositoryUri`; an absent value uses the official
+  Gallery, while an invalid value does not fall back. Trust/license-gated package
+  inspection asks separately before the combined default-Cancel install prompt.
+  Updates run sequentially; dependent plugins are blocked on Core failure while
+  independent updates continue. Results distinguish installed packages from
+  fresh-process activation failures. Credentials last for this operation only.
+  No first installation, hot reload or batch rollback is included.
+  **Delivery limitation:** the new PMU inspection API is local and unpublished;
+  the declared minimum remains 0.2.0. This does not qualify hosted or live plugin
+  updates. See [Core and plugin updates](docs/core-updates.md).
 
 - Plugin authors can run `Test-GerberPluginBoundary -Path <project>` from
   installed Gerber to find identifiable private Core dependencies before building

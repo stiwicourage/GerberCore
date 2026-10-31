@@ -47,6 +47,9 @@ platform or recovery path. Published PMU 0.2.0 still reports provider
 `PackageNotFound` exceptions as a generic discovery failure. Gerber shows
 `NoMatchingPackage` only when PMU supplies the explicit `PMU.PackageNotFound`
 identifier; neither result offers installation or proves Core is up to date.
+The upstream correction is implemented and tested locally, but is not yet
+published or deployed; the dependency minimum remains unchanged. See the
+[current qualification evidence](PLAN.md#g-4a7r-closure-evidence-and-remaining-work).
 `PMU.UnsupportedInstallation` normally gives generic supported
 numeric-version layout/restart guidance without claiming installation or
 rollback success. When the selected numeric installation specifically lacks
@@ -54,7 +57,11 @@ native provider metadata, Gerber identifies it as locally copied or published
 and instructs the user to reinstall the current version from PSGallery before
 retrying `/update list`. Gerber never manufactures provider metadata or
 automatically removes the existing installation.
-Plugin updates remain planned. See [Core update policy](docs/core-updates.md).
+The local G-4A9 implementation adds installed-plugin updates to `/update list`.
+Its new PMU target-manifest inspection capability is **not published**: published PMU
+0.2.0 satisfies the unchanged declared minimum but does not deliver those APIs.
+Building this checkout alone does not deploy them. See
+[update policy and dependency delivery](docs/core-updates.md).
 [Disposable build/import qualification](docs/architecture/G-4A6-runtime-dependency-qualification.md)
 passed on macOS/PowerShell 7.4.21 and 7.6.6; normal Nova builds now regenerate both
 requirements in the ignored local manifest. See the
@@ -81,9 +88,9 @@ Root commands and completion suggestions show `/exit`, `/help`, `/plugins`, and 
 | `/exit` | Exit the interactive session cleanly |
 | `/help` | Show the built-in command help |
 | `/plugins` | Inspect, enable or disable plugins, or generate a working plugin with `/plugins create` |
-| `/update` | Open the Core update submenu with list and policy actions |
-| `/update list` | Check Gerber Core in PSGallery and confirm installation of an eligible update |
-| `/update policy` | Choose Stable only (default) or Include prereleases for Core updates |
+| `/update` | Open the Core and plugin update submenu with list and policy actions |
+| `/update list` | Check Core and eligible installed plugins, select updates and confirm installation |
+| `/update policy` | Choose the shared Stable only (default) or Include prereleases update channel |
 | `/branch` | Open an inline submenu for repository branch operations such as `find` and `set-searchable` |
 | `/list` | Open an inline submenu for read-only list/report actions such as `ado-agents` and `ado-team-members`; plugins may contribute more beneath the same root |
 | `/pipelines` | Open an inline submenu for pipeline workflows such as `release common-data-model`, `release approve-environment`, `tags update`, and `tags delete` |
@@ -145,9 +152,21 @@ Examples inside the palette:
 ### `/update`
 
 `/update` opens the shared submenu with **list** and **policy**, like `/secrets`.
-`/update list` shows Core's installed and available versions, PSGallery and
-discovery status. **Cancel is the default**; installation delegates to PSModuleUpdate,
-reports verification/recovery outcomes and tells you when to restart PowerShell.
+`/update list` shows installed/available versions, repository and status for Core
+and installed, associated, approved, enabled plugins. Core always uses PSGallery.
+Plugins use their own manifest's `PrivateData.Gerber.RepositoryUri`, defaulting
+to the official Gallery only when absent; an invalid declaration never falls back.
+When plugin rows exist, use arrow keys and Space to select available updates,
+then Enter to review. A required Core update is visibly added before the combined
+confirmation. Trust/license-gated package inspection needs separate consent for
+a temporary download without installation. **Cancel is the default** at both
+consent prompts. PMU installs sequentially, Core first when required; dependent
+plugins are blocked on Core failure while independent updates continue.
+Results keep installation, verification, recovery and fresh-process activation
+separate; activation failure does not turn an installed package into a failed
+installation. Cancellation stops future attempts. There is no first installation,
+hot reload or batch rollback. Repository credentials are requested per operation,
+never read from native storage or saved in plugin metadata.
 After a verified successful update requiring restart, or discovery of an
 already-installed newer Core, choose **Exit Gerber** or **Continue with current
 version** (the default; Esc also continues). Exiting Gerber does not restart
@@ -157,11 +176,12 @@ An unreachable repository is not reported as "up to date". Startup checks never
 install, request installation consent or access native credential storage.
 An unpublished package is reported without inventing an available version.
 
-See [Core updates](docs/core-updates.md) for the fixed repository binding,
-channel selection and separation from future per-plugin repositories.
+See [Core and plugin updates](docs/core-updates.md) for repository binding,
+channel selection, dependency delivery and qualification limits.
 
 `/update policy` saves **Stable only** (default) or **Include prereleases** in
-your user configuration. Startup and manual `/update list` checks use the same choice.
+your user configuration. Core startup checks and Core/plugin `/update list`
+checks use the same choice; plugin discovery remains manual-only.
 The current choice is preselected: `Enter` saves it, and `Esc` leaves it unchanged.
 Changing the policy performs no update check or installation, clears any old
 startup notification and takes effect on the next `/update list`. After saving,

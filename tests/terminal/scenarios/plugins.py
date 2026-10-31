@@ -22,6 +22,7 @@ SYNTHETIC_PLUGIN_FAILURE = "Synthetic plugin failure."
 SYNTHETIC_EMPTY_TITLE = "/repository empty-text"
 PLUGIN_SECRET = "terminal-plugin-secret"
 PLUGIN_GUID = "7dd21b37-e080-4240-b05f-ec727389035e"
+PLUGIN_CREATION_INPUT_BATCH_SIZE = 64
 
 
 def _start_plugin_creation_session(context) -> None:
@@ -51,7 +52,9 @@ def _start_plugin_creation_session(context) -> None:
 
 def _submit_plugin_creation_field(context, prompt: str, value: str) -> None:
     context.app.wait_for_text(prompt)
-    context.app.type(value)
+    # Drain long input incrementally without extending screen-stability deadlines.
+    for offset in range(0, len(value), PLUGIN_CREATION_INPUT_BATCH_SIZE):
+        context.app.type(value[offset:offset + PLUGIN_CREATION_INPUT_BATCH_SIZE])
     context.app.press("ENTER")
 
 

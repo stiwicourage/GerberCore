@@ -36,6 +36,22 @@ Before opening a pull request:
 - keep PowerShell cmdlet guidance, CLI guidance, and contributor guidance clearly separated
 - validate the changed path before you ask for review
 
+## Update workflow verification
+
+The G-4A9 `/update list` tests use disposable PMU plans and results, target-manifest
+inspection and activation boundaries. They must never install modules, call live
+providers or access a native vault. Keep the existing Core-only PTY assertions
+intact and add combined-selection, automatic Core dependency, blocking,
+partial-failure/continuation, activation-failure, cancellation and redirected-input
+coverage. Enable `GERBER_PROMPT_TRACE=1` and inspect the retained
+`prompt-trace.log` for happy, cancel/Esc and recoverable-error paths.
+
+The declared PMU minimum remains `0.2.0`; its new target-manifest inspection API
+is not published. Mocked PTY results and an isolated local PMU build do not prove
+dependency delivery, hosted qualification or live feed installation. Record the
+exact module paths/revisions used. Publishing, dependency deployment and native
+credential qualification require their own approval and evidence.
+
 ## Native credential platform matrix
 
 `run-platform-matrix` (`.github/workflows/Run-Platform-Matrix.yml`) is a narrow
