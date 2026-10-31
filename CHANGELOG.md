@@ -41,6 +41,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Plugin discovery now skips unreadable module-search roots instead of
+  terminating the plugin inventory or `/update list` with a permission error.
+  Accessible plugins and Core update checks remain available; filesystem
+  permissions and configured module paths are unchanged.
 - Corrected Core update documentation to match the declared PSModuleUpdate
   0.2.0 minimum and its Gallery availability. Recorded user-confirmed live
   installation separately from the locally corrected, unpublished provider

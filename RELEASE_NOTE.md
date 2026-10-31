@@ -11,6 +11,8 @@
 
 ### Fixed
 
+- Unreadable module-search paths no longer prevent plugin discovery or
+  `/update list` from completing.
 - Unsupported Core installation layouts now get supported numeric-version
   directory/restart guidance instead of a PSGallery/connection diagnosis.
   No automatic migration, installation or rollback is implied. An existing
