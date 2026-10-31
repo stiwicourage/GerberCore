@@ -92,4 +92,34 @@ Describe 'New-GerberPluginProject' -Tag 'PluginCreate' {
         Should -Invoke Test-GerberPluginProject -Times 0
         Should -Invoke Resolve-GerberPluginApproval -Times 0
     }
+
+    It 'preserves <Label> through defensive normalization and approval identity' -Tag 'PluginCreateRepository' -ForEach @(
+        @{ Label = 'known URI'; Uri = 'https://packages.example.org/feed' }
+        @{ Label = 'explicit placeholder'; Uri = 'REPLACE_WITH_REPOSITORY_URI' }
+    ) {
+        $request | Add-Member RepositoryUri $Uri
+        Mock Test-GerberPluginProject {
+        }
+        Mock Resolve-GerberPluginApproval {
+            $true
+        }
+        $result = New-GerberPluginProject -Request $request
+        $metadata = (Get-Content (Join-Path $result.Path 'project.json') -Raw | ConvertFrom-Json -AsHashtable).Manifest.PrivateData.Gerber
+        $metadata.RepositoryUri | Should -BeExactly $Uri
+        $result.RepositoryUri | Should -BeExactly $Uri
+        Should -Invoke Resolve-GerberPluginApproval -Times 1 -ParameterFilter {
+            $ExplicitApproval -and $PluginModule.Guid -eq $result.Guid
+        }
+    }
+
+    It 'rejects an explicit unsafe creation override before staging or approval' -Tag 'PluginCreateRepository' {
+        $request | Add-Member RepositoryUri 'https://example.org/feed?token=secret'
+        Mock Resolve-GerberPluginApproval {
+        }
+        {
+            New-GerberPluginProject -Request $request
+        } | Should -Throw '*absolute repository URI*'
+        @(Get-ChildItem $request.ParentPath -Force).Count | Should -Be 0
+        Should -Invoke Resolve-GerberPluginApproval -Times 0
+    }
 }

@@ -44,6 +44,7 @@ BeforeAll {
     }
     . "$root/src/private/cli/Read-GerberConfirmationPrompt.ps1"
     . "$root/src/private/cli/Format-GerberUpdateItemOverview.ps1"
+    . "$root/src/private/cli/Format-GerberUpdateItemListOverview.ps1"
 }
 
 Describe 'Show-GerberUpdateBatchView' -Tag 'G4A9UI' {
@@ -93,6 +94,29 @@ Describe 'Show-GerberUpdateBatchView' -Tag 'G4A9UI' {
         Should -Invoke Wait-GerberContinue -Times 0
     }
 
+    It 'renders Core and plugins together under one aligned table header' {
+        Show-GerberUpdateBatchView -CoreState $script:core -PluginItemList @($script:plugin) -Interactive $false
+        Should -Invoke Write-GerberScreenLine -Times 1 -ParameterFilter {
+            $Text -match '(?m)^Component\s+Name\s+Installed\s+Available\s+Repository\s+Status\s*$' -and
+            $Text -match '(?m)^Core\s+Gerber\s+1\.0\.0\s+2\.0\.0\s+PSGallery\s+Available\s*$' -and
+            $Text -match '(?m)^Plugin\s+ExamplePlugin\s+1\.0\.0\s+2\.0\.0\s+PrivateFeed\s+Available\s*$'
+        }
+    }
+
+    It 'continues without a chooser or false cancellation when no component has an available update' {
+        $script:core.Status = 'UpToDate'
+        $script:plugin.State.Status = 'Unavailable'
+        $script:plugin.State.Available = '-'
+        Show-GerberUpdateBatchView -CoreState $script:core -PluginItemList @($script:plugin) -Interactive $true
+        Should -Invoke Wait-GerberContinue -Times 1
+        Should -Invoke Read-GerberCheckboxMenuPrompt -Times 0
+        Should -Invoke Read-GerberConfirmationPrompt -Times 0
+        Should -Invoke Complete-GerberUpdateBatch -Times 0
+        Should -Invoke Write-GerberScreenLine -Times 0 -ParameterFilter {
+            $Text -match 'cancelled'
+        }
+    }
+
     It 'selects only available rows using the shared unchecked checkbox and cancels installation by default' {
         $script:core.Status = 'UpToDate'
         Show-GerberUpdateBatchView -CoreState $script:core -PluginItemList @($script:plugin) -Interactive $true
@@ -118,6 +142,24 @@ Describe 'Show-GerberUpdateBatchView' -Tag 'G4A9UI' {
         }
         Should -Invoke Complete-GerberUpdateBatch -Times 1 -ParameterFilter {
             [object]::ReferenceEquals($Batch, $script:batch)
+        }
+    }
+
+    It 'allows Core and plugin updates to be selected together without replacing their live identities' {
+        Mock Read-GerberCheckboxMenuPrompt {
+            param($PromptRequest)
+            [pscustomobject]@{
+                SelectedValueList = @($PromptRequest.ItemList.Value)
+            }
+        }
+        Mock Read-GerberConfirmationPrompt {
+            $true
+        }
+        Show-GerberUpdateBatchView -CoreState $script:core -PluginItemList @($script:plugin) -Interactive $true
+        Should -Invoke Resolve-GerberUpdateBatch -Times 1 -ParameterFilter {
+            $SelectedItemList.Count -eq 2 -and
+            [object]::ReferenceEquals($SelectedItemList[0].State, $script:core) -and
+            [object]::ReferenceEquals($SelectedItemList[1], $script:plugin)
         }
     }
 

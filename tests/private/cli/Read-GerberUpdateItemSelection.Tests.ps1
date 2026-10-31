@@ -5,6 +5,7 @@ BeforeAll {
         . $source
     }
     . "$root/src/private/cli/Format-GerberUpdateItemOverview.ps1"
+    . "$root/src/private/cli/Format-GerberUpdateItemListOverview.ps1"
     function Read-GerberCheckboxMenuPrompt {
         param($PromptRequest)
         $null = $PromptRequest
@@ -33,7 +34,13 @@ Describe 'Read-GerberUpdateItemSelection' -Tag 'G4A9UI' {
         Should -Invoke Read-GerberCheckboxMenuPrompt -ParameterFilter {
             $PromptRequest.ItemList.Count -eq 1 -and -not $PromptRequest.ItemList[0].IsSelected -and
             $PromptRequest.ItemList[0].Label -match 'ExamplePlugin.*1.0.0.*2.0.0' -and $PromptRequest.AllowEmptySelection -and
-            $PromptRequest.ScreenText -match 'BlockedPlugin.*Blocked.*No permitted package'
+            $PromptRequest.ScreenText -match 'BlockedPlugin.*Blocked' -and
+            $PromptRequest.ScreenText -notmatch 'BlockedPlugin:|No permitted package'
+        }
+        Should -Invoke Read-GerberCheckboxMenuPrompt -ParameterFilter {
+            $PromptRequest.ScreenText -match '(?m)^Component\s+Name\s+Installed\s+Available\s+Repository\s+Status\s*$' -and
+            $PromptRequest.ScreenText -match '(?m)^Plugin\s+ExamplePlugin\s+1\.0\.0\s+2\.0\.0\s+Feed\s+Available\s*$' -and
+            $PromptRequest.ScreenText -match '(?m)^Plugin\s+BlockedPlugin\s+1\.0\.0\s+-\s+Feed\s+Blocked\s*$'
         }
     }
 

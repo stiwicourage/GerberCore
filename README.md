@@ -58,6 +58,10 @@ and instructs the user to reinstall the current version from PSGallery before
 retrying `/update list`. Gerber never manufactures provider metadata or
 automatically removes the existing installation.
 The local G-4A9 implementation adds installed-plugin updates to `/update list`.
+Core and plugins appear in one aligned table, followed by a blank line and the
+shared channel, without per-plugin information lines. Available updates support
+multi-selection. With no available update, Enter returns without a chooser or
+a misleading cancellation message.
 Its new PMU target-manifest inspection capability is **not published**: published PMU
 0.2.0 satisfies the unchanged declared minimum but does not deliver those APIs.
 Building this checkout alone does not deploy them. See
@@ -282,7 +286,8 @@ Gerber includes a plugin administration surface under `/plugins`:
 - `/plugins info <plugin>` shows detailed metadata and lifecycle state for one plugin, looked up by manifest GUID or unique module name
 - `/plugins enable` approves and enables an installed inactive plugin (including declined ones) and loads its commands immediately
 - `/plugins disable` disables an active plugin, keeps its approval, and removes its commands immediately; it never uninstalls the module
-- `/plugins create` asks for a module suffix (fixed `Gerber.` prefix), description, collision-free command namespace and destination parent (current directory by default), then generates and validates a working Plugin API v1 Nova project
+- `/plugins create` asks for a module suffix (fixed `Gerber.` prefix), description, collision-free command namespace, repository and destination parent (current directory by default), then generates and validates a working Plugin API v1 Nova project
+- PSGallery is the default repository and omits `Manifest.PrivateData.Gerber.RepositoryUri`. Choose another repository to enter its URL, or press Enter if unknown to write `REPLACE_WITH_REPOSITORY_URI`; replace that placeholder in `project.json` and rebuild before remote publishing or updates. Local build, tests and local publication still work. Invalid metadata never falls back to PSGallery
 - successful creation approves, associates and enables the new manifest GUID without installing/loading the module; run `Publish-NovaModule -Local` from the generated project, restart Gerber and try its `/mycompany hello` example
 - creation never overwrites a destination; invalid input can be corrected and `Esc` cancels without approval. The creation handler retains a Nova availability check and consent-based installation fallback; that on-demand safeguard does not make Nova optional in `RequiredModules`
 - explained, separated creation fields show the actual cwd and project-child defaults; completion shows name/version/namespace/location and explicitly says Installed: No

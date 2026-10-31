@@ -184,9 +184,16 @@ selection also returns to that chooser; a further Esc goes back toward home.
 Manual `/update list` includes only already installed, discovered, associated,
 approved, enabled plugins. It does not offer a first installation, load a newly
 installed plugin into the current session or change its approval.
+Core and plugins share one aligned table with Component, Name, Installed,
+Available, Repository and Status columns. A blank line separates the table from
+the shared channel, which appears once. The overview has no per-plugin
+information lines; unavailable or blocked status remains in the table.
 All status rows remain visible; only `Available` rows can be selected.
 Use Up/Down and Space in the shared checkbox, then Enter to review.
 An empty selection cancels; Esc follows the existing back-navigation rules.
+After any repository-authentication step, if no component has an available
+update, no update-selection or installation-confirmation prompt opens. Press
+Enter to return to `/update`; this is not reported as a cancellation.
 Without an interactive terminal, discovery renders all rows without prompts,
 credentials or installation.
 

@@ -5,6 +5,9 @@ BeforeAll {
 
 Describe 'Invoke-GerberPluginsCreateCommand' -Tag 'PluginCreate' {
     BeforeEach {
+        Mock Read-GerberNumberedMenuPrompt {
+            'PSGallery'
+        }
         Mock Confirm-GerberPluginDevelopmentTool { $true }
         Mock Start-GerberScreen {}
         Mock Write-GerberScreenLine {}
@@ -45,7 +48,7 @@ Describe 'Invoke-GerberPluginsCreateCommand' -Tag 'PluginCreate' {
         )) {
             Should -Invoke Write-GerberScreenLine -ParameterFilter { $Text -like "*$text*" }
         }
-        Should -Invoke Write-GerberScreenLine -Times 8 -Exactly -ParameterFilter { $Text -eq '' }
+        Should -Invoke Write-GerberScreenLine -Times 10 -Exactly -ParameterFilter { $Text -eq '' }
     }
 
     It 'summarizes actual creation metadata and quotes a usable PowerShell location' {
@@ -102,5 +105,23 @@ Describe 'Invoke-GerberPluginsCreateCommand' -Tag 'PluginCreate' {
         Invoke-GerberPluginsCreateCommand -Command ([pscustomobject]@{ Arguments = @() })
         Should -Invoke New-GerberPluginProject -Times 1 -ParameterFilter { $Request.Name -eq 'Gerber.Another' }
         Test-Path (Join-Path $TestDrive 'Gerber.Existing') | Should -BeTrue
+    }
+
+    It 'summarizes <Label> and its metadata action honestly' -Tag 'PluginCreateRepository' -ForEach @(
+        @{ Label = 'PSGallery'; Uri = $null; Pattern = 'Repository:\s+PSGallery'; Guidance = 'RepositoryUri omitted' }
+        @{ Label = 'known custom repository'; Uri = 'https://packages.example.org/feed'; Pattern = 'Repository:\s+https://packages.example.org/feed'; Guidance = 'RepositoryUri' }
+        @{ Label = 'unknown custom repository'; Uri = 'REPLACE_WITH_REPOSITORY_URI'; Pattern = 'Repository:\s+REPLACE_WITH_REPOSITORY_URI'; Guidance = 'Replace.*before.*publish.*update' }
+    ) {
+        $result = [pscustomobject]@{
+            Name = 'Gerber.MyCompany'; Version = '0.1.0'; Path = $TestDrive
+            Guid = 'fixture-guid'; Namespace = 'mycompany'
+        }
+        if ($null -ne $Uri) {
+            $result | Add-Member RepositoryUri $Uri
+        }
+        Show-GerberPluginProjectCreationSummary -Result $result
+        $summary = $script:blocks | Where-Object Title -EQ 'Gerber Plugin Created'
+        $summary.Text | Should -Match $Pattern
+        $summary.Text | Should -Match $Guidance
     }
 }

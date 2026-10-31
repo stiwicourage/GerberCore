@@ -10,11 +10,19 @@ function Show-GerberUpdateBatchView {
 function Show-GerberInteractiveUpdateBatch {
     param([object]$CoreState, [object[]]$ItemList)
     $readyItems = @(Resolve-GerberUpdateCredentialItemList -ItemList $ItemList)
+    if ('Available' -notin $readyItems.State.Status) {
+        return Wait-GerberContinue
+    }
     $selected = @(Read-GerberUpdateItemSelection -ItemList $readyItems)
     if ($selected.Count -eq 0) {
         return Show-GerberUpdateBatchCancellation
     }
-    $batch = Get-GerberConfirmedUpdateBatch -CoreState $CoreState -SelectedItemList $selected
+    Complete-GerberSelectedUpdateBatch -CoreState $CoreState -SelectedItemList $selected
+}
+
+function Complete-GerberSelectedUpdateBatch {
+    param([object]$CoreState, [object[]]$SelectedItemList)
+    $batch = Get-GerberConfirmedUpdateBatch -CoreState $CoreState -SelectedItemList $SelectedItemList
     if ($null -eq $batch) {
         return Show-GerberUpdateBatchCancellation
     }
@@ -25,9 +33,7 @@ function Show-GerberInteractiveUpdateBatch {
 
 function Write-GerberUpdateBatchOverview {
     param([object[]]$ItemList)
-    foreach ($item in $ItemList) {
-        Write-GerberScreenLine -Text (Format-GerberUpdateItemOverview -Item $item)
-    }
+    Write-GerberScreenLine -Text (Format-GerberUpdateItemListOverview -ItemList $ItemList)
     Write-GerberPromptTrace -EventName 'update-discovery' -Data @{
         ComponentCount = $ItemList.Count
     }

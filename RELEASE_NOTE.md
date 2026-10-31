@@ -41,9 +41,12 @@
   Stable promotion from an installed preview remains supported. No eligible
   matching package remains a legitimate result and does not prove Core is current.
   `/update list` also checks eligible installed plugins and offers checkbox
-  selection, with a visibly added Core update when required. Plugin manifests
-  declare `PrivateData.Gerber.RepositoryUri`; an absent value uses the official
-  Gallery, while an invalid value does not fall back. Trust/license-gated package
+  selection, with a visibly added Core update when required. Core and plugins
+  appear together in the same aligned overview table, with a blank line before
+  the channel and no per-plugin information lines. When no update is available,
+  Enter returns without a chooser or cancellation message. Plugin manifests
+  declare `PrivateData.Gerber.RepositoryUri`; an absent key uses the official
+  Gallery, while an explicit invalid value does not fall back. Trust/license-gated package
   inspection asks separately before the combined default-Cancel install prompt.
   Updates run sequentially; dependent plugins are blocked on Core failure while
   independent updates continue. Results distinguish installed packages from
@@ -63,8 +66,12 @@
   plugin approvals, discovery or execution.
 
 - `/plugins create` creates a working Gerber plugin: enter `MyCompany` to get
-  `Gerber.MyCompany`, choose its `mycompany` command namespace and destination parent,
+  `Gerber.MyCompany`, choose its `mycompany` command namespace, repository and destination parent,
   then let Gerber build and test it before approval. Existing files are never overwritten.
+  PSGallery is the default and omits `RepositoryUri`. For another repository,
+  enter its URL or leave it empty to write `REPLACE_WITH_REPOSITORY_URI` in
+  `project.json`; replace it and rebuild before remote publishing or updates.
+  Local build, tests and local publication remain available.
   Explained, separated fields show actual defaults; the completion summary states
   the generated metadata and **Installed: No**. Before installation, `/plugins list`
   and `/plugins info` already show the known name/version without loading anything.

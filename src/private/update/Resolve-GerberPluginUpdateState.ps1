@@ -86,12 +86,7 @@ function Resolve-GerberPluginRepositoryUri {
     if (-not $metadata.Contains('RepositoryUri')) {
         return [uri]'https://www.powershellgallery.com/api/v2'
     }
-    $uri = $null
-    if (-not [uri]::TryCreate([string]$metadata.RepositoryUri, [UriKind]::Absolute, [ref]$uri)) {
-        throw [System.InvalidOperationException]::new('The declared plugin repository URI is invalid.')
-    }
-    Assert-GerberPluginRepositoryUri $uri
-    $uri
+    ConvertTo-GerberPluginRepositoryUri -Value $metadata.RepositoryUri
 }
 
 function Read-GerberPluginUpdateMetadataRecord {
@@ -101,15 +96,6 @@ function Read-GerberPluginUpdateMetadataRecord {
         throw [System.InvalidOperationException]::new('Plugin metadata is missing.')
     }
     $metadata
-}
-
-function Assert-GerberPluginRepositoryUri {
-    param([uri]$Uri)
-    foreach ($component in @($Uri.UserInfo, $Uri.Query, $Uri.Fragment)) {
-        if ($component) {
-            throw [System.InvalidOperationException]::new('The declared repository URI must not contain credentials, query or fragment.')
-        }
-    }
 }
 
 function Resolve-GerberPluginUpdatePolicy {

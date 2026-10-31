@@ -1,6 +1,8 @@
 BeforeAll {
+    Import-Module PSModuleUpdate -RequiredVersion 0.2.0
     . (Join-Path $PSScriptRoot '../../TestHelpers/PluginUpdate.TestSupport.ps1')
     . (Join-Path $PSScriptRoot '../../TestHelpers/UpdateActivation.TestSupport.ps1')
+    . (Join-Path $PSScriptRoot '../../../src/private/shared/ConvertTo-GerberPluginRepositoryUri.ps1')
 }
 
 Describe 'Resolve-GerberPluginUpdateState' -Tag 'G4A9' {
@@ -113,6 +115,15 @@ Describe 'Resolve-GerberPluginUpdateState' -Tag 'G4A9' {
             Should -Invoke Get-PSModuleUpdate -Times 0
         }
 
+        It 'rejects the creation placeholder without package lookup or Gallery fallback' -Tag 'PluginCreateRepository' {
+            $manifest = Get-Content -LiteralPath $script:entry.ModulePath -Raw
+            Set-Content -LiteralPath $script:entry.ModulePath -Value $manifest.Replace('https://packages.example.org/v3/index.json', 'REPLACE_WITH_REPOSITORY_URI')
+            $item = Resolve-GerberPluginUpdateState $script:entry
+            $item.State.Status | Should -Be 'Unavailable'
+            $item.State.Plan | Should -BeNullOrEmpty
+            Should -Invoke Get-PSModuleUpdate -Times 0
+        }
+
         It 'rejects changed installed identity before making a package lookup' {
             $script:entry.Guid = [guid]::NewGuid().ToString()
             $item = Resolve-GerberPluginUpdateState $script:entry
@@ -121,7 +132,7 @@ Describe 'Resolve-GerberPluginUpdateState' -Tag 'G4A9' {
         }
     }
 
-    Context 'plugin-author repository metadata' {
+    Context 'plugin-author repository metadata' -Tag 'PluginCreateUriCharacterization' {
         It 'defaults only an absent override to the official Gallery endpoint' {
             $uri = Resolve-GerberPluginRepositoryUri @{
                 Gerber = @{
@@ -142,7 +153,8 @@ Describe 'Resolve-GerberPluginUpdateState' -Tag 'G4A9' {
 
         It 'rejects invalid declared overrides instead of falling back' -ForEach @(
             '', 'relative/path', 'https://user:password@example.org/feed',
-            'https://example.org/feed?token=secret', 'https://example.org/feed#fragment', $null
+            'https://example.org/feed?token=secret', 'https://example.org/feed#fragment', $null,
+            'REPLACE_WITH_REPOSITORY_URI'
         ) {
             $value = $_
             {

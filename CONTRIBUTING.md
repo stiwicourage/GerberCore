@@ -45,6 +45,16 @@ intact and add combined-selection, automatic Core dependency, blocking,
 partial-failure/continuation, activation-failure, cancellation and redirected-input
 coverage. Enable `GERBER_PROMPT_TRACE=1` and inspect the retained
 `prompt-trace.log` for happy, cancel/Esc and recoverable-error paths.
+Keep Core and plugin overview rows aligned under one table header in both the
+discovery view and checkbox screen. Cover the no-available-update path without
+a chooser, installation or false cancellation message. Assert a blank line
+before the shared channel and no per-plugin information footer.
+
+For `/plugins create`, cover the default PSGallery choice without a
+`RepositoryUri` property, a known custom URL, an unknown URL placeholder, unsafe
+URL recovery and cancellation before generation. Generated JSON and manifests
+must retain the selected metadata; an unreplaced placeholder must remain invalid
+for update discovery rather than falling back to PSGallery.
 
 The declared PMU minimum remains `0.2.0`; its new target-manifest inspection API
 is not published. Mocked PTY results and an isolated local PMU build do not prove

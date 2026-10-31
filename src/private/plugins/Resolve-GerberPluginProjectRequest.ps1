@@ -1,16 +1,29 @@
 function Resolve-GerberPluginProjectRequest {
-    param(
-        [AllowEmptyString()][string]$Suffix,
-        [AllowEmptyString()][string]$Description,
-        [AllowEmptyString()][string]$Namespace,
-        [string]$ParentPath = (Get-Location).ProviderPath
-    )
+    param([hashtable]$InputMap)
 
-    $inputMap = @{ Suffix = $Suffix; Description = $Description; Namespace = $Namespace; ParentPath = $ParentPath }
-    foreach ($field in $inputMap.Keys) {
+    $inputMap = Initialize-GerberPluginProjectInputMap -InputMap $InputMap
+    foreach ($field in @('Suffix', 'Description', 'Namespace', 'ParentPath')) {
         Assert-GerberPluginProjectInput -Field $field -Value $inputMap[$field]
     }
-    return ConvertTo-GerberPluginProjectRequest -InputMap $inputMap
+    if ($inputMap.ContainsKey('RepositoryUri')) {
+        Assert-GerberPluginProjectInput -Field RepositoryUri -Value $inputMap.RepositoryUri
+    }
+    $request = ConvertTo-GerberPluginProjectRequest -InputMap $inputMap
+    if ($inputMap.ContainsKey('RepositoryUri')) {
+        $request | Add-Member -NotePropertyName RepositoryUri -NotePropertyValue $inputMap.RepositoryUri
+    }
+    return $request
+}
+
+function Initialize-GerberPluginProjectInputMap {
+    param([hashtable]$InputMap)
+
+    # Required fields: Suffix, Description, Namespace; optional ParentPath and RepositoryUri.
+    $values = $InputMap.Clone()
+    if (-not $values.ContainsKey('ParentPath')) {
+        $values.ParentPath = (Get-Location).ProviderPath
+    }
+    return $values
 }
 
 function ConvertTo-GerberPluginProjectRequest {

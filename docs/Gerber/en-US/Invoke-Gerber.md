@@ -112,8 +112,15 @@ An existing installed Gerber copy needs a separate update to receive this
 source diagnostic; no automatic installation migration is performed.
 
 `/plugins create` asks for a module suffix behind a fixed `Gerber.` prefix,
-description, unused command namespace, and existing destination parent (current
-directory by default). It generates and validates a working Plugin API v1 Nova
+description, unused command namespace, repository choice, and existing
+destination parent (current directory by default). The shared repository chooser
+appears after the namespace and defaults to PSGallery, which omits
+`Manifest.PrivateData.Gerber.RepositoryUri` entirely. Another repository asks for
+a known absolute URI without credentials, query or fragment, or Enter if unknown.
+Known URIs are stored directly in that metadata key, without an Update
+intermediary; Enter writes `REPLACE_WITH_REPOSITORY_URI`. Invalid URI input stays
+at the prompt with correction guidance, and shared Esc cancels from the chooser
+or URI input without creation or approval. It generates and validates a working Plugin API v1 Nova
 project in a new child directory without overwriting existing files. Successful
 creation approves, associates and enables the generated manifest GUID, but does
 not install or load the plugin. Run `Publish-NovaModule -Local` from that project,
@@ -123,7 +130,11 @@ on demand; the creation handler's missing-tool fallback requires consent. Shared
 navigation cancels, and invalid input can be corrected without approval.
 Creation fields have separated headings, descriptions, examples and visible
 current-directory/project-child defaults. The completion summary shows actual
-name, version, namespace, location and lifecycle state, explicitly Installed: No.
+name, version, namespace, location, repository choice and lifecycle state,
+explicitly Installed: No. A placeholder summary requires replacing
+`Manifest.PrivateData.Gerber.RepositoryUri` before remote publishing or updates.
+Build, tests and isolated local publish still work; update consumption rejects
+the explicit placeholder without package lookup or Gallery fallback.
 Read-only list/info show the generated name and initial version before installation
 using GUID-keyed association display metadata; discovered manifest metadata wins.
 Generated projects use only the canonical manifest GUID and include a complete

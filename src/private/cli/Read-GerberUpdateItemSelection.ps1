@@ -11,9 +11,7 @@ function Read-GerberUpdateItemSelection {
 
 function Get-GerberUpdateSelectionRequest {
     param([object[]]$ItemList, [object[]]$Options)
-    $overview = @($ItemList | ForEach-Object {
-        Format-GerberUpdateItemOverview -Item $_
-    }) -join "`n"
+    $overview = Format-GerberUpdateItemListOverview -ItemList $ItemList
     [pscustomobject]@{
         Prompt = 'Select updates'; ScreenTitle = '/update list'
         ScreenText = "$overview`n`nSelect installed components to update. Required Core updates are added before confirmation."

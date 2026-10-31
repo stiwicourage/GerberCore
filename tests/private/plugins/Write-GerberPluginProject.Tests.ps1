@@ -4,6 +4,31 @@ BeforeAll {
 }
 
 Describe 'Write-GerberPluginProject' -Tag 'PluginCreate' {
+    Context 'repository metadata' -Tag 'PluginCreateRepository' {
+        It 'writes <Label> directly under Gerber without an Update intermediary' -ForEach @(
+            @{ Label = 'known custom source'; Uri = 'https://packages.example.org/feed' }
+            @{ Label = 'unknown custom source'; Uri = 'REPLACE_WITH_REPOSITORY_URI' }
+        ) {
+            $request = [pscustomobject]@{
+                Name = 'Gerber.Example'; Namespace = 'example'; Suffix = 'Example'
+                Description = 'Local tools'; RepositoryUri = $Uri
+            }
+            Write-GerberPluginProject -Request $request -Path $TestDrive -Guid '5ff12592-8333-40d1-b167-9f5902149843'
+            $metadata = (Get-Content (Join-Path $TestDrive 'project.json') -Raw | ConvertFrom-Json -AsHashtable).Manifest.PrivateData.Gerber
+            $metadata.RepositoryUri | Should -BeExactly $Uri
+            $metadata.Keys | Should -Not -Contain 'Update'
+        }
+
+        It 'omits RepositoryUri entirely for the default Gallery source' {
+            $request = [pscustomobject]@{
+                Name = 'Gerber.Example'; Namespace = 'example'; Suffix = 'Example'; Description = 'Local tools'
+            }
+            Write-GerberPluginProject -Request $request -Path $TestDrive -Guid '5ff12592-8333-40d1-b167-9f5902149843'
+            $metadata = (Get-Content (Join-Path $TestDrive 'project.json') -Raw | ConvertFrom-Json -AsHashtable).Manifest.PrivateData.Gerber
+            $metadata.Keys | Should -Not -Contain 'RepositoryUri'
+        }
+    }
+
     It 'writes complete sources without source manifests and safely serializes descriptions' {
         $request = [pscustomobject]@{
             Name = 'Gerber.Example'; Namespace = 'example'; Suffix = 'Example'

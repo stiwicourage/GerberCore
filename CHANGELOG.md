@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   remains Core-only. Shared checkbox selection, separately confirmed
   trust/license-gated package inspection and a default-Cancel combined install
   preview show versions, source, scope and visibly auto-added required Core.
+  Core and plugins share one aligned overview table, including in the selection
+  screen, with a blank line before the shared channel and no per-plugin
+  information footer. No available updates return through the continue prompt
+  without a chooser or misleading cancellation message.
   PMU installs the original plans sequentially, Core first; dependency failures
   block dependent items while independent updates continue, and cancellation
   stops future attempts. Results separate installation, verification, recovery
@@ -24,6 +28,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   The new PMU target-manifest inspection API remains locally implemented,
   unpublished and undeployed; numeric minimum stays 0.2.0. No hosted/live
   qualification implied.
+- Added repository selection to `/plugins create`. PSGallery is the default and
+  omits `Manifest.PrivateData.Gerber.RepositoryUri`; another repository accepts
+  a safe absolute URL or writes `REPLACE_WITH_REPOSITORY_URI` when unknown.
+  The completion summary identifies the choice and placeholder replacement
+  requirement. Unsafe URLs can be corrected; cancellation generates nothing.
+  An unreplaced placeholder remains invalid for updates without Gallery fallback.
 
 ### Changed
 

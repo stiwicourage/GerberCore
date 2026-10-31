@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import replace
 
 from framework.scenario_registry import ScenarioMetadata, scenario
@@ -88,6 +89,62 @@ def _open_batch_selection(context) -> None:
     context.app.wait_for_text("Select updates")
     context.app.wait_for_text("Gerber.Batch1: 1.0.0 -> 2.0.0")
     context.app.wait_for_text("Gerber.Batch3: 1.0.0 -> 2.0.0")
+    _assert_batch_overview_table(context)
+
+
+def _assert_batch_overview_table(context) -> None:
+    text = context.app.visible_text()
+    headers = re.findall(r"(?m)^[^\S\n]*Component\s+Name\s+Installed\s+Available\s+Repository\s+Status\s*$", text)
+    core_rows = re.findall(r"(?m)^[^\S\n]*Core\s+Gerber\s+.+$", text)
+    plugin_rows = re.findall(r"(?m)^[^\S\n]*Plugin\s+Gerber\.Batch[123]\s+.+$", text)
+    assert len(headers) == len(core_rows) == 1, text
+    assert len(plugin_rows) == 3, text
+    for row in plugin_rows:
+        assert row.index("Gerber.Batch") == core_rows[0].index("Gerber"), text
+        assert row[headers[0].index("Installed"):].startswith("1.0.0"), text
+    assert "Check the declared plugin repository" not in text, text
+    assert re.search(r"\n[^\S\n]*\n[^\S\n]*Channel:", text), text
+
+
+def _seed_unavailable_batch_update(context) -> None:
+    _seed_batch_update(context, disposition="UpToDate", startupStatus="Unavailable", installedVersion="0.1.0", targetVersion="0.1.0")
+    modules = context.app.runtime_paths.scenario_root / "module-data" / "powershell" / "Modules"
+    for name in _batch_plugin_identities():
+        manifest = modules / name / "1.0.0" / f"{name}.psd1"
+        text = manifest.read_text(encoding="utf-8")
+        manifest.write_text(text.replace("Plugin = $true", "Plugin = $true; RepositoryUri = 'invalid'"), encoding="utf-8")
+
+
+def _open_unavailable_batch_overview(context) -> None:
+    context.app.start(enable_synthetic_plugin=True)
+    context.app.wait_for_prompt()
+    _open_update(context)
+    context.app.wait_for_text("Press Enter to continue")
+
+
+def _assert_unavailable_batch_overview(context) -> None:
+    _assert_batch_overview_table(context)
+    context.app.wait_for_text("Unavailable")
+    context.app.expect_text_absent("Update selection cancelled")
+    context.app.expect_text_absent("Select updates")
+    assert _update_state(context)["installCount"] == 0
+    events = [json.loads(line)["Event"] for line in context.app.prompt_trace_text().splitlines()]
+    assert "update-discovery" in events and "checkbox-open" not in events, events
+    context.app.press("ENTER")
+    context.app.wait_for_prompt()
+    context.app.expect_input("/update ")
+
+
+@scenario(
+    "update-batch-unavailable-overview",
+    title="Up-to-date Core and unavailable plugins retain aligned rows without a false cancellation",
+    categories=("core", "updates", "batch-updates"),
+    metadata=ScenarioMetadata(commands=("update list",), workflows=("command:update list",), coverage=("workflow", "rendering", "error-recovery", "navigation")),
+)
+def update_batch_unavailable_overview(context) -> None:
+    _seed_unavailable_batch_update(context)
+    _open_unavailable_batch_overview(context)
+    _assert_unavailable_batch_overview(context)
 
 
 def _select_batch_plugins(context, *, include_core: bool = False) -> None:
