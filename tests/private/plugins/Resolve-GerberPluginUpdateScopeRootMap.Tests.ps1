@@ -17,9 +17,10 @@ Describe 'Resolve-GerberPluginUpdateScopeRootMap' -Tag 'G4A9' {
         $originalPlatform = Get-Variable -Name IsWindows -Scope Global -ValueOnly
         try {
             Set-Variable -Name IsWindows -Scope Global -Value $true -Force
+            Mock Get-GerberSpecialFolderPath { Join-Path $TestDrive $Name }
             $roots = Resolve-GerberPluginUpdateScopeRootMap
-            $roots.CurrentUser | Should -Be (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'PowerShell/Modules')
-            $roots.AllUsers | Should -Be (Join-Path ([Environment]::GetFolderPath('ProgramFiles')) 'PowerShell/Modules')
+            $roots.CurrentUser | Should -Be (Join-Path (Join-Path $TestDrive 'MyDocuments') 'PowerShell/Modules')
+            $roots.AllUsers | Should -Be (Join-Path (Join-Path $TestDrive 'ProgramFiles') 'PowerShell/Modules')
         } finally {
             Set-Variable -Name IsWindows -Scope Global -Value $originalPlatform -Force
         }
