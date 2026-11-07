@@ -20,6 +20,6 @@ jobs:
   tests:
     uses: stiwicourage/powershell-ci/.github/workflows/tests.yml@develop
     with:
-      test-command: ./scripts/build/ci/Invoke-NovaModuleToolsCI.ps1 -OutputDirectory ./artifacts
+      script-analyzer-required-version: '1.25.0'
       changelog-files: ./CHANGELOG.md ./RELEASE_NOTE.md
     secrets: inherit
