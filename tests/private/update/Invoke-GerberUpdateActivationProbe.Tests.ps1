@@ -37,4 +37,38 @@ Describe 'Invoke-GerberUpdateActivationProbe' -Tag 'G4A9' {
         (Invoke-GerberUpdateActivationProbe $script:probePayload -TimeoutMilliseconds 100).Status | Should -Be 'Unverified'
         $watch.Elapsed.TotalSeconds | Should -BeLessThan 10
     }
+
+    It 'reports a probe exception as unverified without leaking diagnostics and closes the process' {
+        Mock Receive-GerberUpdateActivationProbe { throw 'private-probe-diagnostic' }
+        Mock Close-GerberUpdateProbe { $Process.Dispose() }
+        $result = Invoke-GerberUpdateActivationProbe $script:probePayload
+        $result.Status | Should -Be 'Unverified'
+        ($result | ConvertTo-Json) | Should -Not -Match 'private-probe-diagnostic'
+        Should -Invoke Close-GerberUpdateProbe -Times 1 -Exactly
+    }
+
+    It 'propagates cancellation while still closing the process' {
+        Mock Receive-GerberUpdateActivationProbe { throw [OperationCanceledException]::new('Probe cancelled.') }
+        Mock Close-GerberUpdateProbe { $Process.Dispose() }
+        { Invoke-GerberUpdateActivationProbe $script:probePayload } | Should -Throw 'Probe cancelled.'
+        Should -Invoke Close-GerberUpdateProbe -Times 1 -Exactly
+    }
+}
+
+Describe 'Get-GerberUpdateActivationWorkerPath' -Tag 'G4A9' {
+    It 'resolves the worker from <Relative> without requiring a build' -ForEach @(
+        @{ Relative = 'resources/update'; Probes = 1 }
+        @{ Relative = '../../resources/update'; Probes = 2 }
+    ) {
+        $script:workerCandidate = Join-Path (Join-Path $backendRoot "update/$Relative") 'Test-GerberUpdateActivationWorker.ps1'
+        Mock Test-Path { $LiteralPath -eq $script:workerCandidate }
+        Get-GerberUpdateActivationWorkerPath | Should -Be ([IO.Path]::GetFullPath($script:workerCandidate))
+        Should -Invoke Test-Path -Times $Probes -Exactly -ParameterFilter { $PathType -eq 'Leaf' }
+    }
+
+    It 'reports a missing worker rather than returning an unusable path' {
+        Mock Test-Path { $false }
+        { Get-GerberUpdateActivationWorkerPath } | Should -Throw '*activation worker is missing*Rebuild or reinstall Gerber*'
+        Should -Invoke Test-Path -Times 2 -Exactly
+    }
 }

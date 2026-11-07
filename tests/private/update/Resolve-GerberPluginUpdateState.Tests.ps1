@@ -141,6 +141,43 @@ Describe 'Resolve-GerberPluginUpdateState' -Tag 'G4A9' {
             Should -Invoke Get-PSModuleUpdate -Times 0
         }
 
+        It 'rejects missing or ambiguous installed module discovery with <Count> matches' -ForEach @(
+            @{ Count = 0 }
+            @{ Count = 2 }
+        ) {
+            $script:availableModules = @(@($script:module) * $Count)
+            Mock Get-Module { $script:availableModules } -ParameterFilter { $ListAvailable }
+            $item = Resolve-GerberPluginUpdateState $script:entry
+            $item.State.Status | Should -Be 'Unavailable'
+            $item.State.Plan | Should -BeNullOrEmpty
+            Should -Invoke Get-PSModuleUpdate -Times 0
+        }
+
+        It 'rejects ambiguous active installations without package lookup' {
+            Mock Get-Module { @($script:module, $script:older) } -ParameterFilter { -not $ListAvailable }
+            $item = Resolve-GerberPluginUpdateState $script:entry
+            $item.State.Status | Should -Be 'Unavailable'
+            $item.State.Plan | Should -BeNullOrEmpty
+            Should -Invoke Get-PSModuleUpdate -Times 0
+        }
+
+        It 'rejects a different installed module name even when the GUID matches' {
+            $script:entry.Name = 'Gerber.Renamed'
+            $item = Resolve-GerberPluginUpdateState $script:entry
+            $item.State.Status | Should -Be 'Unavailable'
+            $item.State.Plan | Should -BeNullOrEmpty
+            Should -Invoke Get-PSModuleUpdate -Times 0
+        }
+
+        It 'rejects missing Gerber metadata without defaulting to Gallery discovery' {
+            Mock Import-PowerShellDataFile { @{ GUID = $script:entry.Guid; PrivateData = @{} } }
+            $item = Resolve-GerberPluginUpdateState $script:entry
+            $item.State.Status | Should -Be 'Unavailable'
+            $item.State.Repository | Should -Be '-'
+            $item.State.Plan | Should -BeNullOrEmpty
+            Should -Invoke Get-PSModuleUpdate -Times 0
+        }
+
         It 'shows the canonical name while forwarding its URI and ignoring invalid legacy metadata' -Tag 'PluginCreateRepository' {
             Initialize-TestNamedPluginRepository
             $item = Resolve-GerberPluginUpdateState $script:entry

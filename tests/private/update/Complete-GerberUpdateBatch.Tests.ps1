@@ -153,6 +153,43 @@ Describe 'Complete-GerberUpdateBatch' -Tag 'G4A9' {
         Should -Invoke Install-PSModuleUpdate -Times 0
     }
 
+    It 'blocks an item whose discovery status is no longer available' {
+        $script:second.State.Status = 'Unavailable'
+        $script:batch.Items = @($script:second)
+        (Complete-GerberUpdateBatch $script:batch).Outcome | Should -Be 'Blocked'
+        Should -Invoke Install-PSModuleUpdate -Times 0
+    }
+
+    It 'blocks a plugin when the shared update channel changed after discovery' {
+        $script:second.State.Channel = 'IncludePrerelease'
+        $script:batch.Items = @($script:second)
+        (Complete-GerberUpdateBatch $script:batch).Outcome | Should -Be 'Blocked'
+        Should -Invoke Install-PSModuleUpdate -Times 0
+    }
+
+    It 'blocks missing or ambiguous current plugin selections with <Count> matches' -ForEach @(
+        @{ Count = 0 }
+        @{ Count = 2 }
+    ) {
+        $script:selection = @(@($script:second.Plugin) * $Count)
+        Mock Get-GerberPluginInventory { $script:selection }
+        $script:batch.Items = @($script:second)
+        (Complete-GerberUpdateBatch $script:batch).Outcome | Should -Be 'Blocked'
+        Should -Invoke Install-PSModuleUpdate -Times 0
+    }
+
+    It 'blocks a current plugin whose <Field> changed since selection' -ForEach @(
+        @{ Field = 'Name'; Value = 'Gerber.Renamed' }
+        @{ Field = 'ModulePath'; Value = '/different-installation/Gerber.Second.psd1' }
+    ) {
+        $script:selection = $script:second.Plugin.PSObject.Copy()
+        $script:selection.$Field = $Value
+        Mock Get-GerberPluginInventory { $script:selection }
+        $script:batch.Items = @($script:second)
+        (Complete-GerberUpdateBatch $script:batch).Outcome | Should -Be 'Blocked'
+        Should -Invoke Install-PSModuleUpdate -Times 0
+    }
+
     It 'does not use a planned Core target as proof of the actual installed version' {
         Mock Invoke-GerberCoreUpdateInstall {
             $result = Get-TestPluginInstallResult
