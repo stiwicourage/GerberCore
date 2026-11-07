@@ -116,4 +116,22 @@ Describe 'Invoke-GerberLegacyConfigurationTransition' -Tag 'PluginJson' {
         (Test-Path $script:pluginPath) | Should -BeFalse
         (Test-Path $script:legacyPath) | Should -BeTrue
     }
+
+    It 'retains the legacy file when <Target> data changes before verification' -ForEach @(
+        @{ Target = 'Legacy'; Message = '*changed during transition*' }
+        @{ Target = 'Core'; Message = '*could not verify*' }
+    ) {
+        $script:corruptPath = @{ Legacy = $script:legacyPath; Core = $script:corePath }[$Target]
+        Set-GerberTransitionTestJson $script:legacyPath @{ schemaVersion = 1; custom = 'original' }
+        Mock Save-GerberJsonConfiguration {
+            Set-GerberTransitionTestJson $Path $Value
+            Set-GerberTransitionTestJson $script:corruptPath @{ schemaVersion = 1; custom = 'changed' }
+        } -ParameterFilter { $Path -eq $script:corePath }
+
+        { Invoke-GerberLegacyConfigurationTransition -CorePath $script:corePath } |
+            Should -Throw -ExceptionType ([System.IO.IOException]) -ExpectedMessage $Message
+        (Test-Path -LiteralPath $script:legacyPath) | Should -BeTrue
+        (Get-Content -LiteralPath $script:corruptPath -Raw | ConvertFrom-Json -AsHashtable).custom | Should -Be 'changed'
+        (Test-Path -LiteralPath $script:pluginPath) | Should -BeFalse
+    }
 }

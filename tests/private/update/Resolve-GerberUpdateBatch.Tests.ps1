@@ -41,6 +41,14 @@ Describe 'Resolve-GerberUpdateBatch' -Tag 'G4A9' {
         $batch.Items[0].State.Status | Should -Be 'Available'
     }
 
+    It 'rejects an unverifiable installed Core version before inspecting candidates' {
+        $script:core.Installed = 'not-a-version'
+
+        { Resolve-GerberUpdateBatch -CoreState $script:core -SelectedItemList @($script:item) } |
+            Should -Throw -ExceptionType ([System.InvalidOperationException]) -ExpectedMessage '*installed Core version could not be verified*'
+        Should -Invoke Get-PSModuleUpdateTargetManifest -Times 0 -Exactly
+    }
+
     It 'blocks changed plugin identity or an unsupported API before installation' -ForEach @('GUID', 'ApiVersion') {
         $field = $_
         Mock Get-PSModuleUpdateTargetManifest {

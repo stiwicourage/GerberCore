@@ -10,6 +10,20 @@ Describe 'Resolve-GerberPluginUpdateStateList' -Tag 'G4A9' {
         }
     }
 
+    It 'returns the resolved update item for an eligible plugin without replacing it' {
+        $script:resolvedItem = Get-TestPluginUpdateItem
+        Mock Resolve-GerberPluginUpdateState { $script:resolvedItem }
+
+        $items = @(Resolve-GerberPluginUpdateStateList)
+
+        $items.Count | Should -Be 1
+        [object]::ReferenceEquals($items[0], $script:resolvedItem) | Should -BeTrue
+        $items[0].State.Status | Should -Be 'Available'
+        Should -Invoke Resolve-GerberPluginUpdateState -Times 1 -Exactly -ParameterFilter {
+            [object]::ReferenceEquals($Entry, $script:entry)
+        }
+    }
+
     It 'excludes disabled, unapproved, unassociated and missing plugins without provider access' -ForEach @(
         @{
             field = 'IsEnabled'

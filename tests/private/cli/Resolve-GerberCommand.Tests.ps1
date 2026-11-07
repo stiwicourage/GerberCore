@@ -81,6 +81,36 @@ Describe 'Resolve-GerberCommand' -Tag 'ActiveCommandTree' {
         $result.Suggestions | Should -BeNullOrEmpty
     }
 
+    It 'keeps static prompts neutral without resolving input as a command' -ForEach @('', '/tools') {
+        $result = Resolve-GerberPromptInput -InputText $_ -SuggestionMode 'Static'
+
+        $result.IsValid | Should -BeTrue
+        $result.Name | Should -BeNullOrEmpty
+        $result.Arguments | Should -BeNullOrEmpty
+        $result.ErrorMessage | Should -BeNullOrEmpty
+        $result.Suggestions | Should -BeNullOrEmpty
+    }
+
+    It 'resolves root prompt input through the command catalog by default' {
+        $result = Resolve-GerberPromptInput -InputText '/help'
+
+        $result.IsValid | Should -BeTrue
+        $result.Name | Should -Be 'help'
+        $result.Arguments | Should -BeNullOrEmpty
+        $result.ErrorMessage | Should -BeNullOrEmpty
+    }
+
+    It 'uses the menu table when a subcommand prompt has no explicit table' {
+        Mock Get-GerberMenuSubcommandTable { [ordered]@{ custom = 'A contributed action' } }
+        $result = Resolve-GerberPromptInput -InputText '/' -SuggestionMode 'Subcommand' -SuggestionCommandName 'tools'
+
+        $result.IsValid | Should -BeTrue
+        $result.Name | Should -BeNullOrEmpty
+        $result.Suggestions.DisplayText | Should -Be @('/tools custom')
+        $result.ErrorMessage | Should -BeNullOrEmpty
+        Should -Invoke Get-GerberMenuSubcommandTable -Times 1 -Exactly -ParameterFilter { $CommandName -eq 'tools' }
+    }
+
     It 'accepts exact root search input for leaf commands without a slash' {
         $result = Resolve-GerberCommand -InputText 'help'
 
@@ -284,6 +314,10 @@ Describe 'Resolve-GerberCommand' -Tag 'ActiveCommandTree' {
         $result = Get-GerberMatchingTokenList -CandidateList @('create-uuid', 'base-64', 'ado-agents') -InputToken 'uuid'
 
         $result | Should -Be @('create-uuid')
+    }
+
+    It 'returns no token matches when there are no candidates' {
+        @(Get-GerberMatchingTokenList -CandidateList @() -InputToken 'create').Count | Should -Be 0
     }
 
     It 'keeps unknown slash commands as normal parser errors when there are no suggestions' {
