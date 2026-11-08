@@ -88,7 +88,12 @@ jobs:
                 $password = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
                 $password | gnome-keyring-daemon --unlock --components=secrets | Out-Null
                 Remove-Variable password
-                $owner = gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus --method org.freedesktop.DBus.NameHasOwner org.freedesktop.secrets
+                # The daemon registers on D-Bus asynchronously; wait up to 10 seconds.
+                $owner = ""
+                for ($attempt = 0; $attempt -lt 20 -and $owner.Trim() -ne "(true,)"; $attempt++) {
+                    if ($attempt -gt 0) { Start-Sleep -Milliseconds 500 }
+                    $owner = gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus --method org.freedesktop.DBus.NameHasOwner org.freedesktop.secrets
+                }
                 if ($owner.Trim() -ne "(true,)") { throw "Secret Service provider is unavailable." }
                 $ownerPid = gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus --method org.freedesktop.DBus.GetConnectionUnixProcessID org.freedesktop.secrets
                 $daemonId = [int][regex]::Match($ownerPid, "(?<=uint32 )[0-9]+").Value
