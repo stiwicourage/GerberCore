@@ -8,6 +8,15 @@ Describe 'Show-GerberStartupUpdateNotification' -Tag 'G4A7' {
     AfterEach { Remove-Variable GerberStartupUpdateState -Scope Script -ErrorAction SilentlyContinue }
 
     Context 'root redraw notification' {
+        It 'retains restart guidance on successive redraws without suggesting another install' {
+            $script:GerberStartupUpdateState = [pscustomobject]@{ Status = 'RestartRequired'; Message = 'Restart PowerShell, then run gerber.' }
+            Mock Write-GerberScreenLine {}
+            Show-GerberStartupUpdateNotification
+            Show-GerberStartupUpdateNotification
+            Should -Invoke Write-GerberScreenLine -Times 2 -ParameterFilter {
+                $Text -match 'Restart PowerShell.*run gerber' -and $Text -notmatch 'available'
+            }
+        }
         It 'renders the available Core version with the manual review command' {
             Mock Get-Variable { [pscustomobject]@{ Status = 'Available'; Available = '0.2.0' } } -ParameterFilter {
                 $Name -eq 'GerberStartupUpdateState' -and $Scope -eq 'Script'

@@ -1,4 +1,5 @@
 function Show-GerberRegisteredSubcommandMenu {
+    [OutputType([bool])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -7,7 +8,9 @@ function Show-GerberRegisteredSubcommandMenu {
         [Parameter(Mandatory)]
         [pscustomobject]$Command,
 
-        [switch]$AutoSelectFirstSuggestionOnSubmit
+        [switch]$AutoSelectFirstSuggestionOnSubmit,
+
+        [switch]$PropagateExit
     )
 
     $currentCommand = $Command
@@ -24,9 +27,10 @@ function Show-GerberRegisteredSubcommandMenu {
         }
 
         $registeredCommand = Get-GerberRegisteredSubcommandDefinition -CommandName $CommandName -Subcommand $subcommand
-        Invoke-GerberRegisteredSubcommand `
+        $shouldExit = Invoke-GerberRegisteredSubcommand `
             -RegisteredCommand $registeredCommand `
-            -Arguments $currentCommand.Arguments
+            -Arguments $currentCommand.Arguments -PassThru:$PropagateExit
+        if ($PropagateExit -and $shouldExit) { return $true }
         $currentCommand = ConvertTo-GerberNestedCommand
     }
 }
@@ -80,18 +84,22 @@ function Get-GerberRegisteredSubcommandDefinition {
 }
 
 function Invoke-GerberRegisteredSubcommand {
+    [OutputType([bool])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [pscustomobject]$RegisteredCommand,
 
         [AllowEmptyCollection()]
-        [string[]]$Arguments = @()
+        [string[]]$Arguments = @(),
+
+        [switch]$PassThru
     )
 
     try {
         $nestedCommand = ConvertTo-GerberNestedCommand -Arguments $Arguments -SkipCount 1
-        $null = Invoke-GerberRegisteredCommand -CommandDefinition $RegisteredCommand -Command $nestedCommand
+        $shouldExit = Invoke-GerberRegisteredCommand -CommandDefinition $RegisteredCommand -Command $nestedCommand
+        if ($PassThru) { return $shouldExit }
     } catch {
         if (-not (Test-GerberMenuEscapeException -Exception $_.Exception)) {
             throw

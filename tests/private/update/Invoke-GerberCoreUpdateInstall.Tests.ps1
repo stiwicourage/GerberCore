@@ -28,6 +28,14 @@ Describe 'Invoke-GerberCoreUpdateInstall' -Tag 'G4A7' {
     }
 
     Context 'PMU installation boundary' {
+        It 'returns the structured PMU result only on explicit PassThru' {
+            $result = @(Invoke-GerberCoreUpdateInstall -State $script:state -PassThru)
+            $result.Count | Should -Be 1
+            $result[0].Outcome | Should -Be 'Installed'
+            $result[0].VerificationStatus | Should -Be 'Verified'
+            $result[0].RestartRequired | Should -BeTrue
+        }
+
         It 'accepts an original prerelease plan only while its discovered channel is still selected' {
             Mock Get-GerberUserConfiguration { @{ schemaVersion = 1; coreUpdates = @{ channel = 'IncludePrerelease' } } }
             $script:state.Channel = 'IncludePrerelease'
@@ -81,6 +89,7 @@ Describe 'Invoke-GerberCoreUpdateInstall' -Tag 'G4A7' {
             $textResult = Invoke-GerberCoreUpdateInstall -State $script:state
             $textResult | Should -Match $text
             $textResult | Should -Not -Match 'raw-token-secret|Installed and verified'
+            Invoke-GerberCoreUpdateInstall -State $script:state -PassThru | Should -Be $textResult
         }
 
         It 'propagates Ctrl+C rather than translating it to an installation failure' {

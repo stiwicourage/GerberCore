@@ -4,13 +4,29 @@
 
 ### Changed
 
-- Gerber now requires numeric PSModuleUpdate `0.1.1` for corrected mixed-layout
-  discovery. Dependency bootstrap is a separate approved action, not automatic
+- Azure DevOps now belongs to the separate **Gerber.AzureDevOps 0.1.0** plugin,
+  included in Core's declared dependencies. Approval and activation remain
+  explicit; disabled or declined plugins contribute no ADO commands.
+  Existing `/list`, `/repository`, `/branch` and `/pipelines tags` paths remain.
+- Core settings use `GerberCore.json`; plugin profiles use
+  `Gerber.AzureDevOps.json` through Plugin API v1. The legacy configuration
+  transition preserves originals on conflict or failure and never changes
+  approval or credentials. Missing plugin PATs are entered again through the
+  existing GUID-scoped Secrets API; old credentials remain untouched.
+  Publication and live PSGallery/internal-repository qualification are later
+  work, not performed by this extraction.
+- Gerber requires numeric PSModuleUpdate `0.2.0`, available from PSGallery.
+  Dependency installation is a separate approved action, not automatic
   installation or cleanup of local Gerber. An up-to-date `0.1.0` remains visible
   in Available with no install offer.
 
 ### Fixed
 
+- Empty product menus no longer appear. Shared roots and nested menus remain
+  available while any active plugin contributes an action, and update
+  immediately after enable/disable across menus, completion and help.
+- Unreadable module-search paths no longer prevent plugin discovery or
+  `/update list` from completing.
 - Unsupported Core installation layouts now get supported numeric-version
   directory/restart guidance instead of a PSGallery/connection diagnosis.
   No automatic migration, installation or rollback is implied. An existing
@@ -25,15 +41,37 @@
   checks Gerber Core in its fixed official PSGallery repository and shows
   installed/available versions before asking whether to install. Cancel is the
   default; results explain verification, recovery and when to restart PowerShell.
+  Verified success requiring restart, or discovery of a newer Core already
+  installed, now offers **Exit Gerber** or **Continue with current version**.
+  Continue is the default; Esc also continues with the restart reminder retained.
+  Exiting Gerber does not restart PowerShell: restart PowerShell yourself, then
+  run `gerber`. Core and plugins are not reloaded in-process.
   Startup can notify about an available version but never installs or asks to
   install or request credentials. No Core repository setup or override is
   supported; old Core update settings are ignored. `/update policy` saves
   **Stable only** (the default) or **Include prereleases** for both startup and
   manual checks. Changing it installs nothing; Enter after saving returns to the
   `/update` menu. Installation still defaults to Cancel.
-  Stable promotion from an installed preview remains supported. Core is not
-  published to PSGallery yet, so no matching package is a legitimate result.
-  See [Core updates](docs/core-updates.md). Plugin updates are not included yet.
+  Stable promotion from an installed preview remains supported. No eligible
+  matching package remains a legitimate result and does not prove Core is current.
+  `/update list` also checks eligible installed plugins and offers checkbox
+  selection, with a visibly added Core update when required. Core and plugins
+  appear together in the same aligned overview table, with a blank line before
+  the channel and no per-plugin information lines. When no update is available,
+  Enter returns without a chooser or cancellation message. Plugin manifests
+  declare `PrivateData.Gerber.Repository` with a display `Name` and canonical `Uri`.
+  Names stay visible when lookup fails; PMU and trust prompts retain the URI.
+  Absent metadata uses PSGallery; invalid explicit metadata never falls back.
+  Legacy `RepositoryUri` still works, with canonical metadata taking precedence.
+  Trust/license-gated package
+  inspection asks separately before the combined default-Cancel install prompt.
+  Updates run sequentially; dependent plugins are blocked on Core failure while
+  independent updates continue. Results distinguish installed packages from
+  fresh-process activation failures. Credentials last for this operation only.
+  No first installation, hot reload or batch rollback is included.
+  **Delivery limitation:** the new PMU inspection API is local and unpublished;
+  the declared minimum remains 0.2.0. This does not qualify hosted or live plugin
+  updates. See [Core and plugin updates](docs/core-updates.md).
 
 - Plugin authors can run `Test-GerberPluginBoundary -Path <project>` from
   installed Gerber to find identifiable private Core dependencies before building
@@ -45,10 +83,16 @@
   plugin approvals, discovery or execution.
 
 - `/plugins create` creates a working Gerber plugin: enter `MyCompany` to get
-  `Gerber.MyCompany`, choose its `mycompany` command namespace and destination parent,
+  `Gerber.MyCompany`, choose its `mycompany` command namespace, repository and destination parent,
   then let Gerber build and test it before approval. Existing files are never overwritten.
+  PSGallery is preselected and writes its name and official URI without extra
+  questions. Another repository asks for its name, then URL; blank names can
+  be corrected locally. Enter for an unknown URL writes
+  `REPLACE_WITH_REPOSITORY_URI` in `Repository.Uri`; replace it in `project.json`
+  and rebuild before remote publishing or updates. Esc cancels without generation.
+  Local build, tests and local publication remain available.
   Explained, separated fields show actual defaults; the completion summary states
-  the generated metadata and **Installed: No**. Before installation, `/plugins list`
+  the repository name and URI, generated metadata and **Installed: No**. Before installation, `/plugins list`
   and `/plugins info` already show the known name/version without loading anything.
   Projects include a canonical manifest GUID, a complete Unreleased changelog and
   Gerber-specific agent resources led by AGENTS.md with thin Claude/Copilot bridges.

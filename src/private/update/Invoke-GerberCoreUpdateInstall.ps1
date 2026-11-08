@@ -1,10 +1,11 @@
 function Invoke-GerberCoreUpdateInstall {
-    param([object]$State)
+    param([object]$State, [switch]$PassThru)
     try {
         Assert-GerberCoreInstallPlan $State
         $result = Install-PSModuleUpdate -Update $State.Plan -Confirm:$false `
             -TrustRepository:$State.Plan.RequiresRepositoryTrust -AcceptLicense:$State.Plan.RequiresLicenseAcceptance `
             -ErrorAction Stop -WarningAction SilentlyContinue -InformationAction SilentlyContinue -Verbose:$false -Debug:$false
+        if ($PassThru) { return $result }
         return Format-GerberCoreUpdateResult $result
     } catch [System.Management.Automation.PipelineStoppedException] { throw
     } catch [System.OperationCanceledException] { throw

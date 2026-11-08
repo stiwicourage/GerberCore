@@ -3,7 +3,23 @@ BeforeAll {
     Import-GerberSource -StartPath $PSScriptRoot
 }
 
-Describe 'Show-GerberRegisteredSubcommandMenu' {
+Describe 'Show-GerberRegisteredSubcommandMenu' -Tag 'CoreUpdateRestartUx' {
+    It 'propagates exit only for explicitly opted-in menus' -ForEach @($true, $false) {
+        $propagate = $_
+        $script:exitSelectionCount = 0
+        Mock Get-GerberMenuSubcommand { @('base-64', '')[$script:exitSelectionCount++] }
+        Mock Invoke-GerberRegisteredCommand { $true }
+        $result = @(Show-GerberRegisteredSubcommandMenu -CommandName tools `
+            -Command ([pscustomobject]@{ Arguments = @('base-64') }) -PropagateExit:$propagate)
+        if ($propagate) {
+            $result | Should -Be @($true)
+            $script:exitSelectionCount | Should -Be 1
+        } else {
+            $result.Count | Should -Be 0
+            $script:exitSelectionCount | Should -Be 2
+        }
+    }
+
     It 'dispatches the selected registered nested command and reopens the parent chooser' {
         Mock Get-GerberMenuSubcommand { @('base-64', '')[$script:subcommandCallCount++] }
         Mock Invoke-GerberRegisteredCommand {}
