@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Added community health files for outside contributors: `SECURITY.md`,
+  `CODE_OF_CONDUCT.md`, GitHub bug-report and feature-request issue forms,
+  `.github/CODEOWNERS`, weekly Dependabot updates for GitHub Actions, and a
+  "Getting started" section in `CONTRIBUTING.md`.
 - Added identity-bound Plugin API v1 `Configuration.Read` and
   `Configuration.Save` for schema-free, module-named JSON files beside Core
   configuration, with strict JSON errors and atomic publication. Added the
@@ -76,7 +80,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Removed Core-owned ADO Plugin API capabilities and built-in product dispatch.
   No compatibility facade or new Plugin API version is introduced.
-### Added
 
 ### Fixed
 
