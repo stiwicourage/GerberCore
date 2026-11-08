@@ -2,7 +2,20 @@
 
 Thank you for contributing. Keep changes small, reviewable, and easy to validate.
 
-Before opening a pull request:
+## Getting started
+
+- Read the [Code of Conduct](CODE_OF_CONDUCT.md). By participating you agree to follow it.
+- Report reproducible defects with the bug report form and ideas with the feature request form. Search existing issues first.
+- Do not open a public issue for a security vulnerability; follow [SECURITY.md](SECURITY.md) instead.
+- Azure DevOps functionality lives in the separate Gerber.AzureDevOps repository.
+- Discuss larger changes in an issue before you start, so the scope is agreed up front.
+- Branch from `develop` and open your pull request against `develop`. Use the pull request template to explain intent, record what you validated and call out documentation or changelog work.
+- Every pull request needs a maintainer review. `.github/CODEOWNERS` requests it automatically.
+- Update the `[Unreleased]` section of `CHANGELOG.md` for user-visible changes.
+- Pull requests from forks do not receive repository secrets, so the CodeScene checks cannot run for them. Maintainers run those checks separately; this does not block your contribution.
+- Never commit credentials, tokens or other secrets, and redact them from logs and issue text.
+
+## Before opening a pull request
 
 - update tests when behavior changes
 - keep tests mirrored to changed source files: one focused `.Tests.ps1` file for every new or changed `src/**/*.ps1` file

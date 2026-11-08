@@ -1,0 +1,165 @@
+name: Bug report
+description: Report a reproducible problem in Gerber Core.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+        Please fill out the sections below so we can reproduce the issue quickly.
+        Never paste real credentials, tokens or personal access tokens into this form.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Briefly describe the problem.
+      placeholder: A short description of the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Share the smallest reliable reproduction you have.
+      placeholder: |
+        1. Run `Invoke-Gerber`
+        2. Open `/...`
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      placeholder: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      placeholder: What happened instead?
+    validations:
+      required: true
+
+  - type: input
+    id: module-version
+    attributes:
+      label: Gerber version
+      description: For example the output of `(Get-Module Gerber).Version` and its prerelease label.
+      placeholder: 0.2.1-preview02
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did you hit the issue?
+      options:
+        - Interactive prompt or slash menu
+        - Slash command
+        - Plugin lifecycle (approve, enable, disable, create)
+        - Update flow
+        - Credential or secret management
+        - Configuration
+        - Build or packaging
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: command
+    attributes:
+      label: Slash command or cmdlet
+      description: Share the exact command, slash command or workflow that failed.
+      placeholder: /plugins create
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output or logs
+      description: Paste console output or error details. Redact secrets. Setting `$env:GERBER_PROMPT_TRACE = "1"` writes `.gerber/prompt-debug.log`, which can help for interactive problems.
+      render: shell
+
+  - type: input
+    id: plugins
+    attributes:
+      label: Installed Gerber plugins
+      description: List plugin names and versions if the problem involves a plugin.
+      placeholder: Gerber.AzureDevOps 0.1.0
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: macOS 15.4 / Ubuntu 24.04 / Windows 11
+    validations:
+      required: true
+
+  - type: input
+    id: powershell
+    attributes:
+      label: PowerShell version
+      description: Gerber requires PowerShell 7.4 or later.
+      placeholder: 7.4.2
+    validations:
+      required: true
+
+  - type: input
+    id: terminal
+    attributes:
+      label: Terminal
+      description: The terminal or host that runs PowerShell.
+      placeholder: Windows Terminal / iTerm2 / VS Code terminal
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Installation method
+      options:
+        - Install-Module or Install-PSResource
+        - Manual import from source or dist
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: regression
+    attributes:
+      label: Regression?
+      description: Did this work in an earlier version?
+      options:
+        - "No"
+        - "Yes"
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add screenshots, workarounds, or anything else that may help.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submit checklist
+      options:
+        - label: I searched existing issues to avoid creating a duplicate.
+          required: true
+        - label: I included enough detail for someone else to reproduce the issue.
+          required: true
+        - label: I removed credentials, tokens and other secrets from everything I pasted.
+          required: true
+        - label: This is not a security vulnerability report.
+          required: true
