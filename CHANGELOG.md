@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.3.0] - 2026-11-08
+
+### Added
+
 - Added community health files for outside contributors: `SECURITY.md`,
   `CODE_OF_CONDUCT.md`, GitHub bug-report and feature-request issue forms,
   `.github/CODEOWNERS`, weekly Dependabot updates for GitHub Actions, and a
@@ -74,8 +88,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   Restart guidance remains visible; exiting Gerber does not restart PowerShell.
   Restart PowerShell, then run `gerber`; Core/plugins are not hot reloaded.
 
-### Deprecated
-
 ### Removed
 
 - Removed Core-owned ADO Plugin API capabilities and built-in product dispatch.
@@ -101,8 +113,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   error classification and outstanding platform/recovery qualification; no
   Gerber dependency or runtime behavior changes are included in this
   documentation correction.
-
-### Security
 
 ## [0.2.0] - 2026-10-27
 
@@ -369,3 +379,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Single `Esc` from `/plugins list` and `/plugins info` now returns to `/plugins`, while single `Esc` from plugin details opened through `/plugins list` still returns to the list view first.
   - Double `Esc` within 200 milliseconds still returns directly to the root prompt from nested plugin-management views.
   - Direct `/plugins list` and `/plugins info` execution continues to use Gerber's existing command-resolution behavior without inventing a separate navigation history.
+

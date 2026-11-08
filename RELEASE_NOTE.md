@@ -4,6 +4,28 @@
 
 ### Changed
 
+### Fixed
+
+### Added
+
+### Changed
+
+### Fixed
+
+### Persistent plugin approval and lifecycle state
+
+### Read-only plugin management
+
+### Enforced interactive regression coverage
+
+### First-use Azure DevOps setup
+
+### Repository Creation from Templates
+
+## [0.3.0] - 2026-11-08
+
+### Changed
+
 - Azure DevOps now belongs to the separate **Gerber.AzureDevOps 0.1.0** plugin,
   included in Core's declared dependencies. Approval and activation remain
   explicit; disabled or declined plugins contribute no ADO commands.
@@ -251,3 +273,4 @@ This file summarizes public cmdlet, CLI, configuration, and migration changes fo
 - Fixed **G-UX1-FIX1 — Shared Plugin Menu Navigation Regression** so `/plugins` now follows the same shared Core submenu contract as the other nested Gerber menus. Entering `/plugins` keeps plugin navigation inside the shared parent menu, `Esc` from `/plugins list` or `/plugins info` returns to `/plugins`, `Esc` from plugin details returns to the list, and rapid double-`Esc` still jumps directly to the root prompt.
 
 ### Security
+
