@@ -95,7 +95,7 @@ body:
     attributes:
       label: Installed Gerber plugins
       description: List plugin names and versions if the problem involves a plugin.
-      placeholder: Gerber.AzureDevOps 0.1.0
+      placeholder: Gerber.MyCompany 0.1.0
 
   - type: input
     id: os

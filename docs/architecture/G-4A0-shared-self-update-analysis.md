@@ -105,7 +105,7 @@ The manifest source declares `Gerber`, GUID `ec5ae6fe-540b-48c2-a6d1-cb39aac6c44
 
 Persistent configuration already provides schema version 1, absent-file defaults, explicit malformed-file errors, preservation of unknown properties and a temporary-file/flush/replace writer. It lives outside installed modules. There is no implemented update section or update-policy validator. Atomic file replacement does not prevent two read-modify-write callers losing each other's changes; it is not a global configuration lock. [G6-G7]
 
-Core must work without Nova, plugins, ADO or PATs. Only `/plugins create` lazily offers Nova installation, with explicit consent. This is precedent for lazy optional tooling, not permission to require Nova for `/update`. Plugin API v1 has UI, ADO, Secrets and Clipboard capabilities, not a module-installation service. Plugin approval is GUID-based user intent, not package authenticity. `/update` belongs in Core and must not enumerate plugins for installation, change their approvals or add a plugin package-manager API. [G1, G8-G9]
+Core must work without Nova, plugins or PATs. Only `/plugins create` lazily offers Nova installation, with explicit consent. This is precedent for lazy optional tooling, not permission to require Nova for `/update`. Plugin API v1 has UI, Secrets and Clipboard capabilities, not a module-installation service. Plugin approval is GUID-based user intent, not package authenticity. `/update` belongs in Core and must not enumerate plugins for installation, change their approvals or add a plugin package-manager API. [G1, G8-G9]
 
 ## 4. Reusable versus module-specific functionality
 

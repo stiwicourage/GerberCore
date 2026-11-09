@@ -5,10 +5,9 @@ plugins. Operations are scriptblocks invoked with `&`. `ApiVersion` remains
 `"1"`; `PluginId` is the registered manifest GUID.
 
 [`/plugins create`](../plugins-create.md) generates a minimal UI consumer.
-Gerber.AzureDevOps is a separate reference plugin for the configuration,
-Secrets, UI and HTTP metadata capabilities it actually uses. Azure DevOps
-profiles, authentication, REST and product operations belong to that plugin,
-not a Core `Ado` capability. Core supplies no historical ADO facade.
+Product integrations are separate plugins that use only the capabilities they
+need. Product-specific connections, authentication and operations belong to the
+plugin, not to Core.
 Consumers of the new Configuration/UI/Http operations must declare
 `MinimumGerberVersion` of at least `0.2.1-preview02`, the Core version supplying
 them; API v1 alone does not establish capability availability in older Core.
@@ -24,7 +23,7 @@ them; API v1 alone does not establish capability availability in older Core.
 
 Core binds the capability to the discovered, registered module name. Its file is
 `<ModuleName>.json` beside the resolved Core file, for example
-`Gerber.AzureDevOps.json` beside `GerberCore.json`. Plugins cannot provide a
+`Gerber.MyCompany.json` beside `GerberCore.json`. Plugins cannot provide a
 filename, another module name or an arbitrary path through this API. A collision
 with an explicitly selected Core file is rejected.
 
@@ -47,11 +46,7 @@ Do not save PATs, passwords or tokens in JSON. Use Secrets instead. This API
 does not inspect content for secrets or migrate credentials.
 `GERBER_CONFIG_PATH` is an absolute Core-file override; plugin files follow its
 directory. A legacy `config.json` override selects sibling `GerberCore.json`.
-Core's bounded legacy transition transfers non-ADO fields to Core and the
-`ado` section to AzureDevOps JSON, preserving unknown fields. Conflicts retain
-originals with guidance; partial failures are retryable. The old file is removed
-only after complete verification. Normal plugin reads do not access Core data,
-and transition does not approve or activate a plugin.
+Normal plugin reads do not access Core data.
 
 ### UI
 
@@ -106,10 +101,7 @@ product-plugin responsibilities.
 | `Remove` | `($PathSegmentList)` | Remove the plugin-owned secret. |
 
 Core maps logical paths to `gerber:plugin:<manifest-guid>:<path>`.
-AzureDevOps uses `@('ado', $ProfileName, 'pat')` under GUID
-`a468dee5-c7a0-43e4-ae88-bb19158fe679`. It does not automatically reuse, migrate
-or delete legacy `gerber:ado:<profile>:pat` credentials. A missing PAT is entered
-again at interactive authenticated use; metadata-only operations need no PAT.
+Metadata-only operations need no secret.
 Never log, trace, display in errors or JSON-store retrieved values.
 
 ### Clipboard
@@ -128,7 +120,7 @@ not process isolation or a sandbox.
 
 Module import does not register commands or imply Gerber approval. Discovery,
 GUID approval, association and enable/disable rules are unchanged. Declined
-and disabled plugins contribute no commands; non-ADO Core tools remain usable.
+and disabled plugins contribute no commands; Core tools remain usable.
 
 The published command tree contains only standalone actions and menus with
 available descendants. Plugins may share menu paths; removing one plugin does

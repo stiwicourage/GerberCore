@@ -42,7 +42,7 @@
 <div class="ambient" aria-hidden="true"></div>
 <header class="wrap"><nav class="nav" id="navigation" aria-label="Main navigation">
   <a href="#top" class="brand"><img src="assets/gerber-mark.png" alt="Gerber logo"><span><strong>GERBER</strong><small>DEVOPS MULTI-TOOL</small></span></a>
-  <div class="navlinks" id="navlinks"><a href="#features">Features</a><a href="#plugins">Plugins</a><a href="#how-it-works">How it works</a><a href="#get-started">Get started</a></div>
+  <div class="navlinks" id="navlinks"><a href="#features">Features</a><a href="#commands">Commands</a><a href="#plugins">Plugins</a><a href="#how-it-works">How it works</a><a href="#get-started">Get started</a></div>
   <a href="#get-started" class="btn primary navcta">Get started <span aria-hidden="true">↗</span></a>
   <button class="mobile-toggle" aria-label="Toggle navigation" aria-controls="navlinks" aria-expanded="false" onclick="toggleNav(this)">☰</button>
 </nav></header>
@@ -51,7 +51,7 @@
     <div class="eyebrow">THE DEVOPS MULTI-TOOL</div>
     <h1>One tool.<br><span class="gradient">Many possibilities.</span></h1>
     <p>Meet Gerber Core: a modular DevOps multi-tool built on PowerShell for everyday developer and DevOps work. Useful tools out of the box. Integrations when you need them.</p>
-    <div class="actions"><a class="btn primary" href="#get-started">Explore Gerber <span aria-hidden="true">→</span></a><a class="btn" href="#plugins">Explore Azure DevOps <span aria-hidden="true">↗</span></a></div>
+    <div class="actions"><a class="btn primary" href="#get-started">Explore Gerber <span aria-hidden="true">→</span></a><a class="btn" href="#plugins">Explore plugins <span aria-hidden="true">↗</span></a></div>
     <div class="micro"><span>PowerShell 7.4+</span><span>Cross-platform</span><span>Plugin-first</span></div>
   </div><div class="terminal" role="img" aria-label="Gerber terminal preview with a slash command suggestion menu">
     <div class="terminal-head"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="terminal-title">Terminal</span></div>
@@ -62,7 +62,7 @@
         <div class="suggestion selected"><span class="chevron">❯</span><span>/exit</span></div>
         <div class="suggestion"><span class="chevron"></span><span>/help</span></div>
         <div class="suggestion"><span class="chevron"></span><span>/plugins</span></div>
-        <div class="suggestion"><span class="chevron"></span><span>/ado</span></div>
+        <div class="suggestion"><span class="chevron"></span><span>/update</span></div>
         <div class="suggestion"><span class="chevron"></span><span>/secrets</span></div>
         <div class="suggestion"><span class="chevron"></span><span>/tools</span></div>
       </div>
@@ -80,11 +80,16 @@
       <article class="card"><div class="icon"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg></div><h3>Extensible by design</h3><p>Add new workflows through independent modules while keeping Gerber Core free of vendor-specific logic.</p></article>
     </div>
   </section>
+  <section id="commands" class="section wrap"><div class="section-head"><div class="eyebrow">PowerShell commands</div><h2>Help where <span class="gradient">you expect it.</span></h2><p>Gerber Core ships built-in PowerShell help, so <code>Get-Help</code> works after you import the module.</p></div>
+    <div class="grid">
+      <article class="card"><h3>Invoke-Gerber</h3><p>Starts the interactive Gerber session. Alias: <code>gerber</code>.</p><p><code>Get-Help Invoke-Gerber -Full</code></p></article>
+      <article class="card"><h3>Test-GerberPluginBoundary</h3><p>Checks authored plugin source for private Gerber Core dependencies before you publish a plugin.</p><p><code>Get-Help Test-GerberPluginBoundary -Full</code></p></article>
+    </div>
+  </section>
   <section id="plugins" class="plugins section"><div class="wrap"><div class="section-head"><div class="eyebrow">Integrate your stack</div><h2>Your platforms.<br><span class="gradient">Your choice.</span></h2><p>DevOps integrations can be distributed as PowerShell module dependencies. Gerber asks before enabling their command namespaces, and plugins remain independent of Core.</p></div>
     <div class="plugin-grid single-plugin">
-      <article class="plugin"><span class="tag">IN DEVELOPMENT · FIRST INTEGRATION</span><h3>Gerber.AzureDevOps</h3><p>Azure DevOps integration for branches, repositories, pipelines and related workflows. A separate plugin, activated only when you approve it.</p><code>/ado</code></article>
       <article class="plugin plugin-principle"><span class="tag planned">OPEN PLUGIN ARCHITECTURE</span><h3>Build around your workflow</h3><p>Gerber Core is not tied to any one provider. Extend it with independent plugins when your workflow calls for them.</p><code>/plugins</code></article>
-    </div><p class="note">Gerber.AzureDevOps is under development. Other provider integrations are not currently announced or scheduled.</p>
+    </div>
   </div></section>
   <section id="how-it-works" class="section wrap"><div class="section-head"><div class="eyebrow">Designed around control</div><h2>Installed doesn't mean <span class="gradient">enabled.</span></h2><p>Gerber separates PowerShell module installation from plugin approval and activation inside Gerber.</p></div>
     <div class="grid"><article class="card"><div class="icon">01</div><h3>Install</h3><p>Get Gerber Core and its declared PowerShell module dependencies.</p></article><article class="card"><div class="icon">02</div><h3>Choose</h3><p>Review discovered plugins and decide which ones Gerber may load.</p></article><article class="card"><div class="icon">03</div><h3>Work</h3><p>Use enabled plugin commands alongside Core tools; change your choices later.</p></article></div>

@@ -9,7 +9,7 @@ Gerber has not reached 1.0.0. Security fixes are provided for the latest publish
 | Latest release (including prerelease)  | :white_check_mark: |
 | Older releases                         | :x:                |
 
-This policy covers Gerber Core. Product plugins, for example Gerber.AzureDevOps, are separate repositories with their own security policy.
+This policy covers Gerber Core. Product plugins are separate repositories with their own security policy.
 
 ## Reporting a Vulnerability
 

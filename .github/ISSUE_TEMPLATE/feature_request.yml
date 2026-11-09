@@ -10,7 +10,7 @@ body:
         Thanks for sharing an idea.
 
         Please describe the problem and proposed improvement as clearly as you can so we can evaluate it efficiently.
-        Requests for Azure DevOps functionality belong in the Gerber.AzureDevOps repository.
+        Requests for product-specific functionality belong in the matching plugin's repository.
 
   - type: textarea
     id: summary

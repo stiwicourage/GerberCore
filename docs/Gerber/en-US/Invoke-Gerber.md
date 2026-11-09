@@ -31,8 +31,6 @@ This cmdlet has the following aliases,
 
 ## DESCRIPTION
 
-Gerber.AzureDevOps 0.1.0 is a declared RequiredModules dependency. Import alone does not approve, activate or register its commands. Normal discovery and saved approval/enable/disable rules remain authoritative.
-
 `Invoke-Gerber` opens the interactive Gerber terminal workflow for the current working directory.
 Startup attempts a bounded Gerber Core update check through PSModuleUpdate using
 the fixed official PSGallery repository. An eligible available-version notification
@@ -40,22 +38,14 @@ refers to `/update list`; startup never installs, asks to install or requests cr
 Offline, timed-out or no-matching-package checks leave the session usable without
 claiming it is up to date. A read-only public PMU check on 2026-10-25 returned
 installed/target 0.1.0 and UpToDate from PSGallery; no installation was attempted.
-The session starts with a minimal prompt-first home screen and reveals matching root commands as you type `/`, or matching executable leaf action commands as you type plain text such as `uuid`, `base`, `ado`, or `help`.
+The session starts with a minimal prompt-first home screen and reveals matching root commands as you type `/`, or matching executable leaf action commands as you type plain text such as `uuid`, `base`, or `help`.
 The root prompt supports interactive autocomplete with `Tab`, `Up`, and `Down`, including help previews for matching commands.
 Root browsing and completion show `/exit`, `/help`, `/plugins`, and `/update` first, in that order, followed by all remaining Core and active plugin root commands alphabetically. Submenu ordering is unchanged.
 Pressing `Enter` accepts the highlighted suggestion and executes it once the selected command is complete, whether you started from slash input or plain root action-search text.
 The currently selected suggestion is visually highlighted to stay readable across terminal themes while you navigate with arrow keys.
-Bare submenu commands such as `/tools`, `/list`, `/pipelines`, `/branch`, `/repository`, `/plugins`, and `/secrets` open an inline submenu prompt that shows the available subcommands directly on the command line.
+Bare submenu commands such as `/tools`, `/plugins`, and `/secrets` open an inline submenu prompt that shows the available subcommands directly on the command line.
 Nested submenu flows such as installed plugin tools and `/tools base-64` keep the same arrow-key suggestion behavior while narrowing the prompt to that tool's actions.
 After `/tools base-64 encode` or `decode`, continue reopens the same action.
-Azure DevOps commands are supplied by the approved, enabled Gerber.AzureDevOps
-plugin, not built into Core. Their existing paths remain `/list ado-agents`,
-`/list ado-team-members`, `/repository create`, `/branch find`,
-`/branch set-searchable`, `/branch set-default`, `/pipelines tags delete`
-and `/pipelines tags update`. The plugin owns profile selection, lazy setup,
-reports/export, REST, retry and pagination, repositories, branches and pipelines.
-Shared Enter, Escape and continue routing remain unchanged. Inactive plugins
-contribute no commands; unrelated Core tools and secret management remain usable.
 Press `Esc` from an interactive prompt or continue screen to return to the main Gerber menu.
 Shared `/branch`, `/list`, `/pipelines` and `/repository` roots appear only while active plugins contribute available actions. Empty intermediate submenus disappear too. Several plugins may share a root; disabling one preserves the others, while disabling the last hides the empty menu. Menus, completion, help and direct command lookup use the same active command tree. Standalone Core tools, `/plugins`, `/update` and `/secrets` remain available without product plugins.
 
@@ -182,7 +172,6 @@ Use plain-text root search to jump directly to a leaf action.
 
 ```text
 uuid
-ado
 help
 ```
 
@@ -206,18 +195,6 @@ Use the interactive Base64 tool after Gerber starts.
 /tools base-64
 /tools base-64 encode
 /tools base-64 decode
-/list
-/list ado-agents
-/pipelines
-/pipelines tags delete
-/pipelines tags update
-/branch
-/branch find
-/branch set-searchable
-/branch set-default
-/repository
-/repository create
-/repository review
 /plugins
 /plugins list
 /plugins info
@@ -287,24 +264,13 @@ Module import alone performs no update check or Nova lifecycle operation.
 
 Plugin enable and disable decisions are saved in the existing Gerber user configuration and survive restarts. Disabled plugins cannot execute commands through Gerber until enabled again. Plugin inventory and details remain read-only.
 The `/tools base-64` utility is text-focused in v1, shows results in the terminal, and copies them to the clipboard when Gerber finds a supported clipboard command.
-Gerber resolves Azure DevOps connections lazily: startup, `/help`, `/secrets`, plugin discovery, and unrelated commands do not prompt for Azure DevOps configuration, while authenticated ADO commands can configure a missing profile or missing PAT inline and then continue the same command.
-When no Azure DevOps default profile is configured, Gerber uses the configured default when present, offers to use the single existing profile when exactly one profile exists, lets the user choose when multiple profiles exist, and offers to configure the explicitly requested profile instead of silently switching to a different one.
-Core lifecycle/platform settings use GerberCore.json; Azure DevOps profiles use
-Gerber.AzureDevOps.json in the same platform-resolved directory. Plugin API v1
+Core settings use GerberCore.json; each plugin can use its own module-named JSON
+file in the same platform-resolved directory. Plugin API v1
 provides identity-bound Configuration.Read and Configuration.Save without paths
 or Core access. Missing files return null; invalid JSON is reported, not replaced;
-writes are atomic. The repeatable legacy config.json transition preserves unknown
-and destination settings, retains originals on conflict/failure, and deletes the
-old file only after verified transfer. It never changes approval or credentials.
-The AzureDevOps plugin uses Secrets under GUID
-a468dee5-c7a0-43e4-ae88-bb19158fe679 and logical path ado/<profile>/pat.
-Missing PATs are entered again during interactive authenticated use; legacy Core
-credentials are never automatically reused, migrated or deleted. Noninteractive
-missing credentials do not open prompts. PATs are not stored in JSON or diagnostics.
-The `/list ado-agents` report reads Azure DevOps connection settings from `Properties.json`, queries automation and deployment task pools, keeps empty sections and empty pools explicit, color-codes version lines consistently per run, shows a version legend, and retrieves the active profile PAT from secure credential storage only when authentication is required.
-The `/pipelines tags delete` workflow asks for the current tag, lists every Azure DevOps build/run that still carries that tag, groups the checkbox selection screen by pipeline name, removes the tag on each selected run, continues across per-run failures, and shows one final deleted / failed / skipped summary before it returns to the same tag-delete flow after `Press Enter to continue`.
-The `/pipelines tags update` workflow asks for the current tag and replacement tag, lists every Azure DevOps build/run that still carries the current tag, groups the checkbox selection screen by pipeline name, removes the old tag and adds the new tag on each selected run, continues across per-run failures, and shows one final updated / failed / skipped summary before it returns to the same tag-update flow after `Press Enter to continue`.
-The `/repository review` workflow is contributed by the Gerber.ExampleOrg plugin. Gerber Core supplies the shared command registry plus the public Plugin API, while Gerber.ExampleOrg owns the review rules in `Gerber.ExampleOrg/src/resources/Properties.json`, accepts either a PR number in the configured project or a full PR URL, uses the same Gerber-owned Azure DevOps connection-readiness flow as Core commands, reviews the whole relevant file for each changed path, groups results by the standard DevOps review categories, shows that Markdown review in the terminal, and copies the same text for PR notes when clipboard copy is available.
+writes are atomic. Plugin secrets are stored through the Secrets capability under
+the plugin's manifest GUID and a logical path, never in JSON or diagnostics.
+Noninteractive missing credentials do not open prompts.
 The `/secrets` menu uses secure credential storage, accepts case-insensitive Gerber identifiers such as `gerber:<scope>:<name>`, lists only non-sensitive identifiers, supports existence checks with `/secrets test`, copies a selected value to the clipboard before any terminal reveal when possible, and asks for confirmation before revealing, overwriting, or removing sensitive values.
 
 ## RELATED LINKS

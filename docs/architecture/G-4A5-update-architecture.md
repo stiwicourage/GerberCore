@@ -159,7 +159,7 @@ Gerber owns the overview and interaction; PMU owns generic discovery and install
 ```text
 Plugin              Installed    Available    Repository
 ----------------------------------------------------------
-Gerber.AzureDevOps  1.2.0        1.3.0        PSGallery
+Gerber.ExampleOrg   1.2.0        1.3.0        PSGallery
 Gerber.ExampleTeam     2.1.0        2.2.0        ExampleTeam
 Gerber.ExamplePartner  1.4.0        1.4.0        ExamplePartner
 Gerber.ExampleOrg      3.0.0        3.1.0        ExampleOrg
@@ -177,7 +177,7 @@ rollback succeeded after a failure. Noninteractive views never confirm or instal
 
 ## 8. Plugin updates (Decided; Planned)
 
-- Plugins are independently versioned modules and may use different repositories (illustrative: `Gerber.AzureDevOps` to PSGallery, `Gerber.ExampleTeam` to `ExampleTeam`, and so on; not verified production configuration).
+- Plugins are independently versioned modules and may use different repositories (illustrative: `Gerber.ExampleOrg` to PSGallery, `Gerber.ExampleTeam` to `ExampleTeam`, and so on; not verified production configuration).
 - Repository identity comes from **explicit, trusted configuration or an approved plugin metadata contract**. It is never inferred from the plugin name, never assumed to be PSGallery, and never switched automatically because another repository holds a higher version.
 - Gerber coordinates discovery and selection; PMU executes the generic operation.
 - Existing plugin security and approval boundaries remain intact ([ARCHITECTURE.md](../../ARCHITECTURE.md) plugin lifecycle, [D-003](../../DECISIONS.md)): approval is by manifest GUID, persists across updates, and a GUID is not proof of publisher or code integrity. An update must not silently bypass plugin trust or approval requirements (for example a plugin whose GUID changes is not the same plugin).

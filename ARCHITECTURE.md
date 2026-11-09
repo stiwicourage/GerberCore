@@ -9,7 +9,6 @@ Gerber Core (standalone PowerShell module)
   ├─ interactive slash CLI, registry, help, rendering, PTY
   ├─ configuration (persistent user-owned data)
   ├─ /secrets → Core Secrets API → credential abstraction → OS credential store
-  ├─ Azure DevOps generic connection / operations
   ├─ Plugin API v1 + discovery/registration/lifecycle
   └─ /plugins inspection, enable/disable and transactional creation
           │ public Plugin API only
@@ -23,7 +22,7 @@ RequiredModules:
 ```
 
 ## Initialization
-`Install-Module Gerber`, `Import-Module Gerber`, `Invoke-Gerber` should work without Azure DevOps, a PAT or plugins, with **both NovaModuleTools and PSModuleUpdate available as required modules**. The owner decision recorded in D-017 supersedes this baseline's former "NOT mandatory" Nova wording and the Nova exclusion in D-002; other Core/plugin boundaries remain. Required-module resolution is not execution of Nova build/package/publish operations at every startup. Missing/incompatible dependencies may prevent import; an unreachable update repository must not block startup. ADO configuration is lazy, triggered only by a command that needs it. Configuration and approvals survive module updates and reinstallations; do not write user settings into installed module files.
+`Install-Module Gerber`, `Import-Module Gerber`, `Invoke-Gerber` should work without a PAT or plugins, with **both NovaModuleTools and PSModuleUpdate available as required modules**. The owner decision recorded in D-017 supersedes this baseline's former "NOT mandatory" Nova wording and the Nova exclusion in D-002; other Core/plugin boundaries remain. Required-module resolution is not execution of Nova build/package/publish operations at every startup. Missing/incompatible dependencies may prevent import; an unreachable update repository must not block startup. Plugin configuration is lazy, triggered only by a command that needs it. Configuration and approvals survive module updates and reinstallations; do not write user settings into installed module files.
 
 ## Interactive navigation
 - Root commands that expose registered subcommands use Gerber's shared submenu prompt/navigation infrastructure rather than bespoke parent-menu loops.
@@ -104,8 +103,8 @@ to receive this source diagnostic.
 - Existing Core command roots can be extended by plugins; conflicting full paths must be resolved deterministically, never last-loaded-wins.
 - Future: trusted publisher certificates and compromised GUID notifications; not required for the first management implementation.
 
-## Secrets and ADO
-Current chosen backend: Devlooped CredentialManager, via a Gerber-owned Secrets abstraction; macOS Keychain works in the user's environment. No backend marketing text in runtime UI. Namespace plugin secrets by plugin GUID. Raw PAT is never stored in JSON or passed to plugins. Generic ADO functionality belongs in Core; plugin access uses opaque connection handles. Tests isolate credentials and HTTP, not real endpoints.
+## Secrets
+Current chosen backend: Devlooped CredentialManager, via a Gerber-owned Secrets abstraction; macOS Keychain works in the user's environment. No backend marketing text in runtime UI. Namespace plugin secrets by plugin GUID. Raw secrets are never stored in JSON or passed to plugins. Product-specific connections belong to plugins. Tests isolate credentials and HTTP, not real endpoints.
 
 ## Development and quality
 NovaModuleTools is a runtime dependency for Gerber's plugin-development functionality as well as repository development/release tooling. The implemented `/plugins create` handler retains an invocation-time availability check and consent-based installation fallback; this is not a promise that Gerber imports without Nova. Decline leaves files and approvals unchanged. Gerber owns deterministic plugin-specific source/test/docs/agent templates under `src/resources/plugin-template`; Nova provides build/test/package/local publication and generates `dist/<Name>`, `docs/schema` and lifecycle artifacts. Creation builds/tests before approval but does not package, publish or install the plugin; its completion guidance offers `Publish-NovaModule -Local` separately. G-3E1 adds canonical self-contained AGENTS.md, thin tool bridges, scoped instructions, a plugin developer role and three workflow skills. Templates use constrained identity/namespace substitutions; descriptions are JSON-serialized after substitution, never injected into code/Markdown. The full six-category Unreleased changelog contains no fictional stable release. No separate templating framework or CI infrastructure is introduced. Core quality gates run without Gerber.ExampleOrg.
@@ -144,7 +143,6 @@ sandbox, discovery rejection or new approval mechanism is introduced.
 ## Implementation status (limited evidence)
 - Historical G-4A5 source inspection 2026-10-24 found the ignored manifest stale and Core updates absent. [G-4A6](docs/architecture/G-4A6-runtime-dependency-qualification.md) subsequently qualified disposable generation/import. G-4A7 adds Core startup discovery and `/update`, and normal Nova builds refresh the local artifact. Neither dependency declaration changed. Focused mocked/disposable behavior and terminal scenarios are exercised; full quality readiness and remaining provider/platform limits are recorded in [PLAN.md](PLAN.md). This is not live repository installation qualification.
 - Reported after G-PTY3: Core default `run.ps1` independent of Gerber.ExampleOrg; 26 Core commands; 54 PTY scenarios passed in an archived run; 1,366 Pester tests passed and 96.88% coverage reported. These are **historical run results**, not a fresh validation.
-- User manually verified `/repository create` with real ADO; its full simulated provisioning chain remains a deferred PTY test gap.
 - G-2A/G-2B were worked on before PTY, but exact completion of every acceptance criterion requires code inspection.
 - G-3A1 persistent GUID approval, read-only `/plugins list`/`info`, enable/disable and G-3D1 create are implemented. A separate approve command is unnecessary because enable handles declined plugins. Remove/decline/revoke management is outside Core 1.
 - G-3A2 persistent plugin association and enabled/disabled lifecycle state is implemented in Core. Read-only management now surfaces approved, declined, associated, enabled/disabled, loaded, and missing states without importing unknown, declined, or disabled plugins.
