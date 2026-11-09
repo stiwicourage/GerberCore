@@ -33,7 +33,7 @@ Describe 'Read-GerberUpdateItemSelection' -Tag 'G4A9UI' {
         [object]::ReferenceEquals($selected[0], $available) | Should -BeTrue
         Should -Invoke Read-GerberCheckboxMenuPrompt -ParameterFilter {
             $PromptRequest.ItemList.Count -eq 1 -and -not $PromptRequest.ItemList[0].IsSelected -and
-            $PromptRequest.ItemList[0].Label -match 'ExamplePlugin.*1.0.0.*2.0.0' -and $PromptRequest.AllowEmptySelection -and
+            $PromptRequest.AllowEmptySelection -and
             $PromptRequest.ScreenText -match 'BlockedPlugin.*Blocked' -and
             $PromptRequest.ScreenText -notmatch 'BlockedPlugin:|No permitted package'
         }
@@ -41,6 +41,21 @@ Describe 'Read-GerberUpdateItemSelection' -Tag 'G4A9UI' {
             $PromptRequest.ScreenText -match '(?m)^Component\s+Name\s+Installed\s+Available\s+Repository\s+Status\s*$' -and
             $PromptRequest.ScreenText -match '(?m)^Plugin\s+ExamplePlugin\s+1\.0\.0\s+2\.0\.0\s+Feed\s+Available\s*$' -and
             $PromptRequest.ScreenText -match '(?m)^Plugin\s+BlockedPlugin\s+1\.0\.0\s+-\s+Feed\s+Blocked\s*$'
+        }
+    }
+
+    It 'renders each checkbox as a single line with the repository in parentheses' {
+        $item = [pscustomobject]@{
+            Kind = 'Plugin'; State = [pscustomobject]@{
+                Status = 'Available'; Name = 'ExamplePlugin'; Installed = '1.0.0'; Available = '2.0.0'; Repository = 'Feed'; Message = ''
+            }
+        }
+        Mock Read-GerberCheckboxMenuPrompt {
+            [pscustomobject]@{ SelectedValueList = @() }
+        }
+        $null = Read-GerberUpdateItemSelection -ItemList @($item)
+        Should -Invoke Read-GerberCheckboxMenuPrompt -ParameterFilter {
+            $PromptRequest.ItemList[0].Label -ceq 'ExamplePlugin  1.0.0 -> 2.0.0  (Feed)' -and -not $PromptRequest.ItemList[0].Description
         }
     }
 

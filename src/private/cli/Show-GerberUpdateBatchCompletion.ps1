@@ -1,4 +1,4 @@
-function Show-GerberUpdateBatchCompletion {
+﻿function Show-GerberUpdateBatchCompletion {
     param([object[]]$ResultList)
     Write-GerberUpdateBatchResultList -ResultList $ResultList
     $restart = @($ResultList | Where-Object {
@@ -30,5 +30,47 @@ function Get-GerberUpdateBatchRestartText {
 
 function Format-GerberUpdateBatchResultLine {
     param([object]$Result)
-    "$($Result.Item.State.Name): $($Result.Outcome). Verification: $($Result.VerificationStatus). Recovery: $($Result.RecoveryStatus). Activation: $($Result.ActivationStatus). $($Result.Message)"
+    $symbol = Get-GerberUpdateBatchResultSymbol -Outcome $Result.Outcome
+    $label = if ($Result.Outcome -eq 'AlreadyInstalled') { 'already installed' } else { $Result.Outcome.ToLowerInvariant() }
+    $lines = @("$symbol $($Result.Item.State.Name)  $label")
+    $installed = $Result.Outcome -in @('Installed', 'AlreadyInstalled')
+    if (-not $installed -and $Result.Message) {
+        $lines += "    $($Result.Message)"
+    }
+    $detail = Get-GerberUpdateBatchResultDetail -Result $Result
+    if ($detail) {
+        $lines += "    $detail"
+    }
+    $lines -join "`
+"
+}
+
+function Get-GerberUpdateBatchResultSymbol {
+    param([string]$Outcome)
+    switch ($Outcome) {
+        { $_ -in @('Installed', 'AlreadyInstalled') } { '✔' }
+        { $_ -in @('Cancelled', 'NotAttempted') } { '-' }
+        default { '✖' }
+    }
+}
+
+function Get-GerberUpdateBatchResultDetail {
+    param([object]$Result)
+    if ((Test-GerberUpdateBatchResultClean -Result $Result) -or (Test-GerberUpdateBatchResultUntouched -Result $Result)) {
+        return
+    }
+    "Verification: $($Result.VerificationStatus) · Recovery: $($Result.RecoveryStatus) · Activation: $($Result.ActivationStatus)"
+}
+
+function Test-GerberUpdateBatchResultClean {
+    param([object]$Result)
+    if ($Result.Outcome -notin @('Installed', 'AlreadyInstalled')) {
+        return $false
+    }
+    $Result.VerificationStatus -eq 'Verified' -and $Result.RecoveryStatus -eq 'NotRequired' -and $Result.ActivationStatus -ne 'Failed'
+}
+
+function Test-GerberUpdateBatchResultUntouched {
+    param([object]$Result)
+    $Result.VerificationStatus -eq 'NotRun' -and $Result.RecoveryStatus -eq 'NotRequired' -and $Result.ActivationStatus -eq 'NotRun'
 }

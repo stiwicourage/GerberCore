@@ -41,11 +41,7 @@ function Write-GerberUpdateBatchOverview {
 
 function Get-GerberConfirmedUpdateBatch {
     param([object]$CoreState, [object[]]$SelectedItemList)
-    $approval = Read-GerberUpdateInspectionConsent -SelectedItemList $SelectedItemList
-    if ($false -eq $approval) {
-        return
-    }
-    $batch = Resolve-GerberUpdateBatch -CoreState $CoreState -SelectedItemList $SelectedItemList -InspectionApproved:($true -eq $approval)
+    $batch = Resolve-GerberUpdateBatch -CoreState $CoreState -SelectedItemList $SelectedItemList
     if (Read-GerberUpdateBatchInstallConsent -Batch $batch) {
         $batch
     }

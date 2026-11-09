@@ -66,11 +66,10 @@ Trust confirmations retain the actual URL. Startup remains Core-only.
 
 When plugin rows exist, use Up/Down and Space in the shared checkbox to select
 available updates, then Enter to review. Exact selected-package inspection checks
-GUID, Plugin API v1 and required Core version. Trust/license-gated inspection
-requires separate default-Cancel consent for temporary download without
-installation. A required Core candidate is visibly added to the combined
-default-Cancel installation preview, with full versions, source, scope and
-operation-local trust/license choices. Unavailable Core requirements block the
+GUID, Plugin API v1 and required Core version through a temporary download
+without installation and without a separate prompt. A required Core candidate is
+visibly added to the combined default-Cancel installation preview, which lists
+one line per component with full versions, followed by one source and scope line. Unavailable Core requirements block the
 dependent plugin. Empty selection cancels; Esc follows shared back navigation.
 Noninteractive views render all status rows without prompting or installing.
 

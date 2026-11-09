@@ -184,9 +184,9 @@ URL shows PSGallery, while custom URLs keep their raw display until a name is ad
 The canonical object takes precedence when both keys exist.
 When plugin rows exist, use arrow keys and Space to select available updates,
 then Enter to review. A required Core update is visibly added before the combined
-confirmation. Trust/license-gated package inspection needs separate consent for
-a temporary download without installation. **Cancel is the default** at both
-consent prompts. PMU installs sequentially, Core first when required; dependent
+confirmation. Selected packages are inspected automatically through a temporary
+download without installation; there is no separate inspection prompt.
+**Cancel is the default** at the combined confirmation. PMU installs sequentially, Core first when required; dependent
 plugins are blocked on Core failure while independent updates continue.
 Results keep installation, verification, recovery and fresh-process activation
 separate; activation failure does not turn an installed package into a failed

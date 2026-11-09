@@ -1,42 +1,42 @@
-function Get-GerberUpdateBatchConsentText {
+﻿function Get-GerberUpdateBatchConsentText {
     param([object]$Batch)
-    $lines = @($Batch.Items | ForEach-Object {
-        Get-GerberUpdateItemConsentText -Item $_
+    $items = @($Batch.Items)
+    $width = ($items.State.Name | Measure-Object -Property Length -Maximum).Maximum
+    $lines = @($items | ForEach-Object {
+        Get-GerberUpdateItemConsentLine -Item $_ -Batch $Batch -NameWidth $width
     })
-    ($lines -join "`n`n") + "`n`nInstall sequentially, Core first when required. Gerber will not hot reload components or roll back the batch. Cancel is the default."
+    $footer = Get-GerberUpdateBatchSourceText -ItemList $items
+    "Will install (Core first when required):`n" + ($lines -join "`n") + "`n`n$footer`nGerber will not hot reload components or roll back the batch."
 }
 
-function Get-GerberUpdateItemConsentText {
-    param([object]$Item)
+function Get-GerberUpdateItemConsentLine {
+    param([object]$Item, [object]$Batch, [int]$NameWidth)
     $state = $Item.State
-    $text = Format-GerberUpdateItemOverview -Item $Item
-    $text += Get-GerberUpdateRequirementConsentText -Item $Item
-    if ($null -ne $state.Plan) {
-        $text += Get-GerberUpdatePlanConsentText -Plan $state.Plan
+    $name = $state.Name.PadRight($NameWidth)
+    if ($state.Status -ne 'Available') {
+        return "  $name  $($state.Status): $($state.Message)"
     }
-    $text
+    $note = Get-GerberUpdateItemConsentNote -Item $Item -Batch $Batch
+    "  $name  $($state.Installed) -> $($state.Available)$note"
 }
 
-function Get-GerberUpdateRequirementConsentText {
-    param([object]$Item)
-    $text = ''
+function Get-GerberUpdateItemConsentNote {
+    param([object]$Item, [object]$Batch)
     if ($Item.AutoAdded) {
-        $text += "`nGerber automatically added this required Core update."
+        $requiring = @($Batch.Items | Where-Object {
+            $_.Kind -eq 'Plugin' -and $_.MinimumCore
+        } | ForEach-Object { $_.State.Name })
+        return "  (added: required by $($requiring -join ', '))"
     }
     if ($Item.MinimumCore) {
-        $text += "`nRequired Core: $($Item.MinimumCore)."
+        return "  (requires Core $($Item.MinimumCore))"
     }
-    $text
 }
 
-function Get-GerberUpdatePlanConsentText {
-    param([object]$Plan)
-    $text = "`nSource: $($Plan.RepositoryUri). Scope: $($Plan.Scope)."
-    if ($Plan.RequiresRepositoryTrust) {
-        $text += ' Installing grants repository trust for this operation only.'
-    }
-    if ($Plan.RequiresLicenseAcceptance) {
-        $text += ' Installing accepts this package license for this operation.'
-    }
-    $text
+function Get-GerberUpdateBatchSourceText {
+    param([object[]]$ItemList)
+    $plans = @($ItemList | Where-Object { $null -ne $_.State.Plan } | ForEach-Object { $_.State.Plan })
+    $uris = @($plans.RepositoryUri | Select-Object -Unique) -join ', '
+    $scopes = @($plans.Scope | Select-Object -Unique) -join ', '
+    "Source: $uris · Scope: $scopes"
 }

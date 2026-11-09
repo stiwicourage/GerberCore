@@ -210,17 +210,20 @@ Without an interactive terminal, discovery renders all rows without prompts,
 credentials or installation.
 
 Gerber inspects the exact selected package's manifest before installation to
-validate plugin GUID, Plugin API v1 and `MinimumGerberVersion`. If PMU requires
-repository trust or package-license acceptance for inspection, a separate
-default-Cancel prompt names the source and grants consent only for temporary
-package download/inspection—not installation. Declining stops the selection.
-Ordinary inspection without those requirements adds no prompt.
+validate plugin GUID, Plugin API v1 and `MinimumGerberVersion`. Selecting a
+component is the consent to this temporary download; there is no separate
+inspection prompt. Repository trust and package-license acceptance required by
+PMU are passed on for the operation only, so users and plugin authors remain
+responsible for the licenses of the plugins they use and publish.
 
 When a selected plugin needs a newer Core, a permitted Core candidate is
 automatically added visibly to the combined preview. If no permitted Core
 candidate satisfies it, the plugin remains visible as `Blocked` with a reason.
-The final default-Cancel confirmation shows full versions, source, scope, Core
-requirements and operation-local trust/license choices for the actual install.
+The final default-Cancel confirmation lists one line per component with full
+versions and Core requirements, followed by one source and scope line.
+Results show one status line per component (`✔` installed, `✖` failed or
+blocked, `-` cancelled); verification, recovery and activation details are
+indented below and shown only when they need attention.
 Credentials are supplied through Gerber's existing text/secure-input patterns
 for this operation only; they are not saved or fetched from native storage.
 

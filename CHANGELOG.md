@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Simplified `/update list`: selected packages are inspected without a separate
+  consent prompt, each checkbox is a single line (`Name  from -> to  (Repository)`),
+  the installation confirmation is a compact per-component plan with one source
+  and scope line, and results show one status line per component with details
+  only when they need attention.
+
 ### Deprecated
 
 ### Removed
