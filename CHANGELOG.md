@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.3.2] - 2026-11-10
+
+### Added
+
 - After an update that needs a restart, `/update list` offers **Exit Gerber and
   PowerShell** in PowerShell console hosts, because exiting Gerber alone leaves
   the old module loaded. Other hosts (VS Code, ISE, remote) get guidance to
@@ -20,8 +34,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   the installation confirmation is a compact per-component plan with one source
   and scope line, and results show one status line per component with details
   only when they need attention.
-
-### Deprecated
 
 ### Removed
 
@@ -37,8 +49,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `/update list` can update Core and plugins that were copied manually (no
   PowerShell provider metadata) when the installed PSModuleUpdate supports
   `-ReplaceUnmanagedInstallation`; older versions keep the reinstall guidance.
-
-### Security
 
 ## [0.3.1] - 2026-11-10
 
@@ -321,3 +331,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Single `Esc` from `/plugins list` and `/plugins info` now returns to `/plugins`, while single `Esc` from plugin details opened through `/plugins list` still returns to the list view first.
   - Double `Esc` within 200 milliseconds still returns directly to the root prompt from nested plugin-management views.
   - Direct `/plugins list` and `/plugins info` execution continues to use Gerber's existing command-resolution behavior without inventing a separate navigation history.
+
