@@ -45,7 +45,7 @@ The original plan explicitly allowed reordering and prioritized plugin creation 
 | G-2F | Named connections in Plugin API | Verify |
 | G-3A | Plugin GUID identity and isolation | G-3A1 persistent approval implemented; G-3A2 persistent association and enabled/disabled lifecycle implemented; management commands remain planned |
 | G-3B | Namespace aliases and conflict resolution | Planned |
-| G-3C | `/plugins` overview plus `list/info/enable/disable` | Overview/list/info and enable/disable implemented; separate approve is unnecessary because enable handles declined plugins; remove/decline/revoke are not Core 1 scope |
+| G-3C | `/plugins` overview plus `list/info/enable/disable` | Overview/list/info and enable/disable implemented; separate approve is unnecessary because enable handles declined plugins. Decided 2026-11-10: no remove/revoke commands; disable inside Gerber, and uninstalling the PowerShell module outside Gerber is removal/revocation (D-005) |
 | G-3D | Transactional `/plugins create` | G-3D1 + FIX1: explained/spaced fields, visible cwd/child defaults, completion metadata; cached pre-install name/version, canonical manifest GUID and complete Unreleased changelog; staged validation/autoapproval preserved |
 | G-3E | Generated agent resources | G-3E1: canonical self-contained AGENTS.md, thin Claude/Copilot bridges, three scoped instruction files, plugin developer role and three actionable skills; generated project builds/tests/publishes locally in isolation |
 | G-3F | Plugin boundary guardrails | G-3F1 implemented: standalone installed-source AST validation, transactional generation gate and generated development workflow; CodeScene review/safeguard availability remains a separate verification gate. Gerber.ExampleOrg unchanged. |
@@ -126,4 +126,4 @@ Local implementation work is complete. Resume separately authorized PMU API deli
 - Compare `PLAN.md`, `ARCHITECTURE.md`, `DECISIONS.md` to source and existing project documentation.
 - Confirm G-2A/G-2B and credential abstraction current state.
 - Verify G-3A1/G-3A2 against the current loader and persistent configuration tests before adding `/plugins` management commands.
-- Agree the **revoked-but-still-usable** warning and user override semantics before coding.
+- Revoke/remove decided 2026-11-10 (D-005): no commands; disable in Gerber, uninstall the module outside it. Verify that a persisted association whose module is gone is handled cleanly at startup and in `/plugins list`.

@@ -271,7 +271,7 @@ Current read-only commands also keep these terms distinct:
 
 - **Declined** means Gerber persisted a decision not to load the plugin automatically
 - **Disabled** means the plugin is still approved and associated, but its commands are unavailable until `/plugins enable` activates it again
-- **Revoked** is a future security-management concept and is not the same as declined or disabled
+- There is no revoke or remove command: disable a plugin in Gerber, or uninstall its PowerShell module outside Gerber to remove it
 
 If multiple discovered plugins share the same module name, `/plugins info` requires the manifest GUID instead of guessing. Gerber rejects activation of a different GUID that conflicts with an active plugin's module name. Plugins can add commands beneath Core commands or their own commands, but not beneath another plugin's commands.
 

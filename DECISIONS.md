@@ -40,7 +40,11 @@ migration. List/info remain read-only and never import/install/approve.
 ### D-004 — Gerber-generated plugin auto-approval (DECIDED)
 `/plugins create` creates a unique manifest GUID, generates and validates a working plugin, then records that GUID as approved, associates the plugin with Gerber and enables it, without an additional approval prompt. Only commit registration/approval after successful generation, build, tests and Core integration. A failed generation must not leave a partially approved plugin or destroy pre-existing files.
 
-### D-005 — Enable, disable, remove and revoke (DECIDED intent; runtime details OPEN)
+### D-005 — Enable, disable, remove and revoke (DECIDED 2026-11-10)
+**Decision 2026-11-10 (supersedes the bullets below):** Gerber has no `/plugins remove` or `/plugins revoke` command. To stop using a plugin inside Gerber, the user disables it (`/plugins disable`). To remove or revoke a plugin, the user uninstalls its PowerShell module outside Gerber; a plugin whose module is gone is removed and revoked from Gerber's point of view. The revoke-override workflow is therefore not needed.
+
+Historical wording, kept for context:
+
 - **Enable:** make an associated approved plugin's functionality available.
 - **Disable:** make its functionality unavailable without removing approval or uninstalling the PowerShell module. The persisted disabled state must survive restart and must block module import plus command registration, not merely hide commands after load.
 - **Remove:** disconnect plugin from Gerber, remove its registrations and its approval, but **do not uninstall the PowerShell module from the computer**.
@@ -155,8 +159,7 @@ Authoritative contract: [G-4A5](docs/architecture/G-4A5-update-architecture.md).
 - **OPEN:** long-term startup-budget/cache policy; G-4A9 plugin repository metadata/activation contract; remaining package-source, live-provider installation and Gerber Windows/Linux qualification. The Core repository and both required dependencies are **decided**, not open conflicts. Full quality readiness is separate from implemented behavior (see [PLAN.md](PLAN.md)).
 
 ## Known questions — do not silently decide
-1. How precisely does a user override a revoked plugin warning, and what restrictions apply while revoked?
-2. How should future module-discovery sources beyond local PowerShell module paths expose equally safe manifest metadata inspection?
-3. How should GUID impersonation/collision be surfaced pending future signature-based trust?
+1. How should future module-discovery sources beyond local PowerShell module paths expose equally safe manifest metadata inspection?
+2. How should GUID impersonation/collision be surfaced pending future signature-based trust?
 4. Which `/plugins` actions are immediate within a running PowerShell session versus requiring reload/restart?
 5. Exact config schema and canonical location must be read from the current code, not invented from examples.
