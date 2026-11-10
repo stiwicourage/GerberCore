@@ -7,6 +7,16 @@ This file summarizes user-visible commands, configuration and migration changes.
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+## [0.3.1] - 2026-11-10
+
+### Added
+
 - After an update requiring restart, supported console hosts offer **Exit Gerber
   and PowerShell**. Other hosts provide guidance to restart the session from the
   host. **Continue with current version** remains the default; exiting Gerber
@@ -117,3 +127,4 @@ This file summarizes user-visible commands, configuration and migration changes.
   macOS/Linux storage.
 - Recoverable errors stay inside Gerber with actionable messages. Shared menu
   navigation returns through parent menus and honors double Escape.
+
