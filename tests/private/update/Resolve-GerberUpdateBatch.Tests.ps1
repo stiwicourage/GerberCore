@@ -67,12 +67,12 @@ Describe 'Resolve-GerberUpdateBatch' -Tag 'G4A9' {
         $batch.Items[0].State.Status | Should -Be 'Blocked'
     }
 
-    It 'does not grant trust or license acceptance silently while inspecting' {
+    It 'passes the plan trust and license requirements to inspection without a separate consent step' {
         $script:item.State.Plan.RequiresRepositoryTrust = $true
         $script:item.State.Plan.RequiresLicenseAcceptance = $true
         Resolve-GerberUpdateBatch -CoreState $script:core -SelectedItemList @($script:item) | Out-Null
         Should -Invoke Get-PSModuleUpdateTargetManifest -ParameterFilter {
-            -not $TrustRepository -and -not $AcceptLicense
+            $TrustRepository -and $AcceptLicense
         }
     }
 

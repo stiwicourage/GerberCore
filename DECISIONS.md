@@ -11,9 +11,9 @@
 Gerber is a free, proprietary, extensible, agent-first PowerShell product intended for public distribution at 1.0.0. Before 1.0.0 there is only one user and one installation to consider; breaking changes are allowed. Do not add migrations, compatibility shims, or legacy behavior solely to preserve pre-1.0 installations. The private Core repository may publish its compiled/distributed PowerShell module publicly through PowerShell Gallery.
 
 ### D-002 — Core boundary (DECIDED; Nova restriction superseded 2026-10-24)
-Core is usable without Gerber.ExampleOrg, any other plugin, ADO or a PAT. Plugins extend Core through the public Plugin API, not private Core functions. Generic Core features need not be moved to plugins simply to minimize Core's size. Gerber.ExampleOrg is a consumer, never a Core dependency.
+Core is usable without Gerber.ExampleOrg, any other plugin or a PAT. Plugins extend Core through the public Plugin API, not private Core functions. Generic Core features need not be moved to plugins simply to minimize Core's size. Product plugins (for example the Azure DevOps plugin) are consumers, never Core dependencies; Core does not list them in `RequiredModules`.
 
-**Historical wording:** the 2026-10-10 reconstruction said "Core is fully usable without Gerber.ExampleOrg, any other plugin, ADO, PAT, or NovaModuleTools." It recorded Core independence alongside public-only plugin integration; it did not record a separate rationale for excluding Nova. The project owner's current decision **supersedes only the NovaModuleTools exclusion**, not the other boundaries above. Both NovaModuleTools and PSModuleUpdate are required runtime dependencies through `RequiredModules`: Nova supports Gerber's plugin-development functionality, and PMU supplies generic update mechanics. See D-017 and [G-4A5](docs/architecture/G-4A5-update-architecture.md#11-historical-reconciliation). Required dependency resolution does not require Nova build/package/publish operations on every startup.
+**Historical wording:** the 2026-10-10 reconstruction said "Core is fully usable without Gerber.ExampleOrg, any other plugin, PAT, or NovaModuleTools." It recorded Core independence alongside public-only plugin integration; it did not record a separate rationale for excluding Nova. The project owner's current decision **supersedes only the NovaModuleTools exclusion**, not the other boundaries above. Both NovaModuleTools and PSModuleUpdate are required runtime dependencies through `RequiredModules`: Nova supports Gerber's plugin-development functionality, and PMU supplies generic update mechanics. See D-017 and [G-4A5](docs/architecture/G-4A5-update-architecture.md#11-historical-reconciliation). Required dependency resolution does not require Nova build/package/publish operations on every startup.
 
 ### D-003 — Plugin identity and approvals (DECIDED)
 The PowerShell module manifest GUID is the permanent plugin identity. Persistent user configuration stores approved GUIDs. An unknown discovered plugin requires explicit user approval before executing its plugin code. Once approved, a GUID stays approved through subsequent versions/upgrades; do **not** require approval on every routine update. Names and command namespaces are distinct from GUID identity. GUID alone is an identifier, not cryptographic proof of publisher or code integrity.
@@ -40,7 +40,11 @@ migration. List/info remain read-only and never import/install/approve.
 ### D-004 — Gerber-generated plugin auto-approval (DECIDED)
 `/plugins create` creates a unique manifest GUID, generates and validates a working plugin, then records that GUID as approved, associates the plugin with Gerber and enables it, without an additional approval prompt. Only commit registration/approval after successful generation, build, tests and Core integration. A failed generation must not leave a partially approved plugin or destroy pre-existing files.
 
-### D-005 — Enable, disable, remove and revoke (DECIDED intent; runtime details OPEN)
+### D-005 — Enable, disable, remove and revoke (DECIDED 2026-11-10)
+**Decision 2026-11-10 (supersedes the bullets below):** Gerber has no `/plugins remove` or `/plugins revoke` command. To stop using a plugin inside Gerber, the user disables it (`/plugins disable`). To remove or revoke a plugin, the user uninstalls its PowerShell module outside Gerber; a plugin whose module is gone is removed and revoked from Gerber's point of view. The revoke-override workflow is therefore not needed.
+
+Historical wording, kept for context:
+
 - **Enable:** make an associated approved plugin's functionality available.
 - **Disable:** make its functionality unavailable without removing approval or uninstalling the PowerShell module. The persisted disabled state must survive restart and must block module import plus command registration, not merely hide commands after load.
 - **Remove:** disconnect plugin from Gerber, remove its registrations and its approval, but **do not uninstall the PowerShell module from the computer**.
@@ -56,7 +60,7 @@ Use the existing slash-command model. `/plugins` is the management entry point; 
 ### D-008 — Plugin creation experience (DECIDED)
 `/plugins create` asks for the module **suffix only**, behind an immutable `Gerber.` prefix (`MyCompany` → `Gerber.MyCompany`), description, real unused command namespace (`mycompany`), and destination **parent**, defaulting to cwd with a new `Gerber.MyCompany` child. It rejects invalid/traversal input and existing destinations, permits correction, and uses shared Escape navigation. Gerber owns plugin-specific templates; Nova provides build/test/package/publish, not a new generic generator. The existing creation handler checks Nova availability on invocation and offers installation with consent if missing; declining leaves files and approval unchanged. This handler safeguard does not make Nova optional at module import: D-017 supersedes that implication of the earlier lazy-tooling description.
 
-G-3D1 generates a working Plugin API v1 project with one new permanent manifest GUID, Get-GerberPlugin, functional `/mycompany hello`, unit/public API registration integration tests, README and version/changelog metadata. Nova generates the manifest/module root from project.json; no source psm1/psd1 is authored. Build/tests and actual Core registration must pass in staging before finalization and GUID approval/association/enabling. Creation itself does not install/load the module; local publish and next-start discovery use the same approved GUID without another prompt. No ADO, PAT or customer dependencies are required.
+G-3D1 generates a working Plugin API v1 project with one new permanent manifest GUID, Get-GerberPlugin, functional `/mycompany hello`, unit/public API registration integration tests, README and version/changelog metadata. Nova generates the manifest/module root from project.json; no source psm1/psd1 is authored. Build/tests and actual Core registration must pass in staging before finalization and GUID approval/association/enabling. Creation itself does not install/load the module; local publish and next-start discovery use the same approved GUID without another prompt. No PAT or customer dependencies are required.
 
 G-3D1-FIX1 uses a clear introduction and separated field headings, explanations,
 examples and live cwd/child defaults through the existing UI. Completion states
@@ -81,11 +85,11 @@ CI tooling. Role definitions describe ownership; skills describe actionable step
 ### D-010 — Credentials architecture (DECIDED; supersedes G-1A options)
 The chosen implementation is a Core-owned credential abstraction backed currently by **Devlooped CredentialManager** and OS credential storage (macOS Keychain verified). Plugins call Gerber's Secrets API; they do not depend on the backend. Credential identities for plugins are namespaced by plugin GUID. Gerber's UI should show Gerber terminology and credential names, **not vendor/backend branding** in every result. Documentation may identify dependency and version. The earlier SecretManagement/SecretStore plus environment-variable-PAT design is historical, not the active target.
 
-### D-011 — Secrets and ADO UX (DECIDED)
-Gerber should retrieve PAT through its credential abstraction, prompting securely only when missing/invalid, with lazy ADO setup and persistent user-specific config. Never put raw PAT in config, logs, traces or plugin-visible objects. Plugins should use opaque ADO handles. A user should not have to enter a vault password on every ADO use. Prior discussions about passwordless SecretStore were superseded by choosing OS credential storage; do not reintroduce them as active requirements.
+### D-011 — Secrets UX (DECIDED)
+Gerber should retrieve secrets through its credential abstraction, prompting securely only when missing/invalid, with lazy setup and persistent user-specific config. Never put raw secrets in config, logs, traces or plugin-visible objects. A user should not have to enter a vault password on every use. Prior discussions about passwordless SecretStore were superseded by choosing OS credential storage; do not reintroduce them as active requirements.
 
 ### D-012 — Testing and quality (DECIDED)
-Use NovaModuleTools/Pester for unit and integration tests; existing PTY framework for focused real terminal regressions. PSScriptAnalyzer zero findings is Definition of Done; preserve coverage and CodeScene quality gates. Tests of Core must not depend on Gerber.ExampleOrg, real Keychain, customer network or live ADO. Avoid a new sweeping PTY expansion. Keep Copilot tasks bounded with clear stopping criteria; no autonomous hours-long fixture expansion.
+Use NovaModuleTools/Pester for unit and integration tests; existing PTY framework for focused real terminal regressions. PSScriptAnalyzer zero findings is Definition of Done; preserve coverage and CodeScene quality gates. Tests of Core must not depend on Gerber.ExampleOrg, real Keychain, customer network or live external services. Avoid a new sweeping PTY expansion. Keep Copilot tasks bounded with clear stopping criteria; no autonomous hours-long fixture expansion.
 
 ### D-013 — Cross-platform (DECIDED)
 Target Windows, macOS and Linux; macOS is the primary development and hands-on verification environment. Windows/Linux can be verified with suitable VMs or colleagues; do not invent claims of completed platform verification.
@@ -135,7 +139,7 @@ to this task.
 
 Authoritative contract: [G-4A5](docs/architecture/G-4A5-update-architecture.md). Recorded 2026-10-23 and clarified 2026-10-24 from explicit project-owner decisions; this entry supersedes conflicting update recommendations in G-4A0, G-4A1 and G-4A2, and the Nova exclusion in D-002. Historical report labels are not authority over this current decision.
 
-- PSModuleUpdate (PMU) is the shared, generic, independent update engine over PSResourceGet; it contains no Gerber, Nova, ADO or Nexus logic and no vendor-specific engines.
+- PSModuleUpdate (PMU) is the shared, generic, independent update engine over PSResourceGet; it contains no Gerber, Nova or Nexus logic and no vendor-specific engines.
 - **Both NovaModuleTools and PSModuleUpdate are required runtime dependencies**, declared through `RequiredModules`. Nova supports Gerber's plugin-development lifecycle: Gerber owns creation workflows/templates, while Nova provides build, test, packaging and local publication. Nova is not exclusively Gerber-repository development tooling, but those operations need not run at startup.
 - PMU supplies update discovery, version selection, package installation, verification, locking and rollback/recovery, independently of Gerber and Nova. The optional/lazy PMU recommendation is rejected. A missing or incompatible required module may block import; an unreachable update repository must never block startup.
 - Gerber checks for Core updates at startup: informational only, refers to `/update`, never installs, prompts, updates plugins or changes configuration. Failure is never reported as "up to date".
@@ -155,8 +159,7 @@ Authoritative contract: [G-4A5](docs/architecture/G-4A5-update-architecture.md).
 - **OPEN:** long-term startup-budget/cache policy; G-4A9 plugin repository metadata/activation contract; remaining package-source, live-provider installation and Gerber Windows/Linux qualification. The Core repository and both required dependencies are **decided**, not open conflicts. Full quality readiness is separate from implemented behavior (see [PLAN.md](PLAN.md)).
 
 ## Known questions — do not silently decide
-1. How precisely does a user override a revoked plugin warning, and what restrictions apply while revoked?
-2. How should future module-discovery sources beyond local PowerShell module paths expose equally safe manifest metadata inspection?
-3. How should GUID impersonation/collision be surfaced pending future signature-based trust?
+1. How should future module-discovery sources beyond local PowerShell module paths expose equally safe manifest metadata inspection?
+2. How should GUID impersonation/collision be surfaced pending future signature-based trust?
 4. Which `/plugins` actions are immediate within a running PowerShell session versus requiring reload/restart?
 5. Exact config schema and canonical location must be read from the current code, not invented from examples.

@@ -26,6 +26,7 @@ function Complete-GerberSelectedUpdateBatch {
     if ($null -eq $batch) {
         return Show-GerberUpdateBatchCancellation
     }
+    Write-GerberScreenLine -Text ''
     Write-GerberScreenLine -Text 'Installing selected updates sequentially...'
     $results = @(Complete-GerberUpdateBatch -Batch $batch)
     Show-GerberUpdateBatchCompletion -ResultList $results
@@ -41,11 +42,7 @@ function Write-GerberUpdateBatchOverview {
 
 function Get-GerberConfirmedUpdateBatch {
     param([object]$CoreState, [object[]]$SelectedItemList)
-    $approval = Read-GerberUpdateInspectionConsent -SelectedItemList $SelectedItemList
-    if ($false -eq $approval) {
-        return
-    }
-    $batch = Resolve-GerberUpdateBatch -CoreState $CoreState -SelectedItemList $SelectedItemList -InspectionApproved:($true -eq $approval)
+    $batch = Resolve-GerberUpdateBatch -CoreState $CoreState -SelectedItemList $SelectedItemList
     if (Read-GerberUpdateBatchInstallConsent -Batch $batch) {
         $batch
     }

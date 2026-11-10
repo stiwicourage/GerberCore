@@ -154,8 +154,7 @@ not overwritten. Serialization/publication failures preserve the previous file.
 Do not put secrets in JSON; Core does not scan its contents for secrets.
 `UI.ReadSubcommand` accepts an optional fourth boolean for default Enter
 selection. Preserve shared navigation and check `UI.IsInteractive` before
-setup. Product plugins own authentication, REST, retries and pagination;
-there is no Core `Ado` capability.
+setup. Product plugins own authentication, REST, retries and pagination.
 When using the new Configuration or platform UI/Http operations, declare
 `MinimumGerberVersion` at least `0.2.1-preview02`. The hello example uses the
 older UI subset; this guide does not change the generator's separate minimum

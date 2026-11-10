@@ -20,7 +20,7 @@ Free, proprietary, cross-platform, agent-first PowerShell DevOps product. Standa
 ## Original product phases (high-level)
 | Phase | Original scope | Status |
 |---|---|---|
-| G-1 | Generic config, PAT, lazy ADO | In progress / parts delivered; inspect |
+| G-1 | Generic config, PAT, lazy setup | In progress / parts delivered; inspect |
 | G-2 | GitHub Actions, release, PowerShell Gallery | Not verified |
 | G-3 | `/update` and self-update | Core implemented in G-4A7; plugins implemented locally in G-4A9; quality readiness below |
 | G-4 | `/plugins create` and working scaffolding | G-3D1 + G-3D1-FIX1 implemented; see detailed validation evidence |
@@ -38,14 +38,14 @@ The original plan explicitly allowed reordering and prioritized plugin creation 
 | G-1C | Local analyzer/quality tooling | Analyzer zero findings reported; task status verify |
 | G-1D | Test/publish workflows | Verify |
 | G-2A | Persistent user configuration | Worked on; verify exact acceptance criteria |
-| G-2B | Generic ADO profile resolution / remove organization defaults | Worked on; verify exact acceptance criteria |
-| G-2C | Pure ADO URL parser | Verify |
+| G-2B | Generic profile resolution / remove organization defaults | Worked on; verify exact acceptance criteria |
+| G-2C | Pure URL parser | Verify |
 | G-2D | Credential resolver | Original vault/env design **superseded** by Devlooped abstraction; verify current implementation |
-| G-2E | Lazy ADO setup and safe command resume | Verify |
+| G-2E | Lazy setup and safe command resume | Verify |
 | G-2F | Named connections in Plugin API | Verify |
 | G-3A | Plugin GUID identity and isolation | G-3A1 persistent approval implemented; G-3A2 persistent association and enabled/disabled lifecycle implemented; management commands remain planned |
 | G-3B | Namespace aliases and conflict resolution | Planned |
-| G-3C | `/plugins` overview plus `list/info/enable/disable` | Overview/list/info and enable/disable implemented; separate approve is unnecessary because enable handles declined plugins; remove/decline/revoke are not Core 1 scope |
+| G-3C | `/plugins` overview plus `list/info/enable/disable` | Overview/list/info and enable/disable implemented; separate approve is unnecessary because enable handles declined plugins. Decided 2026-11-10: no remove/revoke commands; disable inside Gerber, and uninstalling the PowerShell module outside Gerber is removal/revocation (D-005) |
 | G-3D | Transactional `/plugins create` | G-3D1 + FIX1: explained/spaced fields, visible cwd/child defaults, completion metadata; cached pre-install name/version, canonical manifest GUID and complete Unreleased changelog; staged validation/autoapproval preserved |
 | G-3E | Generated agent resources | G-3E1: canonical self-contained AGENTS.md, thin Claude/Copilot bridges, three scoped instruction files, plugin developer role and three actionable skills; generated project builds/tests/publishes locally in isolation |
 | G-3F | Plugin boundary guardrails | G-3F1 implemented: standalone installed-source AST validation, transactional generation gate and generated development workflow; CodeScene review/safeguard availability remains a separate verification gate. Gerber.ExampleOrg unchanged. |
@@ -117,7 +117,7 @@ Local implementation work is complete. Resume separately authorized PMU API deli
 ## Agent work constraints
 - One bounded objective per Copilot task; avoid multi-hour autonomous iterations and repeated full-suite runs.
 - No automatic work on Gerber.ExampleOrg or NovaModuleTools unless explicitly authorized.
-- No commits, pushes, publishing, live destructive ADO operations, or actual Keychain changes without explicit authorization.
+- No commits, pushes, publishing, live destructive operations, or actual Keychain changes without explicit authorization.
 - New problems: document and stop rather than expand scope.
 - Report files changed, tests actually run, limits, unresolved issues and exact stop reason.
 
@@ -126,4 +126,4 @@ Local implementation work is complete. Resume separately authorized PMU API deli
 - Compare `PLAN.md`, `ARCHITECTURE.md`, `DECISIONS.md` to source and existing project documentation.
 - Confirm G-2A/G-2B and credential abstraction current state.
 - Verify G-3A1/G-3A2 against the current loader and persistent configuration tests before adding `/plugins` management commands.
-- Agree the **revoked-but-still-usable** warning and user override semantics before coding.
+- Revoke/remove decided 2026-11-10 (D-005): no commands; disable in Gerber, uninstall the module outside it. Verify that a persisted association whose module is gone is handled cleanly at startup and in `/plugins list`.

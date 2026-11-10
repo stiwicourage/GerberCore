@@ -46,7 +46,7 @@ function Invoke-GerberBatchItemInstallation {
         ConvertTo-GerberBatchInstallResult $Item $pmu
     } catch {
         Assert-GerberUpdateNotCancelled $_
-        Get-GerberBatchItemResult -Item $Item -Outcome 'Failed' -Message 'Installation failed. Inspect PMU journals and the selected installation before retrying; no rollback is assumed.'
+        Get-GerberBatchItemResult -Item $Item -Outcome 'Failed' -Message (Get-GerberUpdateFailureMessage $_)
     }
 }
 
@@ -93,7 +93,8 @@ function Submit-GerberBatchItem {
     if ($Item.Kind -eq 'Core') {
         return Invoke-GerberCoreUpdateInstall -State $Item.State -PassThru
     }
-    Install-PSModuleUpdate -Update $Item.State.Plan -Credential $Item.Credential -Confirm:$false `
+    $option = Get-GerberPmuInstallOption
+    Install-PSModuleUpdate -Update $Item.State.Plan -Credential $Item.Credential -Confirm:$false @option `
         -TrustRepository:$Item.State.Plan.RequiresRepositoryTrust -AcceptLicense:$Item.State.Plan.RequiresLicenseAcceptance `
         -ErrorAction Stop -WarningAction SilentlyContinue -InformationAction SilentlyContinue -Verbose:$false -Debug:$false
 }

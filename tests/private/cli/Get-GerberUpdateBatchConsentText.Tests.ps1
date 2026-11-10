@@ -8,29 +8,28 @@ BeforeAll {
 }
 
 Describe 'Get-GerberUpdateBatchConsentText' -Tag 'G4A9UI' {
-    It 'shows full versions, exact feed/scope, automatic Core requirement and installation trust/license consent' {
+    It 'lists one compact line per component with versions, once-only source and scope, and the Core auto-add reason' {
         $plan = [pscustomobject]@{
             Scope = 'CurrentUser'; RepositoryUri = 'https://example.test/v2'
             RequiresRepositoryTrust = $true; RequiresLicenseAcceptance = $true
         }
-        $state = [pscustomobject]@{
+        $core = [pscustomobject]@{
             Name = 'Gerber'; Installed = '1.0.0-preview'; Available = '2.0.0-preview.12'; Repository = 'PSGallery'; Status = 'Available'; Plan = $plan; Message = ''
         }
-        $item = [pscustomobject]@{
-            Kind = 'Core'; State = $state; AutoAdded = $true; MinimumCore = $null
+        $plugin = [pscustomobject]@{
+            Name = 'Gerber.Plugin'; Installed = '0.1.0'; Available = '0.2.0'; Repository = 'PSGallery'; Status = 'Available'; Plan = $plan; Message = ''
         }
-        $text = Get-GerberUpdateBatchConsentText -Batch ([pscustomobject]@{
-            Items = @($item)
-        })
-        $text | Should -Match '1.0.0-preview'
-        $text | Should -Match '2.0.0-preview.12'
-        $text | Should -Match 'https://example.test/v2'
-        $text | Should -Match 'CurrentUser'
-        $text | Should -Match 'automatically added.*Core'
-        $text | Should -Match 'trust'
-        $text | Should -Match 'license'
-        $text | Should -Match 'Cancel is the default'
+        $items = @(
+            [pscustomobject]@{ Kind = 'Core'; State = $core; AutoAdded = $true; MinimumCore = $null }
+            [pscustomobject]@{ Kind = 'Plugin'; State = $plugin; AutoAdded = $false; MinimumCore = '2.0.0-preview.12' }
+        )
+        $text = Get-GerberUpdateBatchConsentText -Batch ([pscustomobject]@{ Items = $items })
+        $text | Should -Match '(?m)^\s*Gerber\s+1\.0\.0-preview -> 2\.0\.0-preview\.12\s+\(added: required by Gerber\.Plugin\)$'
+        $text | Should -Match '(?m)^\s*Gerber\.Plugin\s+0\.1\.0 -> 0\.2\.0\s+\(requires Core >= 2\.0\.0-preview\.12\)$'
+        ([regex]::Matches($text, 'https://example.test/v2')).Count | Should -Be 1
+        $text | Should -Match 'Scope: CurrentUser'
         $text | Should -Match 'not hot reload'
+        $text | Should -Not -Match 'trust|license|Cancel is the default'
     }
 
     It 'retains blocked item reasons in the final preview without inventing scope or versions' {
@@ -42,6 +41,6 @@ Describe 'Get-GerberUpdateBatchConsentText' -Tag 'G4A9UI' {
         }
         Get-GerberUpdateBatchConsentText -Batch ([pscustomobject]@{
             Items = @($item)
-        }) | Should -Match 'Blocked.*Required Core is unavailable'
+        }) | Should -Match '(?m)^\s*BlockedPlugin\s+Blocked: Required Core is unavailable\.$'
     }
 }

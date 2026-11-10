@@ -42,7 +42,7 @@
 <div class="ambient" aria-hidden="true"></div>
 <header class="wrap"><nav class="nav" id="navigation" aria-label="Main navigation">
   <a href="#top" class="brand"><img src="assets/gerber-mark.png" alt="Gerber logo"><span><strong>GERBER</strong><small>DEVOPS MULTI-TOOL</small></span></a>
-  <div class="navlinks" id="navlinks"><a href="#features">Features</a><a href="#plugins">Plugins</a><a href="#how-it-works">How it works</a><a href="#get-started">Get started</a></div>
+  <div class="navlinks" id="navlinks"><a href="#features">Features</a><a href="#commands">Commands</a><a href="#plugins">Plugins</a><a href="#how-it-works">How it works</a><a href="#get-started">Get started</a></div>
   <a href="#get-started" class="btn primary navcta">Get started <span aria-hidden="true">↗</span></a>
   <button class="mobile-toggle" aria-label="Toggle navigation" aria-controls="navlinks" aria-expanded="false" onclick="toggleNav(this)">☰</button>
 </nav></header>
@@ -51,7 +51,7 @@
     <div class="eyebrow">THE DEVOPS MULTI-TOOL</div>
     <h1>One tool.<br><span class="gradient">Many possibilities.</span></h1>
     <p>Meet Gerber Core: a modular DevOps multi-tool built on PowerShell for everyday developer and DevOps work. Useful tools out of the box. Integrations when you need them.</p>
-    <div class="actions"><a class="btn primary" href="#get-started">Explore Gerber <span aria-hidden="true">→</span></a><a class="btn" href="#plugins">Explore Azure DevOps <span aria-hidden="true">↗</span></a></div>
+    <div class="actions"><a class="btn primary" href="#get-started">Explore Gerber <span aria-hidden="true">→</span></a><a class="btn" href="#plugins">Explore plugins <span aria-hidden="true">↗</span></a></div>
     <div class="micro"><span>PowerShell 7.4+</span><span>Cross-platform</span><span>Plugin-first</span></div>
   </div><div class="terminal" role="img" aria-label="Gerber terminal preview with a slash command suggestion menu">
     <div class="terminal-head"><i class="dot"></i><i class="dot"></i><i class="dot"></i><span class="terminal-title">Terminal</span></div>
@@ -62,7 +62,7 @@
         <div class="suggestion selected"><span class="chevron">❯</span><span>/exit</span></div>
         <div class="suggestion"><span class="chevron"></span><span>/help</span></div>
         <div class="suggestion"><span class="chevron"></span><span>/plugins</span></div>
-        <div class="suggestion"><span class="chevron"></span><span>/ado</span></div>
+        <div class="suggestion"><span class="chevron"></span><span>/update</span></div>
         <div class="suggestion"><span class="chevron"></span><span>/secrets</span></div>
         <div class="suggestion"><span class="chevron"></span><span>/tools</span></div>
       </div>
@@ -77,20 +77,30 @@
       <article class="card"><div class="icon"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><h3>Secrets management</h3><p>Manage credentials through a consistent <code>/secrets</code> interface backed by secure credential storage.</p></article>
       <article class="card"><div class="icon"><svg viewBox="0 0 24 24"><path d="m12 2 9 5v10l-9 5-9-5V7z"/><path d="M9 12h6m-3-3v6"/></svg></div><h3>Plugin lifecycle</h3><p>Discover, review and approve plugins. Decide which integrations become available in your Gerber session.</p></article>
       <article class="card"><div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m7 10 3 2-3 2m6 0h4"/></svg></div><h3>Cross-platform PowerShell</h3><p>Built for PowerShell 7.4+ across macOS, Windows and Linux, without a separate terminal UI framework.</p></article>
-      <article class="card"><div class="icon"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg></div><h3>Extensible by design</h3><p>Add new workflows through independent modules while keeping Gerber Core free of vendor-specific logic.</p></article>
+      <article class="card"><div class="icon"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/></svg></div><h3>Updates under your control</h3><p>Review Core and eligible plugin updates with <code>/update list</code>. Choose stable releases or previews with <code>/update policy</code>. Installation always requires confirmation; Cancel is the default.</p></article>
     </div>
   </section>
-  <section id="plugins" class="plugins section"><div class="wrap"><div class="section-head"><div class="eyebrow">Integrate your stack</div><h2>Your platforms.<br><span class="gradient">Your choice.</span></h2><p>DevOps integrations can be distributed as PowerShell module dependencies. Gerber asks before enabling their command namespaces, and plugins remain independent of Core.</p></div>
+  <section id="commands" class="section wrap"><div class="section-head"><div class="eyebrow">Inside Gerber</div><h2>Help where <span class="gradient">you expect it.</span></h2><p>Type <code>/</code> to browse, or search for an action with plain text such as <code>uuid</code>. Use arrows to select, Tab to complete and Enter to run. Esc goes back one level; double Esc within 200 ms returns to the root prompt.</p></div>
+    <div class="grid">
+      <article class="card"><h3>Tools</h3><p><code>/tools create-uuid</code> generates a UUID. <code>/tools base-64 encode</code> and <code>/tools base-64 decode</code> convert UTF-8 text. Results are copied when clipboard support is available.</p></article>
+      <article class="card"><h3>Secrets</h3><p><code>/secrets</code> offers <code>list</code>, <code>get</code>, <code>test</code>, <code>set</code> and <code>remove</code>. Values use native credential storage, never plaintext fallback. Revealing, overwriting and deleting require confirmation.</p></article>
+      <article class="card"><h3>Plugins</h3><p><code>/plugins</code> offers <code>list</code>, <code>info</code>, <code>enable</code>, <code>disable</code> and <code>create</code>. Inventory is read-only; active plugins contribute their own commands to the shared palette.</p></article>
+      <article class="card"><h3>Updates</h3><p><code>/update list</code> checks afresh and lets you review available Core and plugin updates. <code>/update policy</code> selects Stable only (default) or Include prereleases. Select prereleases to receive preview updates. <a href="core-updates.md">Update requirements and guidance →</a></p></article>
+      <article class="card"><h3>Help and exit</h3><p><code>/help</code> describes the active command registry. <code>/exit</code> returns to PowerShell. Startup can notify about Core updates but never installs, prompts for installation or checks plugins.</p></article>
+      <article class="card"><h3>At the PowerShell prompt</h3><p><code>Invoke-Gerber</code> (alias <code>gerber</code>) starts the session. Plugin authors use <code>Test-GerberPluginBoundary -Path &lt;project&gt;</code> outside Gerber for a static boundary check, not a sandbox. Use <code>Get-Help Invoke-Gerber -Full</code> for cmdlet help.</p></article>
+    </div>
+  </section>
+  <section id="plugins" class="plugins section"><div class="wrap"><div class="section-head"><div class="eyebrow">Extend your workflow</div><h2>Your workflows.<br><span class="gradient">Your choice.</span></h2><p>Plugins are separate PowerShell modules, never Core dependencies. Unknown plugins require approval before import; decline is the default. Approval follows the manifest GUID across updates, not a claim of publisher authenticity.</p></div>
     <div class="plugin-grid single-plugin">
-      <article class="plugin"><span class="tag">IN DEVELOPMENT · FIRST INTEGRATION</span><h3>Gerber.AzureDevOps</h3><p>Azure DevOps integration for branches, repositories, pipelines and related workflows. A separate plugin, activated only when you approve it.</p><code>/ado</code></article>
-      <article class="plugin plugin-principle"><span class="tag planned">OPEN PLUGIN ARCHITECTURE</span><h3>Build around your workflow</h3><p>Gerber Core is not tied to any one provider. Extend it with independent plugins when your workflow calls for them.</p><code>/plugins</code></article>
-    </div><p class="note">Gerber.AzureDevOps is under development. Other provider integrations are not currently announced or scheduled.</p>
+      <article class="plugin plugin-principle"><span class="tag planned">OPEN PLUGIN ARCHITECTURE</span><h3>Create your own plugin</h3><p><code>/plugins create</code> asks for a module suffix behind the fixed Gerber. prefix, description, namespace, repository and destination parent. It builds and tests a new project before approving its GUID, without installing or loading the module. Existing destinations are never overwritten. <a href="plugins-create.md">Plugin creation guide →</a></p><code>/plugins create</code></article>
+    </div>
+    <p class="note">Disable a plugin with <code>/plugins disable</code> while keeping approval and installation. There are no remove or revoke commands: uninstall its PowerShell module outside Gerber to remove or revoke it. Plugin roots appear only while an active plugin contributes commands; Core tools remain available without plugins.</p>
   </div></section>
   <section id="how-it-works" class="section wrap"><div class="section-head"><div class="eyebrow">Designed around control</div><h2>Installed doesn't mean <span class="gradient">enabled.</span></h2><p>Gerber separates PowerShell module installation from plugin approval and activation inside Gerber.</p></div>
-    <div class="grid"><article class="card"><div class="icon">01</div><h3>Install</h3><p>Get Gerber Core and its declared PowerShell module dependencies.</p></article><article class="card"><div class="icon">02</div><h3>Choose</h3><p>Review discovered plugins and decide which ones Gerber may load.</p></article><article class="card"><div class="icon">03</div><h3>Work</h3><p>Use enabled plugin commands alongside Core tools; change your choices later.</p></article></div>
+    <div class="grid"><article class="card"><div class="icon">01</div><h3>Install</h3><p>Get the Gerber preview with NovaModuleTools for plugin development and PSModuleUpdate for updates. No plugin is required.</p></article><article class="card"><div class="icon">02</div><h3>Choose</h3><p>Use Core tools immediately. Review discovered plugins before approval; enable and disable decisions persist across sessions.</p></article><article class="card"><div class="icon">03</div><h3>Work</h3><p>Keep control of updates. Core always uses PSGallery and CurrentUser scope, without automatic repository registration. Restart PowerShell after updating; modules never hot reload.</p></article></div>
   </section>
-  <section id="get-started" class="section plugins"><div class="wrap install-layout"><div><div class="eyebrow">Get started</div><h2 style="font-size:clamp(36px,4vw,52px);letter-spacing:-.05em;line-height:1.15;margin:14px 0">Ready when <span class="gradient">you are.</span></h2><p>Gerber Core is being prepared for its first public release. This is a preview of the planned installation experience; the package is not yet published.</p><p class="note">When available, check the release documentation before installing.</p></div>
-    <div class="codebox"><div class="codehead"><span>PowerShell · planned installation</span><button class="copy" onclick="copyInstall(this)" aria-label="Copy PowerShell installation commands">Copy</button></div><pre id="install-code">Install-Module Gerber -Scope CurrentUser
+  <section id="get-started" class="section plugins"><div class="wrap install-layout"><div><div class="eyebrow">Get started</div><h2 style="font-size:clamp(36px,4vw,52px);letter-spacing:-.05em;line-height:1.15;margin:14px 0">Ready when <span class="gradient">you are.</span></h2><p>Gerber Core is published on PSGallery as a preview. Install from PowerShell 7.4 or later, then start the interactive session. Installation is a PowerShell operation; slash commands run inside Gerber.</p><p class="note">Live update has been verified on macOS only. Linux credentials require a desktop Secret Service session, D-Bus and libsecret. See <a href="core-updates.md">update requirements</a> and <a href="credential-store-verification.md">native storage guidance</a>.</p></div>
+    <div class="codebox"><div class="codehead"><span>PowerShell · preview installation</span><button class="copy" onclick="copyInstall(this)" aria-label="Copy PowerShell installation commands">Copy</button></div><pre id="install-code">Install-Module Gerber -Scope CurrentUser -AllowPrerelease
 Import-Module Gerber
 Invoke-Gerber</pre></div>
   </div></section>

@@ -1,6 +1,6 @@
 # Credential service architecture
 
-Gerber Core owns one internal credential service. Public slash commands, Azure DevOps integrations, and Plugin API v1 all use that service instead of calling an operating-system backend directly.
+Gerber Core owns one internal credential service. Public slash commands and Plugin API v1 all use that service instead of calling an operating-system backend directly.
 
 ## Runtime dependency
 
@@ -13,7 +13,7 @@ Gerber packages these .NET Standard 2.0 assemblies under `resources/lib`:
 
 PowerShell 7.4 supplies the required framework assemblies, including `System.Text.Json`, `System.Security.Cryptography.ProtectedData`, `System.Collections.Immutable`, and `System.Memory`. Gerber loads the packaged assemblies lazily on the first credential operation. Module import and `Invoke-Gerber` startup do not initialize native credential storage.
 
-Nova copies `src/resources` into the built module, so loading the packaged credential assemblies needs neither a local NuGet cache nor a source checkout and does not invoke Nova build operations. This packaging boundary does not make Nova optional for Gerber: the owner's [D-017 / amended D-002](../../DECISIONS.md) requires both NovaModuleTools and PSModuleUpdate at runtime for their respective plugin-development and update roles. CredentialManager and DotNetConfig publish their source under the MIT License; the CredentialManager NuGet binary declares its Open Source Maintenance Fee Agreement as the package license.
+Nova copies `src/resources` into the built module, so loading the packaged credential assemblies needs neither a local NuGet cache nor a source checkout and does not invoke Nova build operations. NovaModuleTools and PSModuleUpdate remain Gerber's required runtime modules for plugin development and updates respectively. CredentialManager and DotNetConfig publish their source under the MIT License; the CredentialManager NuGet binary declares its Open Source Maintenance Fee Agreement as the package license.
 
 ## Internal operations
 
@@ -35,14 +35,11 @@ Credential identifiers are stable, case-insensitive, and canonicalized to lowerc
 
 | Consumer | Identifier |
 | --- | --- |
-| Legacy Core Azure DevOps profile (retained, not reused) | `gerber:ado:<profile>:pat` |
-| Gerber.AzureDevOps profile | `gerber:plugin:a468dee5-c7a0-43e4-ae88-bb19158fe679:ado:<profile>:pat` |
 | Plugin credential | `gerber:plugin:<plugin-guid>:<path-segments>` |
 | General Gerber credential | `gerber:<scope>:<name>` |
 
-AzureDevOps uses its existing GUID-scoped Secrets API with the logical path
-`@('ado', $ProfileName, 'pat')`. Identifiers are not stored redundantly in JSON.
-Old Core credentials are neither migrated, automatically read nor deleted.
+Plugins use the GUID-scoped Secrets API with a logical path segment list.
+Identifiers are not stored redundantly in JSON.
 Plugin identity continues to use the module manifest GUID.
 
 The namespace prevents Gerber from listing or modifying unrelated application credentials. It is not a security sandbox: plugins execute as PowerShell code in the user's process and can call other process-accessible APIs.
@@ -57,31 +54,31 @@ The namespace prevents Gerber from listing or modifying unrelated application cr
 
 Gerber explicitly selects CredentialManager's `secretservice` provider on Linux. If no supported native backend is available, the requested credential operation fails. Gerber does not use a plaintext fallback, a separate password database, configuration files, environment variables, or a Gerber master password for secret storage.
 
-## Azure DevOps
+## Plugin credentials
 
-Gerber.AzureDevOps owns profile resolution and lazy authenticated use through
-the public Secrets API. First-use setup is plugin-owned; import and unrelated
-Core commands do not request PATs. A missing plugin PAT is entered again only
-during interactive authenticated use; noninteractive calls fail without prompts.
+Plugins own their own first-use setup and lazy authenticated use through the
+public Secrets API. Import and unrelated Core commands do not request
+credentials. A missing plugin credential is entered again only during
+interactive authenticated use; noninteractive calls fail without prompts.
 
-Profile metadata and PAT storage remain separate systems:
+Plugin settings and secrets remain separate systems:
 
-- profile metadata stays in `Gerber.AzureDevOps.json` under `ado.defaultProfile` and `ado.profiles`
-- the PAT stays only in GUID-scoped native credential storage through Secrets
-- there is no `AZURE_DEVOPS_PAT` fallback, plaintext storage or PAT copy in JSON
+- plugin settings stay in the plugin's own module-named JSON file
+- secrets stay only in GUID-scoped native credential storage through Secrets
+- there is no environment-variable fallback, plaintext storage or secret copy in JSON
 
-Because those writes are separate, Gerber validates the inputs first, writes configuration before credential storage, and reports any partial failure explicitly so the user can retry safely without exposing the secret value.
+Because those writes are separate, plugins should validate inputs first, write configuration before credential storage, and report any partial failure explicitly so the user can retry safely without exposing the secret value.
 
 ## Core updates
 
-G-4A7R permanently binds Core updates to public PSGallery. Core discovery and
-installation do not retrieve native credentials, request credentials or consult
-ADO profiles. The provisional G-4A7 Core credential references are superseded
-and ignored together with its obsolete configurable repository binding.
+Core updates are permanently bound to public PSGallery and do not request
+credentials or retrieve them from native storage. Obsolete configurable Core
+repository settings are ignored.
 
-Future plugin updates may use Gerber-owned repository/credential configuration
-with PMU, independently of Core; that contract remains G-4A9. No plugin update
-credential flow is implemented here. See [Core updates](../core-updates.md).
+Plugin update repositories come from each installed manifest's
+`PrivateData.Gerber.Repository` descriptor. Repository credentials are requested
+per operation, not saved in that metadata or retrieved from the credential service.
+See [Core and plugin updates](../core-updates.md).
 
 ## Enumeration limits
 

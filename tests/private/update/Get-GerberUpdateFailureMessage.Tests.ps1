@@ -37,7 +37,7 @@ Describe 'Get-GerberUpdateFailureMessage' -Tag 'G4A7' {
 
             $message = Get-GerberUpdateFailureMessage -ErrorRecord $record
 
-            $message | Should -Match 'provider metadata.*locally copied or published.*reinstall.*PSGallery.*retry /update'
+            $message | Should -Match 'no PSGallery provider metadata.*local or dev install.*reinstall.*PSGallery.*retry /update'
             $message | Should -Match 'No success or rollback is assumed'
             $message | Should -Not -Match 'supported numeric-version module directory'
         }

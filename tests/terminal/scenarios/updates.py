@@ -87,8 +87,8 @@ def _open_batch_selection(context) -> None:
     context.app.wait_for_prompt()
     _open_update(context)
     context.app.wait_for_text("Select updates")
-    context.app.wait_for_text("Gerber.Batch1: 1.0.0 -> 2.0.0")
-    context.app.wait_for_text("Gerber.Batch3: 1.0.0 -> 2.0.0")
+    context.app.wait_for_text("Gerber.Batch1  1.0.0 -> 2.0.0")
+    context.app.wait_for_text("Gerber.Batch3  1.0.0 -> 2.0.0")
     _assert_batch_overview_table(context)
 
 
@@ -178,14 +178,14 @@ def _seed_batch_core_requirement(context, minimum: str, **options) -> None:
 
 
 def _assert_batch_core_confirmation(context) -> None:
-    context.app.wait_for_text("automatically added this required Core")
+    context.app.wait_for_text("added: required by")
     context.app.wait_for_text("Scope: CurrentUser")
     context.app.wait_for_text("https://www.powershellgallery.com/api/v2")
 
 
 def _assert_batch_blocked_plugin_continuation(context, expected: list[str]) -> None:
-    context.app.wait_for_text("Gerber.Batch1: Blocked")
-    context.app.wait_for_text("Gerber.Batch3: Installed")
+    context.app.wait_for_text("✖ Gerber.Batch1  blocked")
+    context.app.wait_for_text("✔ Gerber.Batch3  installed")
     _assert_batch_plan_identity(context, expected)
 
 
@@ -207,9 +207,9 @@ def _assert_batch_selection_escape(context) -> None:
 
 
 def _assert_batch_plugin_failure_results(context) -> None:
-    context.app.wait_for_text("Gerber.Batch1: Installed")
-    context.app.wait_for_text("Gerber.Batch2: Failed")
-    context.app.wait_for_text("Gerber.Batch3: Installed")
+    context.app.wait_for_text("✔ Gerber.Batch1  installed")
+    context.app.wait_for_text("✖ Gerber.Batch2  failed")
+    context.app.wait_for_text("✔ Gerber.Batch3  installed")
     _assert_batch_plan_identity(context, ["Gerber.Batch1", "Gerber.Batch2", "Gerber.Batch3"])
 
 
@@ -235,7 +235,7 @@ def update_batch_selection_core_autoaddition(context) -> None:
     _select_batch_plugins(context)
     _assert_batch_core_confirmation(context)
     _accept_batch(context)
-    context.app.wait_for_text("Gerber.Batch3: Installed")
+    context.app.wait_for_text("✔ Gerber.Batch3  installed")
     _assert_batch_plan_identity(context, ["Gerber", "Gerber.Batch1", "Gerber.Batch2", "Gerber.Batch3"])
     _assert_trace_order(context, "checkbox-submit", "update-confirmation", "update-install-complete")
 
@@ -251,7 +251,7 @@ def update_batch_partial_failure_continuation(context) -> None:
     _open_batch_selection(context)
     _select_batch_plugins(context)
     _accept_batch(context)
-    context.app.wait_for_text("Gerber: Failed")
+    context.app.wait_for_text("✖ Gerber  failed")
     _assert_batch_blocked_plugin_continuation(context, ["Gerber", "Gerber.Batch2", "Gerber.Batch3"])
     _assert_trace_order(context, "update-confirmation", "update-install-complete")
 
@@ -267,9 +267,9 @@ def update_batch_activation_failure_truthful_install(context) -> None:
     _open_batch_selection(context)
     _select_batch_plugins(context, include_core=True)
     _accept_batch(context)
-    context.app.wait_for_text("Gerber.Batch2: Installed")
+    context.app.wait_for_text("✔ Gerber.Batch2  installed")
     context.app.wait_for_text("Activation: Failed")
-    context.app.wait_for_text("Gerber.Batch3: Installed")
+    context.app.wait_for_text("✔ Gerber.Batch3  installed")
     _assert_batch_plan_identity(context, ["Gerber", "Gerber.Batch1", "Gerber.Batch2", "Gerber.Batch3"])
 
 
@@ -348,9 +348,9 @@ def update_batch_cancellation_stops_future(context) -> None:
     _open_batch_selection(context)
     _select_batch_plugins(context)
     _accept_batch(context)
-    context.app.wait_for_text("Gerber.Batch1: Installed")
-    context.app.wait_for_text("Gerber.Batch2: Cancelled")
-    context.app.wait_for_text("Gerber.Batch3: Cancelled")
+    context.app.wait_for_text("✔ Gerber.Batch1  installed")
+    context.app.wait_for_text("- Gerber.Batch2  cancelled")
+    context.app.wait_for_text("- Gerber.Batch3  cancelled")
     _assert_batch_plan_identity(context, ["Gerber.Batch1", "Gerber.Batch2"])
 
 
@@ -615,11 +615,11 @@ def update_missing_provider_metadata_recovers(context) -> None:
     context.app.wait_for_text("Install Core update?")
     context.app.press("DOWN")
     context.app.press("ENTER")
-    context.app.wait_for_text("no native provider metadata")
-    context.app.wait_for_text("locally copied or published")
+    context.app.wait_for_text("no PSGallery provider")
+    context.app.wait_for_text("dev install")
     context.app.wait_for_text("Press Enter to continue")
     screen = context.app.visible_text().replace("\n", "")
-    assert "Reinstall the current Gerber version from PSGallery" in screen, screen
+    assert "Reinstall it from PSGallery" in screen, screen
     context.app.expect_text_absent("supported numeric-version module directory")
     context.app.expect_text_absent("raw-update-token")
     context.app.press("ENTER")

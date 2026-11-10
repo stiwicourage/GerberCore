@@ -26,8 +26,7 @@ function Get-GerberUpdateCheckboxItemList {
             continue
         }
         [pscustomobject]@{
-            Label = "$($item.State.Name): $($item.State.Installed) -> $($item.State.Available)"
-            Description = "Repository: $($item.State.Repository)"
+            Label = "$($item.State.Name)  $($item.State.Installed) -> $($item.State.Available)  ($($item.State.Repository))"
             Value = $item; IsSelected = $false
         }
     }

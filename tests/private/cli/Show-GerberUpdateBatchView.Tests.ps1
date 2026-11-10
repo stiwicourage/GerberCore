@@ -1,6 +1,6 @@
 BeforeAll {
     $root = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
-    foreach ($path in @('Show-GerberUpdateBatchView', 'Read-GerberUpdateItemSelection', 'Read-GerberUpdateInspectionConsent', 'Get-GerberUpdateBatchConsentText', 'Show-GerberUpdateBatchCompletion')) {
+    foreach ($path in @('Show-GerberUpdateBatchView', 'Read-GerberUpdateItemSelection', 'Get-GerberUpdateBatchConsentText', 'Show-GerberUpdateBatchCompletion')) {
         $source = "$root/src/private/cli/$path.ps1"
         if (Test-Path $source) {
             . $source
@@ -13,8 +13,8 @@ BeforeAll {
         }
     }
     function Resolve-GerberUpdateBatch {
-        param($CoreState, $SelectedItemList, [switch]$InspectionApproved)
-        $null = $CoreState, $SelectedItemList, $InspectionApproved
+        param($CoreState, $SelectedItemList)
+        $null = $CoreState, $SelectedItemList
     }
     function Complete-GerberUpdateBatch {
         param($Batch)
@@ -138,11 +138,25 @@ Describe 'Show-GerberUpdateBatchView' -Tag 'G4A9UI' {
         }
         Show-GerberUpdateBatchView -CoreState $script:core -PluginItemList @($script:plugin) -Interactive $true
         Should -Invoke Resolve-GerberUpdateBatch -Times 1 -ParameterFilter {
-            [object]::ReferenceEquals($SelectedItemList[0], $script:plugin) -and -not $InspectionApproved
+            [object]::ReferenceEquals($SelectedItemList[0], $script:plugin)
         }
         Should -Invoke Complete-GerberUpdateBatch -Times 1 -ParameterFilter {
             [object]::ReferenceEquals($Batch, $script:batch)
         }
+    }
+
+    It 'starts the installing line on a fresh row so PowerShellGet progress cannot overwrite it' {
+        $script:screenLines = [System.Collections.Generic.List[string]]::new()
+        Mock Read-GerberConfirmationPrompt {
+            $true
+        }
+        Mock Write-GerberScreenLine {
+            $script:screenLines.Add($Text)
+        }
+        Show-GerberUpdateBatchView -CoreState $script:core -PluginItemList @($script:plugin) -Interactive $true
+        $index = $script:screenLines.IndexOf('Installing selected updates sequentially...')
+        $index | Should -BeGreaterThan 0
+        $script:screenLines[$index - 1] | Should -BeExactly ''
     }
 
     It 'allows Core and plugin updates to be selected together without replacing their live identities' {
@@ -186,19 +200,7 @@ Describe 'Show-GerberUpdateBatchView' -Tag 'G4A9UI' {
         Should -Invoke Wait-GerberContinue -Times 1
     }
 
-    It 'does not inspect or install when separate package inspection consent is declined' {
-        $script:plugin.State.Plan = [pscustomobject]@{
-            RequiresRepositoryTrust = $true; RequiresLicenseAcceptance = $true; RepositoryUri = 'https://example.test/v2'
-        }
-        Show-GerberUpdateBatchView -CoreState $script:core -PluginItemList @($script:plugin) -Interactive $true
-        Should -Invoke Read-GerberConfirmationPrompt -Times 1 -ParameterFilter {
-            $Prompt -eq 'Allow package inspection?'
-        }
-        Should -Invoke Resolve-GerberUpdateBatch -Times 0
-        Should -Invoke Complete-GerberUpdateBatch -Times 0
-    }
-
-    It 'inspects with approved flags only after consent then separately confirms installation' {
+    It 'inspects selected packages without a separate consent prompt and asks one installation question' {
         $script:plugin.State.Plan = [pscustomobject]@{
             RequiresRepositoryTrust = $true; RequiresLicenseAcceptance = $true; RepositoryUri = 'https://example.test/v2'; Scope = 'CurrentUser'
         }
@@ -206,10 +208,8 @@ Describe 'Show-GerberUpdateBatchView' -Tag 'G4A9UI' {
             $true
         }
         Show-GerberUpdateBatchView -CoreState $script:core -PluginItemList @($script:plugin) -Interactive $true
-        Should -Invoke Resolve-GerberUpdateBatch -Times 1 -ParameterFilter {
-            $InspectionApproved
-        }
-        Should -Invoke Read-GerberConfirmationPrompt -Times 1 -ParameterFilter {
+        Should -Invoke Resolve-GerberUpdateBatch -Times 1
+        Should -Invoke Read-GerberConfirmationPrompt -Times 0 -ParameterFilter {
             $Prompt -eq 'Allow package inspection?'
         }
         Should -Invoke Read-GerberConfirmationPrompt -Times 1 -ParameterFilter {

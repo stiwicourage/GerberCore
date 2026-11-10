@@ -1,4 +1,4 @@
-BeforeAll {
+﻿BeforeAll {
     $root = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     $source = "$root/src/private/cli/Show-GerberUpdateBatchCompletion.ps1"
     if (Test-Path $source) {
@@ -48,11 +48,17 @@ Describe 'Show-GerberUpdateBatchCompletion' -Tag 'G4A9UI' {
             }
         )
         Show-GerberUpdateBatchCompletion -ResultList $results
-        Should -Invoke Write-GerberScreenLine -Times 4 -ParameterFilter {
-            $Text -match 'Activation: Failed' -and $Text -match 'Safe recovery advice'
+        Should -Invoke Write-GerberScreenLine -Times 1 -ParameterFilter {
+            $Text -match '^✔ Installed\s+installed' -and $Text -match 'Activation: Failed'
         }
-        Should -Invoke Write-GerberScreenLine -ParameterFilter {
-            $Text -match 'Installed: Installed'
+        Should -Invoke Write-GerberScreenLine -Times 1 -ParameterFilter {
+            $Text -match '^✖ Failed\s+failed' -and $Text -match '(?m)^    Safe recovery advice\.$'
+        }
+        Should -Invoke Write-GerberScreenLine -Times 1 -ParameterFilter {
+            $Text -match '^✖ Blocked\s+blocked' -and $Text -match 'Safe recovery advice'
+        }
+        Should -Invoke Write-GerberScreenLine -Times 1 -ParameterFilter {
+            $Text -match '^- Cancelled\s+cancelled' -and $Text -match 'Safe recovery advice'
         }
         Should -Invoke Wait-GerberContinue -Times 1
     }
@@ -69,8 +75,20 @@ Describe 'Show-GerberUpdateBatchCompletion' -Tag 'G4A9UI' {
         }
         Show-GerberUpdateBatchCompletion -ResultList @($result) | Should -BeTrue
         Should -Invoke Show-GerberUpdateBatchRestartChoice -Times 1 -ParameterFilter {
-            $Text -match 'Restart PowerShell' -and $Text -match 'ExamplePlugin: Installed' -and $Text -match 'Activation: Verified'
+            $Text -match 'Restart PowerShell' -and $Text -match '✔ ExamplePlugin\s+installed' -and $Text -notmatch 'Activation:'
         }
         Should -Invoke Wait-GerberContinue -Times 0
+    }
+
+    It 'keeps a clean installed result to a single line' {
+        $result = [pscustomobject]@{
+            Item = [pscustomobject]@{ State = [pscustomobject]@{ Name = 'Gerber' } }
+            Outcome = 'Installed'; VerificationStatus = 'Verified'; RecoveryStatus = 'NotRequired'
+            ActivationStatus = 'Unverified'; RestartRequired = $false; Message = 'Restart PowerShell before using installed updates; this session has not reloaded modules.'
+        }
+        Show-GerberUpdateBatchCompletion -ResultList @($result)
+        Should -Invoke Write-GerberScreenLine -Times 1 -ParameterFilter {
+            $Text -ceq '✔ Gerber  installed'
+        }
     }
 }

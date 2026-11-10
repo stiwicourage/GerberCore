@@ -58,7 +58,7 @@ jobs:
           }
 
       - name: Install required CI PowerShell modules
-        uses: stiwicourage/powershell-ci/actions/install-ps-modules@develop
+        uses: stiwicourage/powershell-ci/actions/install-ps-modules@0.1.0
         with:
           modules: NovaModuleTools KeepAChangelog
 

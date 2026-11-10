@@ -1,8 +1,8 @@
 function Resolve-GerberUpdateBatch {
-    param([object]$CoreState, [object[]]$SelectedItemList, [switch]$InspectionApproved)
+    param([object]$CoreState, [object[]]$SelectedItemList)
     $batch = Get-GerberUpdateBatch $CoreState $SelectedItemList
     foreach ($item in @($SelectedItemList | Where-Object Kind -EQ 'Plugin')) {
-        Complete-GerberCandidateInspection $item -Approved:$InspectionApproved
+        Complete-GerberCandidateInspection $item
         Add-GerberUpdateCoreDependency -Batch $batch -Item $item -CoreState $CoreState
     }
     $batch.Items = @($batch.Items | Sort-Object {
@@ -34,9 +34,9 @@ function ConvertTo-GerberUpdateVersion {
 }
 
 function Complete-GerberCandidateInspection {
-    param([object]$Item, [switch]$Approved)
+    param([object]$Item)
     try {
-        $target = Read-GerberUpdateCandidateManifest $Item -Approved:$Approved
+        $target = Read-GerberUpdateCandidateManifest $Item
         Assert-GerberUpdateCandidateManifest $Item $target.Manifest
         $Item.MinimumCore = ConvertTo-GerberUpdateVersion $target.Manifest.PrivateData.Gerber.MinimumGerberVersion
     } catch {
@@ -46,12 +46,12 @@ function Complete-GerberCandidateInspection {
 }
 
 function Read-GerberUpdateCandidateManifest {
-    param([object]$Item, [switch]$Approved)
+    param([object]$Item)
     $parameters = @{
         Plan            = $Item.State.Plan
         Credential      = $Item.Credential
-        TrustRepository = $Approved -and $Item.State.Plan.RequiresRepositoryTrust
-        AcceptLicense   = $Approved -and $Item.State.Plan.RequiresLicenseAcceptance
+        TrustRepository = $Item.State.Plan.RequiresRepositoryTrust
+        AcceptLicense   = $Item.State.Plan.RequiresLicenseAcceptance
         ErrorAction     = 'Stop'
     }
     Get-PSModuleUpdateTargetManifest @parameters

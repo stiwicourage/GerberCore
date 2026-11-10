@@ -2,14 +2,18 @@
 
 Run these checks on each supported platform after installing the published Gerber module. Use a disposable identifier such as `gerber:test:manual:<platform>` and a non-production value.
 
-The separate native-platform CI lane runs isolated Core and Plugin API credential round trips; see [Contributing](../CONTRIBUTING.md) for setup and the feature-branch rollout. Those checks do not replace the interactive, new-session, and authenticated-command checks below.
+This is a manual verification guide, not a platform qualification report.
+The separate native-platform CI lane runs isolated Core and Plugin API credential
+round trips; see [Contributing](../CONTRIBUTING.md) for setup. Those checks do not
+replace interactive and new-session verification. Do not run hosted-only credential
+helpers against a workstation's normal vault.
 
 ## Common procedure
 
 1. Install and import Gerber:
 
    ```powershell
-   Install-Module Gerber
+   Install-Module Gerber -Scope CurrentUser -AllowPrerelease
    Import-Module Gerber -Force
    Invoke-Gerber
    ```
@@ -21,13 +25,10 @@ The separate native-platform CI lane runs isolated Core and Plugin API credentia
 6. Run `/secrets set` again, approve overwrite, and store a different value.
 7. Start a new PowerShell session, import Gerber, and confirm `/secrets get` returns the updated value.
 8. Run `/secrets remove`, then confirm `/secrets test` reports `Not stored`.
-9. In a disposable environment with Gerber.AzureDevOps approved and enabled,
-   configure a profile at authenticated first use. Its PAT belongs to the
-   plugin GUID's Secrets namespace, not the legacy Core identifier.
-10. Remove that disposable plugin PAT and confirm interactive ADO use requests
-    it again, while noninteractive use reports missing credentials without
-    prompts. Unrelated Core commands must still work. Do not remove or migrate
-    pre-existing Core credentials; product checks belong to the plugin.
+
+Plugin authors can separately verify their GUID-scoped Secrets capability in a
+disposable environment. Plugins own first-use prompting and their domain checks;
+Core does not require a plugin or plugin credentials for this procedure.
 
 ## macOS
 

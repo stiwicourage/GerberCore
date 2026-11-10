@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   publish:
-    uses: stiwicourage/powershell-ci/.github/workflows/publish.yml@develop
+    uses: stiwicourage/powershell-ci/.github/workflows/publish.yml@0.1.0
     with:
       test-command: Test-NovaBuild
       release-continuous-integration: true
