@@ -26,6 +26,7 @@ function Complete-GerberSelectedUpdateBatch {
     if ($null -eq $batch) {
         return Show-GerberUpdateBatchCancellation
     }
+    Write-GerberScreenLine -Text ''
     Write-GerberScreenLine -Text 'Installing selected updates sequentially...'
     $results = @(Complete-GerberUpdateBatch -Batch $batch)
     Show-GerberUpdateBatchCompletion -ResultList $results

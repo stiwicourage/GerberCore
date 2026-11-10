@@ -145,6 +145,20 @@ Describe 'Show-GerberUpdateBatchView' -Tag 'G4A9UI' {
         }
     }
 
+    It 'starts the installing line on a fresh row so PowerShellGet progress cannot overwrite it' {
+        $script:screenLines = [System.Collections.Generic.List[string]]::new()
+        Mock Read-GerberConfirmationPrompt {
+            $true
+        }
+        Mock Write-GerberScreenLine {
+            $script:screenLines.Add($Text)
+        }
+        Show-GerberUpdateBatchView -CoreState $script:core -PluginItemList @($script:plugin) -Interactive $true
+        $index = $script:screenLines.IndexOf('Installing selected updates sequentially...')
+        $index | Should -BeGreaterThan 0
+        $script:screenLines[$index - 1] | Should -BeExactly ''
+    }
+
     It 'allows Core and plugin updates to be selected together without replacing their live identities' {
         Mock Read-GerberCheckboxMenuPrompt {
             param($PromptRequest)
