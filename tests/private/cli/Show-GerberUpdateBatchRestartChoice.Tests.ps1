@@ -4,6 +4,9 @@ BeforeAll {
     if (Test-Path $source) {
         . $source
     }
+    foreach ($helper in 'Complete-GerberRestartSelection', 'Get-GerberRestartGuidance', 'Get-GerberRestartMenuItemList', 'Test-GerberPowerShellHostExitSupported', 'Stop-GerberPowerShellHost') {
+        . "$root/src/private/cli/$helper.ps1"
+    }
     function Read-GerberNumberedMenuPrompt {
         param($Prompt, $ScreenTitle, $ScreenText, $MenuItemList)
         $null = $Prompt, $ScreenTitle, $ScreenText, $MenuItemList

@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- After an update that needs a restart, `/update list` offers **Exit Gerber and
+  PowerShell** in PowerShell console hosts, because exiting Gerber alone leaves
+  the old module loaded. Other hosts (VS Code, ISE, remote) get guidance to
+  restart the session from the host.
+
 ### Changed
 
 - Simplified `/update list`: selected packages are inspected without a separate
