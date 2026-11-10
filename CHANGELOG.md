@@ -8,13 +8,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- After an update that needs a restart, `/update list` offers **Exit Gerber and
+  PowerShell** in PowerShell console hosts, because exiting Gerber alone leaves
+  the old module loaded. Other hosts (VS Code, ISE, remote) get guidance to
+  restart the session from the host.
+
 ### Changed
+
+- Simplified `/update list`: selected packages are inspected without a separate
+  consent prompt, each checkbox is a single line (`Name  from -> to  (Repository)`),
+  the installation confirmation is a compact per-component plan with one source
+  and scope line, and results show one status line per component with details
+  only when they need attention.
 
 ### Deprecated
 
 ### Removed
 
+- Gerber Core no longer requires the `Gerber.AzureDevOps` plugin module.
+  Product integrations are installed separately and Core depends only on
+  NovaModuleTools and PSModuleUpdate.
+
 ### Fixed
+
+- `/update list` now shows the actionable reason when a plugin installation fails
+  instead of a generic message, and the confirmation states the required Core as
+  a minimum (`requires Core >= X`).
+- `/update list` can update Core and plugins that were copied manually (no
+  PowerShell provider metadata) when the installed PSModuleUpdate supports
+  `-ReplaceUnmanagedInstallation`; older versions keep the reinstall guidance.
 
 ### Security
 
@@ -299,4 +321,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Single `Esc` from `/plugins list` and `/plugins info` now returns to `/plugins`, while single `Esc` from plugin details opened through `/plugins list` still returns to the list view first.
   - Double `Esc` within 200 milliseconds still returns directly to the root prompt from nested plugin-management views.
   - Direct `/plugins list` and `/plugins info` execution continues to use Gerber's existing command-resolution behavior without inventing a separate navigation history.
-

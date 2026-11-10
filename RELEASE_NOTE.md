@@ -7,11 +7,34 @@ This file summarizes user-visible commands, configuration and migration changes.
 
 ### Added
 
+- After an update requiring restart, supported console hosts offer **Exit Gerber
+  and PowerShell**. Other hosts provide guidance to restart the session from the
+  host. **Continue with current version** remains the default; exiting Gerber
+  alone does not unload the module.
+
 ### Changed
+
+- `/update list` inspects selected packages without a separate inspection prompt.
+  Selection, installation confirmation and results use compact per-component
+  lines, retaining versions, source, scope and required Core versions.
+- Plugin lifecycle guidance is explicit: disable with `/plugins disable` inside
+  Gerber; uninstall the PowerShell module outside Gerber to remove or revoke it.
+  There are no remove or revoke commands.
 
 ### Removed
 
+- Product-plugin runtime dependencies. Core requires only **NovaModuleTools** and
+  **PSModuleUpdate**; plugins are installed separately.
+
 ### Fixed
+
+- Plugin update failures show actionable reasons, and the installation preview
+  labels required Core versions as minimums.
+- Manually copied installations can be replaced during updates when the installed
+  PMU supports `ReplaceUnmanagedInstallation`; older PMU versions retain
+  reinstall guidance.
+- Installation documentation now uses the published PSGallery preview with
+  `Install-Module Gerber -Scope CurrentUser -AllowPrerelease`.
 
 ## [0.3.1] - 2026-11-10
 
@@ -127,4 +150,3 @@ This file summarizes user-visible commands, configuration and migration changes.
   macOS/Linux storage.
 - Recoverable errors stay inside Gerber with actionable messages. Shared menu
   navigation returns through parent menus and honors double Escape.
-
