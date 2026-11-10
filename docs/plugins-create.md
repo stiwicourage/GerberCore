@@ -60,8 +60,8 @@ for developing the Gerber repository: Gerber exposes plugin creation and uses
 Nova for build/test, packaging and local publication workflows. Gerber owns
 plugin-specific inputs, templates and approval. Both NovaModuleTools and
 PSModuleUpdate remain in Gerber's `RequiredModules`; PMU owns generic update
-installation, not plugin-project build/publication. See [D-002 / D-017](../DECISIONS.md)
-and the [current dependency contract](architecture/G-4A5-update-architecture.md#5-required-runtime-dependencies-decided-declarations-present).
+installation, not plugin-project build/publication. See the
+[runtime dependency contract](architecture/G-4A5-update-architecture.md#runtime-dependencies).
 
 The current command is `/plugins create`; `/create` is not a registered root alias.
 Nova lifecycle operations are on demand, not required on every Gerber startup.
@@ -74,9 +74,7 @@ Install-Module -Name NovaModuleTools
 
 That fallback requires explicit consent; cancel is the default. Declining creates
 neither a project nor an approval. It is not a guarantee that Gerber imports
-without its required modules. Earlier generated-lifecycle validation used
-NovaModuleTools 3.4.1 with PowerShell 7.4-compatible source; it is historical
-evidence, not fresh qualification of the current Nova `3.4.2` declaration.
+without its required modules.
 
 ## Generated project
 
@@ -136,21 +134,24 @@ Do not duplicate it inside `PrivateData.Gerber`:
       "Gerber": {
         "Plugin": true,
         "ApiVersion": "1",
-        "MinimumGerberVersion": "0.1.0-preview"
+        "Repository": {
+          "Name": "PSGallery",
+          "Uri": "https://www.powershellgallery.com/api/v2"
+        }
       }
     }
   }
 }
 ```
 
-That example represents PSGallery selection: there is no `RepositoryUri` key,
-not an empty value or an explicit Gallery override. Another repository adds a
-direct `"RepositoryUri": "https://packages.example.org/feed"` entry inside
-`Manifest.PrivateData.Gerber`; no `Update` intermediary is generated. If the URI
-is unknown, replace `"RepositoryUri": "REPLACE_WITH_REPOSITORY_URI"` in
-`project.json` with the actual safe URI, then rebuild before remote publication
-or updates. Nova carries this metadata into the generated plugin manifest.
-Update discovery defaults to PSGallery only when the key is absent. An explicit
+This is an identity/repository excerpt, not a complete project file. Generation
+also sets `MinimumGerberVersion` to the running Core's semantic version.
+PSGallery selection writes the explicit `Repository` object shown above.
+Another repository changes its `Name` and `Uri`; no `Update` intermediary is
+generated. If the URI is unknown, replace `Repository.Uri`'s
+`REPLACE_WITH_REPOSITORY_URI` value in `project.json`, then rebuild before remote
+publication or updates. Nova carries this metadata into the generated manifest.
+Update discovery defaults to PSGallery only when repository metadata is absent. An explicit
 placeholder, empty/relative URI, or unsafe URI is rejected without Gallery
 fallback or package lookup.
 
@@ -161,7 +162,7 @@ Security. The real `/mycompany hello` example belongs under Added; no stable
 release or date is fabricated.
 
 The source-only unit tests and built-module public-entry-point integration tests
-exercise the example without Azure, PATs, customer configuration or private Core
+exercise the example without external services, credentials or private Core
 calls.
 
 ## Agent-first development
@@ -178,7 +179,7 @@ tests and project.json. The **plugin-developer** agent defines ownership and
 boundaries; the three valid `SKILL.md` workflows provide actionable command,
 public-API and Nova lifecycle steps. They do not assume a Core CI/analyzer wrapper
 exists in the generated project, or grant permission to commit/release/install.
-See generated AGENTS.md for the verified Nova 3.4.1 version/package/release
+See generated AGENTS.md for Nova version/package/release
 commands; normal development needs only build and both test commands.
 
 ## Name and version before installation
@@ -264,5 +265,8 @@ Restart Gerber with the same Gerber user configuration, then enter:
 Expected result: **Hello from Gerber.MyCompany!** The generated namespace also has
 a shared-UI submenu. Startup discovers the same approved manifest GUID without
 another approval prompt. Existing `/plugins enable` and `/plugins disable`
-behavior is unchanged. Creation does not implement installation management,
-remove, decline, revoke, remote distribution, marketplace or update workflows.
+behavior applies. Creation does not install or remotely publish the plugin.
+There are no remove or revoke commands: disable inside Gerber with
+`/plugins disable`, or uninstall the PowerShell module outside Gerber to remove
+or revoke it. Updates for eligible installed plugins use
+[`/update list`](core-updates.md), subject to its PMU capability requirement.

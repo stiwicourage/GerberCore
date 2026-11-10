@@ -1,7 +1,19 @@
-Gerber Core static website — v4
+Gerber Core documentation
 
-Open index.html in any browser. All assets are local.
-The terminal is a brand-themed visual representation of Gerber’s actual UI components; the real CLI uses the user’s terminal color settings.
-Root command examples are in alphabetical order after the Core commands: /exit, /help, /plugins, /update, then /secrets, /tools.
+index.html is the authoritative static website source for gerber.ps.
+Open it in a browser; assets are local. Preserve CNAME, CSS and the existing
+responsive presentation when editing content.
 
-Version 7: Main content container expanded to 1600px maximum width. Responsive layout retained.
+The terminal preview illustrates Core's registry: /exit, /help, /plugins,
+/update, /secrets and /tools. Its brand colors are illustrative; the real
+session inherits the user's terminal colors. Plugin commands are not Core commands.
+
+User guides: core-updates.md and credential-store-verification.md.
+Plugin author guide: plugins-create.md.
+Maintainer and public Plugin API references: architecture/*.md.
+PowerShell help source: Gerber/en-US/*.md, consumed by Nova/PlatyPS.
+
+Keep interactive slash-command syntax distinct from PowerShell installation,
+launch and plugin-development cmdlets. The site has no command-surface selector.
+Check edited links and anchors, PlatyPS help structure where affected, and
+tests/TextFileFormatting.Tests.ps1. No site generator or site build is configured.

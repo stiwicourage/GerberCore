@@ -19,7 +19,7 @@ Checks authored plugin source for identifiable private Gerber Core dependencies.
 
 ### __AllParameterSets
 
-```
+```powershell
 Test-GerberPluginBoundary [[-Path] <string>] [<CommonParameters>]
 ```
 
@@ -31,6 +31,8 @@ Parses source without executing it.
 Returns IsValid, FileCount, PublicApi and
 deterministic Diagnostics.
 This development check is not a PowerShell sandbox.
+It does not start Gerber or invoke Nova lifecycle operations. Importing Gerber
+still requires the declared NovaModuleTools and PSModuleUpdate runtime modules.
 
 ## EXAMPLES
 
@@ -58,7 +60,8 @@ This does not start Gerber, load plugins or read user configuration.
 
 ### -Path
 
-Plugin project directory containing authored PowerShell under src.
+Plugin project directory containing a src directory. Authored PowerShell under
+src, scripts and root entrypoints is inspected.
 
 ```yaml
 Type: System.String

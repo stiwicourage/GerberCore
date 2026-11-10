@@ -3,7 +3,7 @@
     "command": "repository fixture-api",
     "categories": ["error-recovery"],
     "classification": "deterministic-plugin-contract",
-    "reason": "The shared-capability contract performs isolated credential and clipboard lifecycle checks; controlled Plugin API ADO and handler failures cover recovery."
+    "reason": "The shared-capability contract performs isolated credential and clipboard lifecycle checks; controlled Plugin API and handler failures cover recovery."
   },
   {
     "command": "repository fixture-status",

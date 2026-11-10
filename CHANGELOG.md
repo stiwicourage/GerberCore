@@ -25,6 +25,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Removed
 
+- Gerber Core no longer requires the `Gerber.AzureDevOps` plugin module.
+  Product integrations are installed separately and Core depends only on
+  NovaModuleTools and PSModuleUpdate.
+
 ### Fixed
 
 - `/update list` now shows the actionable reason when a plugin installation fails

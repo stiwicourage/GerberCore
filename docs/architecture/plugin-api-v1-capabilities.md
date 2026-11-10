@@ -8,9 +8,9 @@ plugins. Operations are scriptblocks invoked with `&`. `ApiVersion` remains
 Product integrations are separate plugins that use only the capabilities they
 need. Product-specific connections, authentication and operations belong to the
 plugin, not to Core.
-Consumers of the new Configuration/UI/Http operations must declare
-`MinimumGerberVersion` of at least `0.2.1-preview02`, the Core version supplying
-them; API v1 alone does not establish capability availability in older Core.
+Declare a `MinimumGerberVersion` that supplies the operations your plugin uses;
+API v1 alone does not establish capability availability in older Core.
+`/plugins create` sets that minimum to the running Core's semantic version.
 
 ## Capability inventory
 
@@ -42,7 +42,7 @@ if ($null -eq $settings) { $settings = @{ preferredView = 'summary' } }
 & $Gerber.Configuration.Save $settings
 ```
 
-Do not save PATs, passwords or tokens in JSON. Use Secrets instead. This API
+Do not save passwords or tokens in JSON. Use Secrets instead. This API
 does not inspect content for secrets or migrate credentials.
 `GERBER_CONFIG_PATH` is an absolute Core-file override; plugin files follow its
 directory. A legacy `config.json` override selects sibling `GerberCore.json`.
@@ -139,7 +139,8 @@ behavior, including commands that perform an action and also have subcommands.
 ## Development-time boundary validation
 
 The exported development command does not start Gerber, read user configuration,
-require Nova, install the target plugin or execute its source:
+invoke Nova lifecycle operations, install the target plugin or execute its source.
+Importing Gerber still requires its declared runtime modules:
 
 ```powershell
 Import-Module Gerber

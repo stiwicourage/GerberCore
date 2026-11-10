@@ -14,9 +14,21 @@ title: Gerber Module
 
 ## Description
 
-Gerber is an interactive DevOps multitool for the terminal. It provides a slash-command palette, shared menus, secure credential handling and a plugin platform that product plugins build on.
+Gerber Core is an interactive DevOps multitool for PowerShell 7.4 or later.
+It provides a slash-command palette, shared menus, native credential storage,
+UUID/Base64 tools and update management. Core requires NovaModuleTools and
+PSModuleUpdate; plugins are separate modules, never Core dependencies.
 
-Use the module to start the interactive multitool with `Invoke-Gerber` (alias `gerber`), or to validate that authored plugin source depends only on the public Plugin API with `Test-GerberPluginBoundary`.
+Use `Invoke-Gerber` (alias `gerber`) to start the interactive multitool.
+Plugin authors use `Test-GerberPluginBoundary` to check for identifiable private
+Core dependencies without executing source. This static check is not a sandbox.
+
+Gerber is published on PSGallery as a preview. Install from PowerShell with
+`Install-Module Gerber -Scope CurrentUser -AllowPrerelease`.
+Inside Gerber, `/help` shows the active registry; `/update policy` chooses stable
+or prerelease updates. Plugin commands appear only while active plugins contribute
+them. Disable inside Gerber; uninstall a plugin's PowerShell module outside Gerber
+to remove or revoke it.
 
 ## Gerber Cmdlets
 

@@ -12,7 +12,7 @@ Gerber Core (standalone PowerShell module)
   ├─ Plugin API v1 + discovery/registration/lifecycle
   └─ /plugins inspection, enable/disable and transactional creation
           │ public Plugin API only
-          └─ Gerber.ExampleOrg / other independently installed plugins
+          └─ independently installed plugins
 
 RequiredModules:
   NovaModuleTools → plugin development/build/test/package/local publication

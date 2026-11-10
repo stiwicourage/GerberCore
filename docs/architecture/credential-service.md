@@ -13,7 +13,7 @@ Gerber packages these .NET Standard 2.0 assemblies under `resources/lib`:
 
 PowerShell 7.4 supplies the required framework assemblies, including `System.Text.Json`, `System.Security.Cryptography.ProtectedData`, `System.Collections.Immutable`, and `System.Memory`. Gerber loads the packaged assemblies lazily on the first credential operation. Module import and `Invoke-Gerber` startup do not initialize native credential storage.
 
-Nova copies `src/resources` into the built module, so loading the packaged credential assemblies needs neither a local NuGet cache nor a source checkout and does not invoke Nova build operations. This packaging boundary does not make Nova optional for Gerber: the owner's [D-017 / amended D-002](../../DECISIONS.md) requires both NovaModuleTools and PSModuleUpdate at runtime for their respective plugin-development and update roles. CredentialManager and DotNetConfig publish their source under the MIT License; the CredentialManager NuGet binary declares its Open Source Maintenance Fee Agreement as the package license.
+Nova copies `src/resources` into the built module, so loading the packaged credential assemblies needs neither a local NuGet cache nor a source checkout and does not invoke Nova build operations. NovaModuleTools and PSModuleUpdate remain Gerber's required runtime modules for plugin development and updates respectively. CredentialManager and DotNetConfig publish their source under the MIT License; the CredentialManager NuGet binary declares its Open Source Maintenance Fee Agreement as the package license.
 
 ## Internal operations
 
@@ -71,14 +71,14 @@ Because those writes are separate, plugins should validate inputs first, write c
 
 ## Core updates
 
-G-4A7R permanently binds Core updates to public PSGallery. Core discovery and
-installation do not retrieve native credentials or request credentials.
-The provisional G-4A7 Core credential references are superseded
-and ignored together with its obsolete configurable repository binding.
+Core updates are permanently bound to public PSGallery and do not request
+credentials or retrieve them from native storage. Obsolete configurable Core
+repository settings are ignored.
 
-Future plugin updates may use Gerber-owned repository/credential configuration
-with PMU, independently of Core; that contract remains G-4A9. No plugin update
-credential flow is implemented here. See [Core updates](../core-updates.md).
+Plugin update repositories come from each installed manifest's
+`PrivateData.Gerber.Repository` descriptor. Repository credentials are requested
+per operation, not saved in that metadata or retrieved from the credential service.
+See [Core and plugin updates](../core-updates.md).
 
 ## Enumeration limits
 
