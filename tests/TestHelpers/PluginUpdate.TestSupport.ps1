@@ -8,7 +8,7 @@ foreach ($name in @(
     . (Join-Path $backendRoot "$name.ps1")
 }
 foreach ($name in @(
-        'Assert-GerberUpdateNotCancelled', 'Test-GerberPluginUpdateEligibility',
+        'Assert-GerberUpdateNotCancelled', 'Get-GerberUpdateFailureMessage', 'Get-GerberPmuInstallOption', 'Test-GerberPluginUpdateEligibility',
         'Get-GerberUpdateItem', 'Resolve-GerberUpdateDisposition', 'Resolve-GerberPluginUpdateState',
         'Resolve-GerberPluginUpdateStateList', 'Resolve-GerberUpdateBatch',
         'Complete-GerberUpdateBatch', 'Read-GerberUpdateActivationResponse',

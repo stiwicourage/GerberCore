@@ -619,7 +619,7 @@ def update_missing_provider_metadata_recovers(context) -> None:
     context.app.wait_for_text("dev install")
     context.app.wait_for_text("Press Enter to continue")
     screen = context.app.visible_text().replace("\n", "")
-    assert "Reinstall Gerber from PSGallery" in screen, screen
+    assert "Reinstall it from PSGallery" in screen, screen
     context.app.expect_text_absent("supported numeric-version module directory")
     context.app.expect_text_absent("raw-update-token")
     context.app.press("ENTER")

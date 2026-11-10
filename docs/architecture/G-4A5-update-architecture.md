@@ -168,9 +168,12 @@ Gerber.ExampleOrg      3.0.0        3.1.0        ExampleOrg
 A corresponding Gerber Core overview must be supported. The user must eventually be able to choose which available updates to install. This is not approval for bulk updates, automatic plugin updates, a new terminal framework, or abstractions for hypothetical features. Slash-menu behavior must follow the shared menu contract in [terminal UX instructions](../../.github/instructions/terminal-ux-design.instructions.md).
 
 G-4A7 currently renders one Core row with Component, Name, Installed, Available,
-Repository and Status. It requests explicit consent with Cancel as the default,
-retains the overview/scope during confirmation, and explains any required
-operation-local trust/license acceptance. Installation receives the original
+Repository and Status. It requests one explicit confirmation with Cancel as the
+default and retains the overview/scope during confirmation. Gerber shows no
+separate trust, license or inspection prompts; selecting a component is the
+consent to inspect it, and operation-local trust/license flags are passed to PMU
+automatically (license compliance is the responsibility of the plugin author and
+user). Installation receives the original
 live PSGallery-bound PMU plan, not the startup summary. Gerber displays PMU
 verification/recovery/restart results without hot reloading Core or assuming
 rollback succeeded after a failure. Noninteractive views never confirm or install.

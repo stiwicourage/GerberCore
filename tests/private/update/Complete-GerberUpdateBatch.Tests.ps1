@@ -97,6 +97,20 @@ Describe 'Complete-GerberUpdateBatch' -Tag 'G4A9' {
         ($results.Message -join ' ') | Should -Not -Match 'private-provider-token'
     }
 
+    It 'explains a failed plugin installation with the mapped PMU guidance instead of a generic message' {
+        Mock Install-PSModuleUpdate {
+            $record = [System.Management.Automation.ErrorRecord]::new(
+                [System.InvalidOperationException]::new('The selected installation has no native provider metadata.'),
+                'PMU.UnsupportedInstallation', [System.Management.Automation.ErrorCategory]::NotSpecified, $null
+            )
+            $PSCmdlet.ThrowTerminatingError($record)
+        }
+        $script:batch.Items = @($script:second)
+        $result = Complete-GerberUpdateBatch $script:batch
+        $result.Outcome | Should -Be 'Failed'
+        $result.Message | Should -Match 'no PSGallery provider metadata.*local or dev install'
+    }
+
     It 'retains installed status but reports failed activation without claiming rollback' {
         Mock Test-GerberUpdateActivation {
             [pscustomobject]@{

@@ -22,6 +22,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- `/update list` now shows the actionable reason when a plugin installation fails
+  instead of a generic message, and the confirmation states the required Core as
+  a minimum (`requires Core >= X`).
+- `/update list` can update Core and plugins that were copied manually (no
+  PowerShell provider metadata) when the installed PSModuleUpdate supports
+  `-ReplaceUnmanagedInstallation`; older versions keep the reinstall guidance.
+
 ### Security
 
 ## [0.3.0] - 2026-11-08
@@ -273,4 +280,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Single `Esc` from `/plugins list` and `/plugins info` now returns to `/plugins`, while single `Esc` from plugin details opened through `/plugins list` still returns to the list view first.
   - Double `Esc` within 200 milliseconds still returns directly to the root prompt from nested plugin-management views.
   - Direct `/plugins list` and `/plugins info` execution continues to use Gerber's existing command-resolution behavior without inventing a separate navigation history.
-

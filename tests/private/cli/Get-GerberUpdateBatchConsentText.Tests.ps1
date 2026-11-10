@@ -25,7 +25,7 @@ Describe 'Get-GerberUpdateBatchConsentText' -Tag 'G4A9UI' {
         )
         $text = Get-GerberUpdateBatchConsentText -Batch ([pscustomobject]@{ Items = $items })
         $text | Should -Match '(?m)^\s*Gerber\s+1\.0\.0-preview -> 2\.0\.0-preview\.12\s+\(added: required by Gerber\.Plugin\)$'
-        $text | Should -Match '(?m)^\s*Gerber\.Plugin\s+0\.1\.0 -> 0\.2\.0\s+\(requires Core 2\.0\.0-preview\.12\)$'
+        $text | Should -Match '(?m)^\s*Gerber\.Plugin\s+0\.1\.0 -> 0\.2\.0\s+\(requires Core >= 2\.0\.0-preview\.12\)$'
         ([regex]::Matches($text, 'https://example.test/v2')).Count | Should -Be 1
         $text | Should -Match 'Scope: CurrentUser'
         $text | Should -Match 'not hot reload'

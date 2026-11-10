@@ -29,7 +29,7 @@ function Get-GerberUpdateItemConsentNote {
         return "  (added: required by $($requiring -join ', '))"
     }
     if ($Item.MinimumCore) {
-        return "  (requires Core $($Item.MinimumCore))"
+        return "  (requires Core >= $($Item.MinimumCore))"
     }
 }
 

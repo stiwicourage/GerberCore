@@ -3,7 +3,7 @@ function Get-GerberUpdateFailureMessage {
     $id = ($ErrorRecord.FullyQualifiedErrorId -split ',')[0]
     if ($id -ceq 'PMU.UnsupportedInstallation' -and
         $ErrorRecord.Exception.Message -ceq 'The selected installation has no native provider metadata.') {
-        return 'Core has no PSGallery provider metadata (local or dev install). Reinstall Gerber from PSGallery, restart PowerShell, then retry /update list. No success or rollback is assumed.'
+        return 'The installed module has no PSGallery provider metadata (local or dev install). Reinstall it from PSGallery, restart PowerShell, then retry /update list. No success or rollback is assumed.'
     }
     $messages = @{
         'PMU.PackageNotFound' = 'No eligible Gerber package is available from PSGallery under the selected update policy. Run /update list to check again later.'

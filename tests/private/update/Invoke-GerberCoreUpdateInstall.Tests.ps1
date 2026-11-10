@@ -2,6 +2,7 @@ BeforeAll {
     $root = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
     . "$root/src/private/update/Invoke-GerberCoreUpdateInstall.ps1"
     . "$root/src/private/update/Get-GerberUpdateFailureMessage.ps1"
+    . "$root/src/private/update/Get-GerberPmuInstallOption.ps1"
     . "$root/src/private/config/Get-GerberUserConfiguration.ps1"
     foreach ($name in @('Resolve-GerberCoreUpdatePolicy', 'Resolve-GerberUserConfigPath',
         'Test-GerberCoreUpdateConfiguration', 'Test-GerberUserConfiguration')) {
@@ -99,6 +100,7 @@ Describe 'Invoke-GerberCoreUpdateInstall' -Tag 'G4A7' {
                     param($root, $state)
                     . "$root/src/private/update/Invoke-GerberCoreUpdateInstall.ps1"
                     function Resolve-GerberCoreUpdatePolicy { @{ Channel = 'Stable'; Scope = 'CurrentUser' } }
+                    function Get-GerberPmuInstallOption { @{} }
                     function Install-PSModuleUpdate { throw [System.Management.Automation.PipelineStoppedException]::new() }
                     Invoke-GerberCoreUpdateInstall -State $state
                 }).AddArgument($root).AddArgument($script:state)
