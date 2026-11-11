@@ -40,6 +40,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Security
 
+## [0.3.2] - 2026-11-10
+
+### Added
+
+- After an update that needs a restart, `/update list` offers **Exit Gerber and
+  PowerShell** in PowerShell console hosts, because exiting Gerber alone leaves
+  the old module loaded. Other hosts (VS Code, ISE, remote) get guidance to
+  restart the session from the host.
+
+### Changed
+
+- Simplified `/update list`: selected packages are inspected without a separate
+  consent prompt, each checkbox is a single line (`Name  from -> to  (Repository)`),
+  the installation confirmation is a compact per-component plan with one source
+  and scope line, and results show one status line per component with details
+  only when they need attention.
+
+### Removed
+
+- Gerber Core no longer requires the `Gerber.AzureDevOps` plugin module.
+  Product integrations are installed separately and Core depends only on
+  NovaModuleTools and PSModuleUpdate.
+
+### Fixed
+
+- `/update list` now shows the actionable reason when a plugin installation fails
+  instead of a generic message, and the confirmation states the required Core as
+  a minimum (`requires Core >= X`).
+- `/update list` can update Core and plugins that were copied manually (no
+  PowerShell provider metadata) when the installed PSModuleUpdate supports
+  `-ReplaceUnmanagedInstallation`; older versions keep the reinstall guidance.
+
 ## [0.3.1] - 2026-11-10
 
 ### Added

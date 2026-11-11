@@ -7,6 +7,16 @@ This file summarizes user-visible commands, configuration and migration changes.
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+## [0.3.2] - 2026-11-10
+
+### Added
+
 - After an update requiring restart, supported console hosts offer **Exit Gerber
   and PowerShell**. Other hosts provide guidance to restart the session from the
   host. **Continue with current version** remains the default; exiting Gerber
