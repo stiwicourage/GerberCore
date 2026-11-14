@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   PowerShell** in PowerShell console hosts, because exiting Gerber alone leaves
   the old module loaded. Other hosts (VS Code, ISE, remote) get guidance to
   restart the session from the host.
+- Plugins can no longer register subcommands under the Core-reserved roots
+  `exit`, `help`, `plugins`, `update`, `tools` and `secrets`; registration fails
+  with a Gerber-owned message.
 
 ### Changed
 

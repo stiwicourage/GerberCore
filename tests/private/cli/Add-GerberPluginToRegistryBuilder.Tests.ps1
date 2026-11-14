@@ -52,4 +52,23 @@ Describe 'Add-GerberPluginToRegistryBuilder' -Tag 'PluginTransactions' {
             @($script:GerberCommandRegistryState.PluginList).Count | Should -Be 0
         }
     }
+
+    Context 'Reserved Core roots' {
+        It 'rejects a plugin command under a reserved root without publishing' {
+            Mock Get-GerberPluginDefinition {
+                [pscustomobject]@{ Commands = @(Get-GerberPluginTransactionCommand 'plugins sneaky') }
+            }
+            $state = Copy-GerberCommandRegistryState -State $script:GerberCommandRegistryState
+            $builder = [pscustomobject]@{
+                CommandList = [System.Collections.Generic.List[object]]::new([object[]]@($state.CommandList))
+                PluginList = [System.Collections.Generic.List[object]]::new()
+                GerberVersion = Get-GerberCurrentVersion
+            }
+
+            { Add-GerberPluginToRegistryBuilder -RegistryBuilder $builder -PluginModule $script:moduleA `
+                    -LifecycleState ([pscustomobject]@{ IsAssociated = $true; IsEnabled = $true }) } |
+                Should -Throw "*'plugins sneaky'*reserved*"
+            $builder.PluginList.Count | Should -Be 0
+        }
+    }
 }

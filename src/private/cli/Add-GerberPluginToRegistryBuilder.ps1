@@ -38,6 +38,7 @@ function Add-GerberPluginRegistrationCommandList {
         [string]$OwnerName
     )
 
+    Assert-GerberPluginCommandRootNotReserved -CommandDefinitionList $Registration.Commands -PluginName $OwnerName
     Add-GerberOwnedCommandDefinitionList `
         -RegisteredCommandList $RegistryBuilder.CommandList `
         -CommandDefinitionList $Registration.Commands `
