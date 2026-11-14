@@ -27,6 +27,7 @@ function Copy-GerberRegistryWithoutPlugin {
         CommandList   = @(Select-GerberActiveCommandDefinitionList -Commands $remainingCommands)
         PluginList    = @($State.PluginList | Where-Object { $_.Guid -ine $Plugin.Guid })
         GerberVersion = $State.GerberVersion
+        WithheldRootList = @(Get-GerberWithheldRootList -Source $State -WithoutOwner $Plugin.Name)
     }
 }
 

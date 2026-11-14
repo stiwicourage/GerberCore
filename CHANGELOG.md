@@ -15,6 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Plugins can no longer register subcommands under the Core-reserved roots
   `exit`, `help`, `plugins`, `update`, `tools` and `secrets`; registration fails
   with a Gerber-owned message.
+- When two enabled plugins declare the same root command (namespace), Gerber no
+  longer fails at startup. It withholds that namespace from both plugins
+  regardless of load order and warns naming every plugin involved.
 
 ### Changed
 

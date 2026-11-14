@@ -9,5 +9,6 @@ function Publish-GerberCommandRegistryState {
         CommandList   = @(Select-GerberActiveCommandDefinitionList -Commands $RegistryBuilder.CommandList.ToArray())
         PluginList    = $RegistryBuilder.PluginList.ToArray()
         GerberVersion = $RegistryBuilder.GerberVersion.ToString()
+        WithheldRootList = @(Get-GerberWithheldRootList -Source $RegistryBuilder)
     }
 }

@@ -101,6 +101,7 @@ to receive this source diagnostic.
 - `enable`/`disable` control availability without uninstalling the module.
 - `remove`, explicit decline and revocation management are outside Core 1. Future intent is recorded in DECISIONS.md; no runtime capability is claimed.
 - Existing Core command roots can be extended by plugins; conflicting full paths must be resolved deterministically, never last-loaded-wins.
+- When two enabled plugins declare the same root command (namespace), Gerber withholds that namespace from all of them and warns; user aliases (G-3B) are the planned way to resolve it. The withheld state lives in the command registry state (`WithheldRootList`); a root stays withheld until restart even if one claimant is disabled.
 - Future: trusted publisher certificates and compromised GUID notifications; not required for the first management implementation.
 
 ## Secrets
