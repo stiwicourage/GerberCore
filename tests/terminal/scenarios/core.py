@@ -443,7 +443,7 @@ def registered_command_discovery(context) -> None:
 def root_menu_dispatch_contracts(context) -> None:
     expectation_map = {
         "tools": "/tools base-64",
-        "plugins": "/plugins info",
+        "plugins": "/plugins list",
         "secrets": "/secrets get",
     }
     _verify_menu_dispatch_contracts(context, expectation_map)

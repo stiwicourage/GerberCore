@@ -20,19 +20,6 @@ Describe 'Show-GerberPluginsView' {
         Should -Invoke Show-GerberTextBlock -Times 0
     }
 
-    It 'routes direct /plugins info requests through the shared submenu helper' {
-        Mock Get-GerberPluginInventory {}
-        Mock Show-GerberRegisteredSubcommandMenu {}
-
-        Show-GerberPluginsView -Command ([pscustomobject]@{ Arguments = @('info', 'Gerber.TestPlugin') })
-
-        Should -Invoke Show-GerberRegisteredSubcommandMenu -Times 1 -ParameterFilter {
-            $CommandName -eq 'plugins' -and
-            ($Command.Arguments -join ',') -eq 'info,Gerber.TestPlugin' -and
-            $AutoSelectFirstSuggestionOnSubmit
-        }
-    }
-
     It 'routes direct /plugins list requests through the shared submenu helper' {
         Mock Get-GerberPluginInventory {}
         Mock Show-GerberRegisteredSubcommandMenu {}

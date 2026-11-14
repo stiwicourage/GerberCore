@@ -6,7 +6,6 @@ $script:resolvedCommandCaseList = @(
     @{ CommandPath = '/tools base-64 encode'; ExpectedRootName = 'tools'; ExpectedArguments = @('base-64', 'encode') }
     @{ CommandPath = '/tools base-64 decode'; ExpectedRootName = 'tools'; ExpectedArguments = @('base-64', 'decode') }
     @{ CommandPath = '/plugins list'; ExpectedRootName = 'plugins'; ExpectedArguments = @('list') }
-    @{ CommandPath = '/plugins info Gerber.TestPlugin'; ExpectedRootName = 'plugins'; ExpectedArguments = @('info', 'Gerber.TestPlugin') }
     @{ CommandPath = '/secrets list'; ExpectedRootName = 'secrets'; ExpectedArguments = @('list') }
     @{ CommandPath = '/secrets get'; ExpectedRootName = 'secrets'; ExpectedArguments = @('get') }
     @{ CommandPath = '/secrets test'; ExpectedRootName = 'secrets'; ExpectedArguments = @('test') }
@@ -17,8 +16,7 @@ $script:resolvedCommandCaseList = @(
 $script:registeredMenuLeafNameList = @(
     'tools create-uuid',
     'tools base-64',
-    'plugins list',
-    'plugins info'
+    'plugins list'
 )
 
 $script:internalActionCommandNameList = @(

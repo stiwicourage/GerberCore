@@ -41,7 +41,6 @@ Enter these commands **inside Gerber**, not at the PowerShell prompt:
 | `/help` | Show help generated from the active command registry |
 | `/plugins` | Open plugin management |
 | `/plugins list` | List discovered plugins and saved lifecycle records |
-| `/plugins info <plugin>` | Inspect a manifest GUID or unique module name |
 | `/plugins enable` | Select, approve and activate an installed inactive plugin |
 | `/plugins disable` | Deactivate a plugin while keeping approval and installation |
 | `/plugins create` | Generate and validate a working plugin project |

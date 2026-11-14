@@ -21,9 +21,9 @@ Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
             'tools create-uuid',
             'tools base-64',
             'plugins list',
-            'plugins info',
             'plugins enable',
             'plugins disable',
+            'plugins alias',
             'plugins create',
             'update list',
             'update policy'
@@ -80,7 +80,6 @@ Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
         $exitCommand = $definitionList | Where-Object Name -EQ 'exit'
         $pluginsCommand = $definitionList | Where-Object Name -EQ 'plugins'
         $pluginsListCommand = $definitionList | Where-Object Name -EQ 'plugins list'
-        $pluginsInfoCommand = $definitionList | Where-Object Name -EQ 'plugins info'
         $createUuidCommand = $definitionList | Where-Object Name -EQ 'tools create-uuid'
         $base64Command = $definitionList | Where-Object Name -EQ 'tools base-64'
 
@@ -95,7 +94,6 @@ Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
         $helpCommand.Handler.ToString() | Should -Match 'Show-GerberHelpView'
         $exitCommand.Description | Should -Be 'Exit the interactive Gerber session'
         $pluginsListCommand.Description | Should -Be 'List discovered and persisted Gerber plugins'
-        $pluginsInfoCommand.Description | Should -Be 'Show detailed plugin information by GUID or unique module name'
         $createUuidCommand.Description | Should -Be 'Generate a UUID and copy it to the clipboard when possible'
         $createUuidCommand.Subcommands.Count | Should -Be 0
         $base64Command.Subcommands.Keys | Should -Be @('encode', 'decode')
@@ -110,7 +108,6 @@ Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
         $helpCommand = $definitionList | Where-Object Name -EQ 'help'
         $exitCommand = $definitionList | Where-Object Name -EQ 'exit'
         $pluginsListCommand = $definitionList | Where-Object Name -EQ 'plugins list'
-        $pluginsInfoCommand = $definitionList | Where-Object Name -EQ 'plugins info'
         $createUuidCommand = $definitionList | Where-Object Name -EQ 'tools create-uuid'
         $base64Command = $definitionList | Where-Object Name -EQ 'tools base-64'
         Mock Show-GerberToolsView {}
@@ -118,7 +115,6 @@ Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
         Mock Show-GerberHelpView {}
         Mock Write-GerberScreenLine {}
         Mock Invoke-GerberPluginsListCommand {}
-        Mock Invoke-GerberPluginsInfoCommand {}
         Mock Show-GerberCreateUuidTool {}
         Mock Show-GerberBase64Tool {}
 
@@ -127,7 +123,6 @@ Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
         (& $helpCommand.Handler) | Should -BeFalse
         (& $exitCommand.Handler) | Should -BeTrue
         (& $pluginsListCommand.Handler ([pscustomobject]@{ Arguments = @() })) | Should -BeFalse
-        (& $pluginsInfoCommand.Handler ([pscustomobject]@{ Arguments = @('Gerber.TestPlugin') })) | Should -BeFalse
         (& $createUuidCommand.Handler ([pscustomobject]@{ Arguments = @() })) | Should -BeFalse
         (& $base64Command.Handler ([pscustomobject]@{ Arguments = @('encode') })) | Should -BeFalse
 
@@ -136,7 +131,6 @@ Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
         Should -Invoke Show-GerberHelpView -Times 1
         Should -Invoke Write-GerberScreenLine -Times 1 -ParameterFilter { $Text -eq 'Exiting Gerber.' }
         Should -Invoke Invoke-GerberPluginsListCommand -Times 1 -ParameterFilter { $Command.Arguments.Count -eq 0 }
-        Should -Invoke Invoke-GerberPluginsInfoCommand -Times 1 -ParameterFilter { $Command.Arguments[0] -eq 'Gerber.TestPlugin' }
         Should -Invoke Show-GerberCreateUuidTool -Times 1
         Should -Invoke Show-GerberBase64Tool -Times 1 -ParameterFilter { $Command.Arguments[0] -eq 'encode' }
     }

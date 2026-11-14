@@ -194,7 +194,7 @@ Gerber.MyCompany  0.1.0    <generated-manifest-guid>               Approved  Yes
 ```
 
 The plugin remains approved, associated and enabled, **not installed or loaded**.
-`/plugins info Gerber.MyCompany` also works before installation. GUID remains
+The plugin also shows in `/plugins list` before installation. GUID remains
 identity; the cache is display fallback only while installed/loaded metadata is
 absent. Discovered manifest metadata takes precedence, and older associations
 without display metadata retain the GUID-only fallback without migration.

@@ -76,12 +76,6 @@ function Get-GerberCoreLeafCommandDefinitionList {
             Subcommands = [ordered]@{}
         }
         [pscustomobject][ordered]@{
-            Name        = 'plugins info'
-            Description = 'Show detailed plugin information by GUID or unique module name'
-            Handler     = { param([pscustomobject]$Command) Invoke-GerberPluginsInfoCommand -Command $Command; return $false }
-            Subcommands = [ordered]@{}
-        }
-        [pscustomobject][ordered]@{
             Name        = 'plugins enable'
             Description = 'Enable and approve an installed Gerber plugin'
             Handler     = { param([pscustomobject]$Command) Invoke-GerberPluginsEnableCommand -Command $Command; return $false }
@@ -91,6 +85,12 @@ function Get-GerberCoreLeafCommandDefinitionList {
             Name        = 'plugins disable'
             Description = 'Disable an active Gerber plugin and keep its approval'
             Handler     = { param([pscustomobject]$Command) Invoke-GerberPluginsDisableCommand -Command $Command; return $false }
+            Subcommands = [ordered]@{}
+        }
+        [pscustomobject][ordered]@{
+            Name        = 'plugins alias'
+            Description = 'Give a plugin its own command namespace or remove it'
+            Handler     = { param([pscustomobject]$Command) Invoke-GerberPluginsAliasCommand -Command $Command; return $false }
             Subcommands = [ordered]@{}
         }
         Get-GerberCorePluginCreateCommandDefinition

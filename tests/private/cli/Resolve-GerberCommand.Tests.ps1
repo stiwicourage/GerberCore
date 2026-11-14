@@ -250,7 +250,7 @@ Describe 'Resolve-GerberCommand' -Tag 'ActiveCommandTree' {
         $result = Resolve-GerberCommand -InputText '/plugins'
 
         $result.IsValid | Should -BeTrue
-        $result.Suggestions.DisplayText | Should -Be @('/plugins create', '/plugins disable', '/plugins enable', '/plugins info', '/plugins list')
+        $result.Suggestions.DisplayText | Should -Be @('/plugins alias', '/plugins create', '/plugins disable', '/plugins enable', '/plugins list')
     }
 
     It 'rejects an uncontributed /pipelines root' {

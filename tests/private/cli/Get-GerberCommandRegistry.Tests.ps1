@@ -17,9 +17,9 @@ Describe 'Get-GerberCommandRegistry' -Tag 'ActiveCommandTree' {
             'tools create-uuid',
             'tools base-64',
             'plugins list',
-            'plugins info',
             'plugins enable',
             'plugins disable',
+            'plugins alias',
             'plugins create',
             'update list',
             'update policy'

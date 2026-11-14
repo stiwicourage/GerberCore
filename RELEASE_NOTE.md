@@ -11,6 +11,9 @@ This file summarizes user-visible commands, configuration and migration changes.
 
 ### Removed
 
+- `/plugins info <plugin>` is removed. Open `/plugins list`, select a plugin and
+  press Enter to see its details.
+
 ### Fixed
 
 ## [0.3.2] - 2026-11-10

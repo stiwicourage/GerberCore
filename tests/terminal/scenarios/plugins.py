@@ -104,13 +104,13 @@ def _cancel_plugin_creation_at_suffix(context) -> None:
     config_path = context.app.runtime_paths.scenario_root / "GerberCore.json"
     before = config_path.read_text()
     _open_plugins_parent_menu(context)
-    context.app.press("ENTER")
+    _select_plugins_create_from_parent(context)
     context.app.wait_for_text("Create Gerber Plugin")
     context.app.wait_for_text("Module suffix")
     context.app.press("ESCAPE")
     _expect_plugins_parent_menu(context)
     assert config_path.read_text() == before, "Escape must not persist a generated approval"
-    context.app.press("ENTER")
+    _select_plugins_create_from_parent(context)
 
 
 def _enter_plugin_creation_with_recovery(context) -> None:
@@ -170,7 +170,7 @@ def _inspect_created_plugin_from_parent(context) -> None:
 
 def _begin_plugin_creation_to_repository(context) -> None:
     _open_plugins_parent_menu(context)
-    context.app.press("ENTER")
+    _select_plugins_create_from_parent(context)
     _submit_plugin_creation_field(context, "Module suffix", "MyCompany")
     _submit_plugin_creation_field(context, "Description", "PTY example")
     _submit_plugin_creation_field(context, "Command namespace", "mycompany")
@@ -415,14 +415,12 @@ def _expect_plugins_parent_menu(context) -> None:
     context.app.expect_text_absent("Gerber Plugins")
     context.app.wait_for_prompt()
     context.app.expect_input("/plugins ")
+    context.app.expect_selected_suggestion_highlighted("/plugins alias")
+
+
+def _select_plugins_create_from_parent(context) -> None:
+    context.app.press("DOWN")
     context.app.expect_selected_suggestion_highlighted("/plugins create")
-
-
-def _select_plugins_info_from_parent(context) -> None:
-    context.app.press("DOWN")
-    context.app.press("DOWN")
-    context.app.press("DOWN")
-    context.app.expect_selected_suggestion_highlighted("/plugins info")
     context.app.press("ENTER")
 
 
@@ -636,8 +634,8 @@ def synthetic_plugin_approval_declined(context) -> None:
     title="Core plugin management read-only views",
     categories=("plugin", "core", "rendering", "navigation"),
     metadata=ScenarioMetadata(
-        commands=("plugins", "plugins list", "plugins info"),
-        workflows=("command:plugins", "command:plugins list", "command:plugins info"),
+        commands=("plugins", "plugins list"),
+        workflows=("command:plugins", "command:plugins list"),
         coverage=("dispatch", "workflow", "navigation", "rendering"),
     ),
 )
@@ -649,10 +647,8 @@ def plugin_management_read_only(context) -> None:
     context.app.start(enable_synthetic_plugin=True)
     context.app.wait_for_prompt()
     _open_plugins_parent_menu(context)
-    context.app.wait_for_text("/plugins info")
-    _select_plugins_info_from_parent(context)
-    context.app.wait_for_text("Plugin GUID or unique module name:")
-    context.app.type(PLUGIN_GUID)
+    context.app.wait_for_text("/plugins list")
+    _select_plugins_list_from_parent(context)
     context.app.press("ENTER")
     context.app.wait_for_text("/plugins info")
     context.app.wait_for_text(f"GUID:         {PLUGIN_GUID}")
@@ -700,6 +696,38 @@ def plugin_enable_disable_workflow(context) -> None:
 
 
 @scenario(
+    "plugin-alias-workflow",
+    title="Core plugin alias rejects reserved names, saves and supports Esc",
+    categories=("plugin", "core", "rendering", "navigation"),
+    metadata=ScenarioMetadata(
+        commands=("plugins", "plugins alias"),
+        workflows=("command:plugins", "command:plugins alias"),
+        coverage=("dispatch", "workflow", "navigation", "rendering", "error-recovery"),
+    ),
+)
+def plugin_alias_workflow(context) -> None:
+    _start_plugin_management_session(context)
+    context.app.type("/plugins alias")
+    context.app.press("ENTER")
+    context.app.wait_for_text("Select plugin")
+    context.app.press("ESCAPE")
+    _expect_plugins_parent_menu(context)
+    context.app.press("ENTER")
+    context.app.wait_for_text("Select plugin")
+    context.app.press("ENTER")
+    context.app.wait_for_text("Namespace alias")
+    context.app.type("plugins")
+    context.app.press("ENTER")
+    context.app.wait_for_text("reserved for Gerber Core")
+    context.app.wait_for_text("Namespace alias")
+    context.app.type("my-alias")
+    context.app.press("ENTER")
+    context.app.wait_for_text("will use '/my-alias'")
+    context.app.press("ENTER")
+    context.app.wait_for_prompt()
+
+
+@scenario(
     "plugin-menu-list-parent-navigation",
     title="Plugin list single Escape returns to /plugins",
     categories=("plugin", "core", "escape", "navigation"),
@@ -719,32 +747,12 @@ def plugin_menu_list_parent_navigation(context) -> None:
 
 
 @scenario(
-    "plugin-menu-info-parent-navigation",
-    title="Plugin info single Escape returns to /plugins",
-    categories=("plugin", "core", "escape", "navigation"),
-    metadata=ScenarioMetadata(
-        commands=("plugins", "plugins info"),
-        workflows=("command:plugins", "command:plugins info", "navigation:single-escape"),
-        coverage=("workflow", "navigation", "rendering"),
-    ),
-)
-def plugin_menu_info_parent_navigation(context) -> None:
-    _start_plugin_management_session(context)
-    _open_plugins_parent_menu(context)
-    _select_plugins_info_from_parent(context)
-    context.app.wait_for_text("Plugin GUID or unique module name:")
-    context.app.press("ESCAPE")
-    _expect_plugins_parent_menu(context)
-    _return_to_root_from_plugins_parent(context)
-
-
-@scenario(
     "plugin-details-parent-navigation",
     title="Plugin details single Escape returns to list then /plugins",
     categories=("plugin", "core", "escape", "navigation"),
     metadata=ScenarioMetadata(
-        commands=("plugins", "plugins list", "plugins info"),
-        workflows=("command:plugins", "command:plugins list", "command:plugins info", "navigation:single-escape"),
+        commands=("plugins", "plugins list"),
+        workflows=("command:plugins", "command:plugins list", "navigation:single-escape"),
         coverage=("workflow", "navigation", "rendering"),
     ),
 )
@@ -767,16 +775,15 @@ def plugin_details_parent_navigation(context) -> None:
     title="Plugin menu keeps highlight after repeated Escape navigation",
     categories=("plugin", "core", "escape", "navigation", "rendering"),
     metadata=ScenarioMetadata(
-        commands=("plugins", "plugins info", "plugins list"),
-        workflows=("command:plugins", "command:plugins info", "command:plugins list", "navigation:single-escape"),
+        commands=("plugins", "plugins list"),
+        workflows=("command:plugins", "command:plugins list", "navigation:single-escape"),
         coverage=("workflow", "navigation", "rendering"),
     ),
 )
 def plugin_menu_repeated_navigation_highlight(context) -> None:
     _start_plugin_management_session(context)
     _open_plugins_parent_menu(context)
-    _select_plugins_info_from_parent(context)
-    context.app.wait_for_text("Plugin GUID or unique module name:")
+    _select_plugins_list_from_parent(context)
     context.app.press("ESCAPE")
     _expect_plugins_parent_menu(context)
     _select_plugins_list_from_parent(context)
@@ -824,23 +831,3 @@ def plugin_list_direct_invocation_navigation(context) -> None:
     context.app.press("ESCAPE")
     _expect_plugins_parent_menu(context)
     _return_to_root_from_plugins_parent(context)
-
-
-@scenario(
-    "plugin-management-info-recovery",
-    title="Core plugin info recovery",
-    categories=("plugin", "core", "errors", "recovery"),
-    metadata=ScenarioMetadata(
-        commands=("plugins info",),
-        workflows=("command:plugins info", "plugin-management:invalid-guid"),
-        coverage=("error-recovery",),
-    ),
-)
-def plugin_management_info_recovery(context) -> None:
-    context.app.start()
-    context.app.wait_for_prompt()
-    context.app.type("/plugins info 11111111-2222-not-a-guid")
-    context.app.press("ENTER")
-    context.app.wait_for_text("is not a valid GUID")
-    context.app.press("ENTER")
-    context.app.wait_for_prompt()

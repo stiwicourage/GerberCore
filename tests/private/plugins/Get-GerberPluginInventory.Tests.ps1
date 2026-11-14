@@ -51,7 +51,6 @@ Describe 'Get-GerberPluginInventory' -Tag 'PluginCreate' {
         $entry.Loaded | Should -BeFalse
         (Get-GerberPluginListText -PluginInventory @($entry)) | Should -Match $ExpectedName
         (Get-GerberPluginInfoText -Plugin $entry) | Should -Match $ExpectedVersion
-        (Get-GerberSelectedPluginInventoryEntry -PluginInventory @($entry) -LookupText $ExpectedName).Guid | Should -Be $script:pluginGuid
         (Get-Content $env:GERBER_CONFIG_PATH -Raw) | Should -Be $before
         Should -Invoke Import-Module -Times 0
         Should -Invoke Save-GerberUserConfiguration -Times 0
