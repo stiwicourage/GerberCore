@@ -53,6 +53,25 @@ Describe 'Add-GerberPluginToRegistryBuilder' -Tag 'PluginTransactions' {
         }
     }
 
+    Context 'User namespace alias' {
+        It 'registers the plugin commands under the alias stored for its GUID' {
+            Mock Get-GerberPluginNamespaceAlias { 'microsoft-ado' }
+            $state = Copy-GerberCommandRegistryState -State $script:GerberCommandRegistryState
+            $builder = [pscustomobject]@{
+                CommandList = [System.Collections.Generic.List[object]]::new([object[]]@($state.CommandList))
+                PluginList = [System.Collections.Generic.List[object]]::new()
+                GerberVersion = Get-GerberCurrentVersion
+            }
+
+            Add-GerberPluginToRegistryBuilder -RegistryBuilder $builder -PluginModule $script:moduleA `
+                -LifecycleState ([pscustomobject]@{ IsAssociated = $false; IsEnabled = $true })
+
+            $builder.CommandList.Name | Should -Contain 'microsoft-ado staging'
+            $builder.CommandList.Name | Should -Not -Contain 'repository staging'
+            Should -Invoke Get-GerberPluginNamespaceAlias -ParameterFilter { $Guid -eq $script:moduleA.Guid.ToString() }
+        }
+    }
+
     Context 'Reserved Core roots' {
         It 'rejects a plugin command under a reserved root without publishing' {
             Mock Get-GerberPluginDefinition {

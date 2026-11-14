@@ -43,7 +43,58 @@ function Test-GerberPluginUserConfiguration {
         -Configuration $pluginConfiguration `
         -PropertyName 'associated'
     Assert-GerberAssociatedPluginStateTable -AssociatedPluginTable $associatedPluginTable -Path $Path
+    Assert-GerberPluginNamespaceAliasTable -Path $Path -AliasTable (Get-GerberPluginConfigurationPropertyValue `
+        -Configuration $pluginConfiguration `
+        -PropertyName 'aliases')
     return $true
+}
+
+function Assert-GerberPluginNamespaceAliasTable {
+    [CmdletBinding()]
+    param(
+        [AllowNull()]
+        [object]$AliasTable,
+
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    if ($null -eq $AliasTable) {
+        return
+    }
+    if (-not (Test-GerberUserConfigurationRootObject -Configuration $AliasTable)) {
+        throw [System.IO.InvalidDataException]::new(
+            "Gerber user configuration file '$Path' property 'plugins.aliases' must be a JSON object."
+        )
+    }
+
+    $aliasList = @(
+        foreach ($entry in @(Get-GerberPluginConfigurationEntryList -Configuration $AliasTable)) {
+            $null = ConvertTo-GerberPluginConfigurationGuid -Value $entry.Name -Path $Path -PropertyPath 'plugins.aliases'
+            Assert-GerberPluginNamespaceAliasValue -Alias $entry.Value -Path $Path
+            $entry.Value
+        }
+    )
+    if (@($aliasList | Select-Object -Unique).Count -ne $aliasList.Count) {
+        throw [System.IO.InvalidDataException]::new(
+            "Gerber user configuration file '$Path' property 'plugins.aliases' contains a duplicate alias."
+        )
+    }
+}
+
+function Assert-GerberPluginNamespaceAliasValue {
+    param([object]$Alias, [string]$Path)
+
+    try {
+        if ($Alias -isnot [string]) {
+            throw [System.ArgumentException]::new('not a string')
+        }
+        Assert-GerberPluginNamespaceAliasName -Alias $Alias
+    } catch [System.ArgumentException] {
+        throw [System.IO.InvalidDataException]::new(
+            "Gerber user configuration file '$Path' property 'plugins.aliases' must contain valid, unreserved lowercase namespace names."
+        )
+    }
 }
 
 function Get-GerberPluginConfigurationPropertyValue {

@@ -23,7 +23,7 @@ function Complete-GerberPluginRegistryPreparation {
     )
 
     $registration = ConvertTo-GerberPluginRegistration -PluginModule $PluginModule -GerberVersion $RegistryBuilder.GerberVersion
-    Add-GerberPluginRegistrationCommandList -RegistryBuilder $RegistryBuilder -Registration $registration -OwnerName $PluginModule.Name
+    Add-GerberPluginRegistrationCommandList -RegistryBuilder $RegistryBuilder -Registration $registration -PluginModule $PluginModule
     Complete-GerberPluginRegistryState `
         -RegistryBuilder $RegistryBuilder `
         -PluginModule $PluginModule `
@@ -35,19 +35,32 @@ function Add-GerberPluginRegistrationCommandList {
     param(
         [pscustomobject]$RegistryBuilder,
         [pscustomobject]$Registration,
-        [string]$OwnerName
+        [pscustomobject]$PluginModule
     )
 
-    Assert-GerberPluginCommandRootNotReserved -CommandDefinitionList $Registration.Commands -PluginName $OwnerName
+    $OwnerName = $PluginModule.Name
+    $definitionList = @(Get-GerberPluginAliasedCommandDefinitionList -PluginModule $PluginModule -CommandDefinitionList $Registration.Commands)
+    Assert-GerberPluginCommandRootNotReserved -CommandDefinitionList $definitionList -PluginName $OwnerName
     $commandList = @(Resolve-GerberPluginNamespaceConflict `
         -RegistryBuilder $RegistryBuilder `
-        -CommandDefinitionList $Registration.Commands `
+        -CommandDefinitionList $definitionList `
         -OwnerName $OwnerName)
     Add-GerberOwnedCommandDefinitionList `
         -RegisteredCommandList $RegistryBuilder.CommandList `
         -CommandDefinitionList $commandList `
         -OwnerName $OwnerName `
         -OwnerType 'Plugin'
+}
+
+function Get-GerberPluginAliasedCommandDefinitionList {
+    param([pscustomobject]$PluginModule, [AllowNull()][object[]]$CommandDefinitionList)
+
+    $alias = Get-GerberPluginNamespaceAlias -Guid $PluginModule.Guid.ToString()
+    if ([string]::IsNullOrEmpty($alias)) {
+        return $CommandDefinitionList
+    }
+
+    return @(Rename-GerberPluginCommandRoot -CommandDefinitionList $CommandDefinitionList -Alias $alias -PluginName $PluginModule.Name)
 }
 
 function ConvertTo-GerberPluginRegistration {

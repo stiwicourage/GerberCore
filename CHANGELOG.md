@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- A user can store a namespace alias for a plugin in the user configuration
+  (`plugins.aliases.<plugin GUID>`). Gerber registers the plugin's commands
+  under the alias, so two plugins that claim the same namespace can run side by
+  side. The alias is keyed by plugin GUID and survives plugin updates. Aliases
+  must be lowercase names, not Core-reserved, and unique. A plugin that
+  registers more than one root command ignores its alias with a warning. The
+  `/plugins` menu flow to set and remove aliases follows separately.
 - After an update that needs a restart, `/update list` offers **Exit Gerber and
   PowerShell** in PowerShell console hosts, because exiting Gerber alone leaves
   the old module loaded. Other hosts (VS Code, ISE, remote) get guidance to
