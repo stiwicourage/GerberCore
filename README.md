@@ -209,6 +209,21 @@ Core settings, plugin approvals/associations and `coreUpdates.channel` live in
 - macOS/Linux: `$env:XDG_CONFIG_HOME/Gerber/GerberCore.json`, if set;
   otherwise `$HOME/.config/Gerber/GerberCore.json`
 
+`GerberCore.json` uses `schemaVersion` `1`, which is required. All other
+properties are optional, and unknown properties are preserved when Gerber saves
+the file:
+
+| Property | Meaning |
+| --- | --- |
+| `plugins.approved` / `plugins.declined` | Lists of plugin GUIDs. A GUID may not appear twice in one list. |
+| `plugins.associated` | Per-GUID association and enabled state. |
+| `plugins.aliases` | Per-GUID namespace alias, unique across plugins; applied after a restart. |
+| `coreUpdates.channel` | `Stable` (default) or `IncludePrerelease`. |
+
+Gerber rejects an unsupported `schemaVersion` instead of guessing. Later releases
+add optional properties without changing version 1. Changing the meaning of an
+existing property requires a new `schemaVersion`.
+
 `GERBER_CONFIG_PATH` is an absolute **Core file** override. An override ending in
 legacy `config.json` selects sibling `GerberCore.json`; other explicit filenames
 are retained. Legacy-name matching is case-insensitive on Windows and
