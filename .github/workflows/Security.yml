@@ -21,7 +21,7 @@ jobs:
       contents: read
 
   analyzer:
-    uses: stiwicourage/powershell-ci/.github/workflows/powershell-analyzer.yml@0.1.0
+    uses: stiwicourage/powershell-ci/.github/workflows/powershell-analyzer.yml@0.1.1
     permissions:
       security-events: write
       actions: read
