@@ -88,7 +88,7 @@ Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
         $definitionList.Name | Should -Not -Contain 'branch'
         $definitionList.Name | Should -Not -Contain 'list'
         $definitionList.Name | Should -Not -Contain 'pipelines'
-        $pluginsCommand.Description | Should -Be 'Show Gerber plugin status and manage plugin activation'
+        $pluginsCommand.Description | Should -Be 'Manage Gerber plugins: list, install, enable, disable, alias and create'
         $pluginsCommand.Handler.ToString() | Should -Match 'Show-GerberPluginsView'
         $pluginsCommand.Subcommands.Count | Should -Be 0
         $helpCommand.Description | Should -Be 'Show the built-in command help'

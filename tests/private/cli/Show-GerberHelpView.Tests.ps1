@@ -21,7 +21,7 @@ Describe 'Show-GerberHelpView' -Tag 'ActiveCommandTree' {
         $script:helpText | Should -Not -Match '/repository'
         $script:helpText | Should -Not -Match '/branch'
         $script:helpText | Should -Not -Match '/repository create Create a new repository from template'
-        $script:helpText | Should -Match '/plugins Show Gerber plugin status and manage plugin activation'
+        $script:helpText | Should -Match '/plugins Manage Gerber plugins: list, install, enable, disable, alias and create'
         $script:helpText | Should -Match '/plugins list List discovered and persisted Gerber plugins'
         $script:helpText | Should -Not -Match '/pipelines'
         $script:helpText | Should -Not -Match '/pipelines tags Open the pipeline tag submenu'

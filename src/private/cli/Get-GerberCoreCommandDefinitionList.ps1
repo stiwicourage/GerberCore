@@ -25,7 +25,7 @@ function Get-GerberCoreRootCommandDefinitionList {
         }
         [pscustomobject][ordered]@{
             Name        = 'plugins'
-            Description = 'Show Gerber plugin status and manage plugin activation'
+            Description = 'Manage Gerber plugins: list, install, enable, disable, alias and create'
             Handler     = { param([pscustomobject]$Command) Show-GerberPluginsView -Command $Command; return $false }
             Subcommands = [ordered]@{}
         }

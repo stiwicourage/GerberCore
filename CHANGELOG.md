@@ -44,6 +44,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- The `/plugins` description now lists all its subcommands. The review of Core command names found nothing else to change before 1.0.0.
 - Simplified `/update list`: selected packages are inspected without a separate
   consent prompt, each checkbox is a single line (`Name  from -> to  (Repository)`),
   the installation confirmation is a compact per-component plan with one source

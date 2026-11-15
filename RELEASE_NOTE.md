@@ -14,6 +14,7 @@ This file summarizes user-visible commands, configuration and migration changes.
 - `/plugins install` installs a plugin from PowerShell Gallery after a namespace ownership check; enable it afterwards with `/plugins enable`.
 ### Changed
 
+- The `/plugins` description lists all its subcommands.
 ### Removed
 
 - `/plugins info <plugin>` is removed. Open `/plugins list`, select a plugin and
