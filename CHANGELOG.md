@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- The Plugin API v1 document now describes the namespace and conflict contract and the compatibility rules that apply after 1.0.0. The API review found nothing to change before the lock.
 - Generated plugin projects now declare their namespace in `project.json` (manifest and `GerberNamespace_<namespace>` Gallery tag) and include `scripts/Test-PluginNamespaceRegistry.ps1` plus a `Namespace-Registry` workflow. The gate fails when an earlier publisher owns the namespace and reports an unreachable registry as unverified.
 - `/plugins install` now stops when an installed plugin already uses the namespace
   of the plugin being installed, and asks you to rename or uninstall the installed one first.
