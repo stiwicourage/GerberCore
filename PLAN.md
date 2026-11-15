@@ -35,17 +35,17 @@ The original plan explicitly allowed reordering and prioritized plugin creation 
 |---|---|---|
 | G-1A | Read-only three-repository architecture analysis | Complete; `G-1A.md`, `G-1A_response.md` |
 | G-1B | Runtime dependencies and manifest metadata | Both NovaModuleTools and PSModuleUpdate remain `RequiredModules` (D-002 amendment, D-017). Disposable build/import qualification passed on macOS/PowerShell 7.4.21 and 7.6.6 ([G-4A6](docs/architecture/G-4A6-runtime-dependency-qualification.md)); authorized G-4A7 Nova builds refresh the ignored local manifest |
-| G-1C | Local analyzer/quality tooling | Analyzer zero findings reported; task status verify |
-| G-1D | Test/publish workflows | Verify |
-| G-2A | Persistent user configuration | Worked on; verify exact acceptance criteria |
-| G-2B | Generic profile resolution / remove organization defaults | Worked on; verify exact acceptance criteria |
-| G-2C | Pure URL parser | Verify |
-| G-2D | Credential resolver | Original vault/env design **superseded** by Devlooped abstraction; verify current implementation |
-| G-2E | Lazy setup and safe command resume | Verify |
-| G-2F | Named connections in Plugin API | Verify |
+| G-1C | Local analyzer/quality tooling | **Verified 2026-11-15:** `scripts/build/Invoke-ScriptAnalyzerCI.ps1` reports zero findings across 503 files |
+| G-1D | Test/publish workflows | **Verified 2026-11-15:** `.github/workflows/` has `Tests.yml`, `Run-Platform-Matrix.yml`, `Security.yml` and `Publish.yml`; hosted results for the final revision are tracked in G-4C |
+| G-2A | Persistent user configuration | **Verified 2026-11-15:** `GerberCore.json` `schemaVersion` 1 with validation, atomic save, unknown-property preservation and legacy `config.json` transition (`src/private/config`, `tests/private/config`); schema recorded in DECISIONS.md and README |
+| G-2B | Generic profile resolution / remove organization defaults | **Verified 2026-11-15:** Core contains no organization, profile or product defaults; product connections belong to plugins (D-002, Plugin API v1 document) |
+| G-2C | Pure URL parser | **Moved to the product plugin 2026-11-15:** Core has no product URL parser by design (D-002); Core only normalizes plugin repository URIs (`ConvertTo-GerberPluginRepositoryUri`) |
+| G-2D | Credential resolver | Original vault/env design **superseded** by Devlooped abstraction. **Verified 2026-11-15:** internal credential service and the Plugin API `Secrets` capability, documented in [credential-service](docs/architecture/credential-service.md) |
+| G-2E | Lazy setup and safe command resume | **Moved to the product plugin 2026-11-15:** Core offers `UI.IsInteractive` and `Secrets.EnsureReady`; lazy setup and command resume are plugin responsibilities (Plugin API v1 document) |
+| G-2F | Named connections in Plugin API | **Decided 2026-11-15, not added:** Plugin API v1 has no connection capability. Plugins keep named connections in their own `<ModuleName>.json` through `Configuration` and credentials through `Secrets` (Plugin API v1 review, DECISIONS.md) |
 | G-3A | Plugin GUID identity and isolation | G-3A1 persistent approval implemented; G-3A2 persistent association and enabled/disabled lifecycle implemented; management commands remain planned |
-| G-3B | Namespace aliases and conflict resolution | Planned |
-| G-3C | `/plugins` overview plus `list/info/enable/disable` | Overview/list/info and enable/disable implemented; separate approve is unnecessary because enable handles declined plugins. Decided 2026-11-10: no remove/revoke commands; disable inside Gerber, and uninstalling the PowerShell module outside Gerber is removal/revocation (D-005) |
+| G-3B | Namespace aliases and conflict resolution | Implemented, hosted qualification pending: reserved roots, conflict withholding, user alias by GUID (`/plugins alias`), local-plugin install block, first-publication rule, `/plugins install` and the plugin-template publish gate. Open: squatting handling and reading the namespace from published manifests (DECISIONS.md) |
+| G-3C | `/plugins` overview plus `list/enable/disable` | Overview/list and enable/disable implemented; `/plugins info` was removed in favor of selecting a plugin in `/plugins list`; separate approve is unnecessary because enable handles declined plugins. Decided 2026-11-10: no remove/revoke commands; disable inside Gerber, and uninstalling the PowerShell module outside Gerber is removal/revocation (D-005) |
 | G-3D | Transactional `/plugins create` | G-3D1 + FIX1: explained/spaced fields, visible cwd/child defaults, completion metadata; cached pre-install name/version, canonical manifest GUID and complete Unreleased changelog; staged validation/autoapproval preserved |
 | G-3E | Generated agent resources | G-3E1: canonical self-contained AGENTS.md, thin Claude/Copilot bridges, three scoped instruction files, plugin developer role and three actionable skills; generated project builds/tests/publishes locally in isolation |
 | G-3F | Plugin boundary guardrails | G-3F1 implemented: standalone installed-source AST validation, transactional generation gate and generated development workflow; CodeScene review/safeguard availability remains a separate verification gate. Gerber.ExampleOrg unchanged. |
@@ -124,6 +124,6 @@ Local implementation work is complete. Resume separately authorized PMU API deli
 ## Next review checklist
 - Deliver the locally corrected PMU through a separately authorized release/dependency task and complete the remaining G-4A7R live-update qualification before treating Core integration as fully qualified; G-4A9 remains a separate task.
 - Compare `PLAN.md`, `ARCHITECTURE.md`, `DECISIONS.md` to source and existing project documentation.
-- Confirm G-2A/G-2B and credential abstraction current state.
-- Verify G-3A1/G-3A2 against the current loader and persistent configuration tests before adding `/plugins` management commands.
-- Revoke/remove decided 2026-11-10 (D-005): no commands; disable in Gerber, uninstall the module outside it. Verify that a persisted association whose module is gone is handled cleanly at startup and in `/plugins list`.
+- G-2A/G-2B and the credential abstraction were confirmed 2026-11-15 (see the G-1/G-2 table).
+- G-3A1/G-3A2 verified 2026-11-15 against the loader and persistent configuration tests (`Test-GerberPluginUserConfiguration`, `Get-GerberPluginInventory` tests); the `/plugins` management commands now exist.
+- Revoke/remove decided 2026-11-10 (D-005): no commands; disable in Gerber, uninstall the module outside it. Verified 2026-11-15: a persisted association whose module is gone is covered by the `associated missing plugin` case in `tests/private/plugins/Get-GerberPluginInventory.Tests.ps1`.
