@@ -7,6 +7,7 @@ This file summarizes user-visible commands, configuration and migration changes.
 
 ### Added
 
+- `/plugins install` installs a plugin from PowerShell Gallery after a namespace ownership check; enable it afterwards with `/plugins enable`.
 ### Changed
 
 ### Removed

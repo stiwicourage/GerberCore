@@ -19,6 +19,7 @@ Describe 'Get-GerberCommandRegistry' -Tag 'ActiveCommandTree' {
             'plugins list',
             'plugins enable',
             'plugins disable',
+            'plugins install',
             'plugins alias',
             'plugins create',
             'update list',

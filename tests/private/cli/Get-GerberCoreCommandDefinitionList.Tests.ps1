@@ -23,6 +23,7 @@ Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
             'plugins list',
             'plugins enable',
             'plugins disable',
+            'plugins install',
             'plugins alias',
             'plugins create',
             'update list',

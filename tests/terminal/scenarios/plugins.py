@@ -424,8 +424,15 @@ def _select_plugins_create_from_parent(context) -> None:
     context.app.press("ENTER")
 
 
-def _select_plugins_list_from_parent(context) -> None:
+def _select_plugins_install_from_parent(context) -> None:
     for _ in range(4):
+        context.app.press("DOWN")
+    context.app.expect_selected_suggestion_highlighted("/plugins install")
+    context.app.press("ENTER")
+
+
+def _select_plugins_list_from_parent(context) -> None:
+    for _ in range(5):
         context.app.press("DOWN")
     context.app.expect_selected_suggestion_highlighted("/plugins list")
     context.app.press("ENTER")
@@ -725,6 +732,33 @@ def plugin_alias_workflow(context) -> None:
     context.app.wait_for_text("will use '/my-alias'")
     context.app.press("ENTER")
     context.app.wait_for_prompt()
+
+
+@scenario(
+    "plugin-install-workflow",
+    title="Core plugin install validates names, shows the registry result and supports Esc",
+    categories=("plugin", "core", "rendering", "navigation"),
+    metadata=ScenarioMetadata(
+        commands=("plugins", "plugins install"),
+        workflows=("command:plugins", "command:plugins install"),
+        coverage=("dispatch", "workflow", "navigation", "rendering", "error-recovery"),
+    ),
+)
+def plugin_install_workflow(context) -> None:
+    _start_plugin_management_session(context)
+    context.app.type("/plugins install")
+    context.app.press("ENTER")
+    context.app.wait_for_text("Plugin module name")
+    context.app.press("ESCAPE")
+    _expect_plugins_parent_menu(context)
+    _select_plugins_install_from_parent(context)
+    context.app.wait_for_text("Plugin module name")
+    context.app.type("bad name!")
+    context.app.press("ENTER")
+    context.app.wait_for_text("is not a valid module name")
+    context.app.wait_for_text("Plugin module name")
+    context.app.press("ESCAPE")
+    _expect_plugins_parent_menu(context)
 
 
 @scenario(

@@ -88,6 +88,12 @@ function Get-GerberCoreLeafCommandDefinitionList {
             Subcommands = [ordered]@{}
         }
         [pscustomobject][ordered]@{
+            Name        = 'plugins install'
+            Description = 'Install a Gerber plugin from PowerShell Gallery'
+            Handler     = { param([pscustomobject]$Command) Invoke-GerberPluginsInstallCommand -Command $Command; return $false }
+            Subcommands = [ordered]@{}
+        }
+        [pscustomobject][ordered]@{
             Name        = 'plugins alias'
             Description = 'Give a plugin its own command namespace or remove it'
             Handler     = { param([pscustomobject]$Command) Invoke-GerberPluginsAliasCommand -Command $Command; return $false }

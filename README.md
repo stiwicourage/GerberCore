@@ -43,6 +43,7 @@ Enter these commands **inside Gerber**, not at the PowerShell prompt:
 | `/plugins list` | List discovered plugins and saved lifecycle records |
 | `/plugins enable` | Select, approve and activate an installed inactive plugin |
 | `/plugins disable` | Deactivate a plugin while keeping approval and installation |
+| `/plugins install` | Install a plugin from PowerShell Gallery after a namespace registry check; enable it afterwards with `/plugins enable` |
 | `/plugins create` | Generate and validate a working plugin project |
 | `/update` | Open the update menu |
 | `/update list` | Check Core and eligible installed plugins; review and confirm updates |

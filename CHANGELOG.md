@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Added `/plugins install`: installs a plugin from PowerShell Gallery for the current
+  user after checking namespace ownership. A namespace owned by an earlier publisher
+  blocks installation, a failed lookup is shown as unverified and needs explicit
+  confirmation, and the plugin is enabled and approved afterwards with `/plugins enable`.
+  Plugins publish their namespace as the Gallery tag `GerberNamespace_<namespace>`.
 - Added the namespace first-publication rule used for registry checks: the earliest
   PowerShell Gallery first publication of a `PrivateData.Gerber.Namespace` owns it,
   ties go to the lowest GUID, and a failed lookup is reported as unverified.
