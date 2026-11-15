@@ -15,6 +15,10 @@ shared text inputs and Escape navigation; it is not a general-purpose generator.
 | Repository URI (another repository only) | `https://packages.example.org/feed`, or Enter if unknown | Canonical endpoint in `Manifest.PrivateData.Gerber.Repository.Uri`. Enter writes the explicit invalid placeholder `REPLACE_WITH_REPOSITORY_URI`. |
 | Destination parent | Enter, or an existing directory | Defaults to the current working directory. The final project is always a new **parent/Gerber.MyCompany** child. |
 
+A local plugin can use any namespace that Gerber Core does not reserve (`exit`,
+`help`, `plugins`, `update`, `tools`, `secrets`). Developing locally needs no
+registration and no network access.
+
 Suffixes and namespaces are limited to 64 characters. Names cannot contain dots,
 slashes, whitespace or path traversal. Parent directories must already exist and
 must not contain `..` path segments. Existing destinations are never overwritten,

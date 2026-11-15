@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Documented and covered by a test that a local plugin can use any namespace
+  Core does not reserve, without registration or network access.
 - A user can store a namespace alias for a plugin in the user configuration
   (`plugins.aliases.<plugin GUID>`). Gerber registers the plugin's commands
   under the alias, so two plugins that claim the same namespace can run side by

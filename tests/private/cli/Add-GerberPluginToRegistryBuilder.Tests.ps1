@@ -72,6 +72,31 @@ Describe 'Add-GerberPluginToRegistryBuilder' -Tag 'PluginTransactions' {
         }
     }
 
+    Context 'Local plugin namespaces' {
+        It 'registers a local plugin under any unreserved namespace without consulting a registry' {
+            Mock Get-GerberPluginDefinition {
+                [pscustomobject]@{ Commands = @(Get-GerberPluginTransactionCommand 'my-own-ns run') }
+            }
+            Mock Get-GerberPluginNamespaceAlias { $null }
+            Mock Invoke-RestMethod { throw 'Registration must stay offline.' }
+            Mock Invoke-WebRequest { throw 'Registration must stay offline.' }
+            $state = Copy-GerberCommandRegistryState -State $script:GerberCommandRegistryState
+            $builder = [pscustomobject]@{
+                CommandList = [System.Collections.Generic.List[object]]::new([object[]]@($state.CommandList))
+                PluginList = [System.Collections.Generic.List[object]]::new()
+                GerberVersion = Get-GerberCurrentVersion
+            }
+
+            Add-GerberPluginToRegistryBuilder -RegistryBuilder $builder -PluginModule $script:moduleA `
+                -LifecycleState ([pscustomobject]@{ IsAssociated = $true; IsEnabled = $true })
+
+            $builder.CommandList.Name | Should -Contain 'my-own-ns run'
+            $builder.PluginList.Count | Should -Be 1
+            Should -Invoke Invoke-RestMethod -Times 0
+            Should -Invoke Invoke-WebRequest -Times 0
+        }
+    }
+
     Context 'Reserved Core roots' {
         It 'rejects a plugin command under a reserved root without publishing' {
             Mock Get-GerberPluginDefinition {
