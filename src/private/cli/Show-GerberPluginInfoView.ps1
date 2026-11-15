@@ -46,6 +46,11 @@ function Get-GerberPluginInfoText {
         "Commands:     $(Get-GerberPluginInfoListText -ValueList $Plugin.RegisteredCommandList -Prefix '/')"
     )
 
+    $alias = Get-GerberPluginNamespaceAlias -Guid $Plugin.Guid
+    if (-not [string]::IsNullOrWhiteSpace($alias)) {
+        $sectionList += "Alias:        /$alias"
+    }
+
     if ($Plugin.ApprovalStatus -eq 'Declined') {
         $sectionList += @(
             ''

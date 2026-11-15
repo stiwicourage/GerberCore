@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   must be lowercase names, not Core-reserved, and unique. A plugin that
   registers more than one root command ignores its alias with a warning.
   `/plugins alias` sets or removes an alias from the menu; restart Gerber to
-  apply it.
+  apply it, and the plugin details in `/plugins list` show the alias.
 - After an update that needs a restart, `/update list` offers **Exit Gerber and
   PowerShell** in PowerShell console hosts, because exiting Gerber alone leaves
   the old module loaded. Other hosts (VS Code, ISE, remote) get guidance to

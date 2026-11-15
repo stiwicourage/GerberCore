@@ -39,6 +39,49 @@ Describe 'Show-GerberPluginInfoView' {
         Should -Invoke Wait-GerberContinue -Times 1
     }
 
+    It 'shows the user namespace alias when one is stored for the plugin' {
+        Mock Get-GerberPluginNamespaceAlias { 'microsoft-ado' }
+        $plugin = [pscustomobject]@{
+            Guid = '6996218c-58d0-48ce-b6cc-38d06149230a'
+            Name = 'Gerber.TestPlugin'
+            DisplayName = 'Gerber.TestPlugin'
+            Version = '1.0.0'
+            ApprovalStatus = 'Approved'
+            IsAssociated = $true
+            IsEnabled = $true
+            State = 'Enabled'
+            Loaded = $true
+            RegisteredNamespaceList = @('microsoft-ado')
+            RegisteredCommandList = @('microsoft-ado')
+        }
+
+        Show-GerberPluginInfoView -Plugin $plugin
+
+        $script:pluginInfoText | Should -Match 'Alias:\s+/microsoft-ado'
+        Should -Invoke Get-GerberPluginNamespaceAlias -Times 1 -ParameterFilter { $Guid -eq '6996218c-58d0-48ce-b6cc-38d06149230a' }
+    }
+
+    It 'omits the alias line when no alias is stored' {
+        Mock Get-GerberPluginNamespaceAlias { $null }
+        $plugin = [pscustomobject]@{
+            Guid = '6996218c-58d0-48ce-b6cc-38d06149230a'
+            Name = 'Gerber.TestPlugin'
+            DisplayName = 'Gerber.TestPlugin'
+            Version = '1.0.0'
+            ApprovalStatus = 'Approved'
+            IsAssociated = $true
+            IsEnabled = $true
+            State = 'Enabled'
+            Loaded = $true
+            RegisteredNamespaceList = @('example')
+            RegisteredCommandList = @('example')
+        }
+
+        Show-GerberPluginInfoView -Plugin $plugin
+
+        $script:pluginInfoText | Should -Not -Match 'Alias:'
+    }
+
     It 'shows the declined-state note for a declined plugin' {
         $plugin = [pscustomobject]@{
             Guid = '11111111-2222-3333-4444-555555555555'
