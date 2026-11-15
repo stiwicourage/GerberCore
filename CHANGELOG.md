@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Added the namespace first-publication rule used for registry checks: the earliest
+  PowerShell Gallery first publication of a `PrivateData.Gerber.Namespace` owns it,
+  ties go to the lowest GUID, and a failed lookup is reported as unverified.
 - Documented and covered by a test that a local plugin can use any namespace
   Core does not reserve, without registration or network access.
 - A user can store a namespace alias for a plugin in the user configuration
