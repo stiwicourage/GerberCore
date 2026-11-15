@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   codeql:
-    uses: stiwicourage/powershell-ci/.github/workflows/codeql.yml@0.1.0
+    uses: stiwicourage/powershell-ci/.github/workflows/codeql.yml@0.1.1
     permissions:
       security-events: write
       packages: read
