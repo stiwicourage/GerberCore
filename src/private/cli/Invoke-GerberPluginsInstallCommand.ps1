@@ -11,8 +11,9 @@ function Invoke-GerberPluginsInstallCommand {
     }
 
     $verdict = Get-GerberGalleryNamespaceVerdict -Name $name
-    if ($verdict.Status -eq 'Conflict') {
-        Show-GerberTextBlock -Title '/plugins install' -Text (Get-GerberPluginInstallConflictText -Name $name -Verdict $verdict)
+    $blockText = Get-GerberPluginInstallBlockText -Name $name -Verdict $verdict
+    if (-not [string]::IsNullOrEmpty($blockText)) {
+        Show-GerberTextBlock -Title '/plugins install' -Text $blockText
         Wait-GerberContinue
         return
     }
@@ -42,6 +43,24 @@ function Read-GerberPluginInstallName {
         }
         Show-GerberTextBlock -Title '/plugins install' -Text "'$name' is not a valid module name."
     }
+}
+
+function Get-GerberPluginInstallBlockText {
+    [OutputType([string])]
+    param([string]$Name, [pscustomobject]$Verdict)
+
+    if (-not [string]::IsNullOrEmpty($Verdict.Namespace)) {
+        $holder = Get-GerberLocalNamespaceHolder -Namespace $Verdict.Namespace -Name $Name
+        if ($null -ne $holder) {
+            return "Gerber will not install '$Name'. Your installed plugin '$($holder.DisplayName)' already uses " +
+                "namespace '/$($Verdict.Namespace)'. Rename or uninstall it first, then install again."
+        }
+    }
+
+    if ($Verdict.Status -eq 'Conflict') {
+        return Get-GerberPluginInstallConflictText -Name $Name -Verdict $Verdict
+    }
+    return ''
 }
 
 function Get-GerberPluginInstallConflictText {

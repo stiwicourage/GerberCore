@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- `/plugins install` now stops when an installed plugin already uses the namespace
+  of the plugin being installed, and asks you to rename or uninstall the installed one first.
 - Added `/plugins install`: installs a plugin from PowerShell Gallery for the current
   user after checking namespace ownership. A namespace owned by an earlier publisher
   blocks installation, a failed lookup is shown as unverified and needs explicit
