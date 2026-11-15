@@ -1,0 +1,51 @@
+[CmdletBinding()]
+param(
+    [string]$ProjectRoot = (Split-Path -Parent $PSScriptRoot),
+
+    # Returns objects with Name and FirstPublished for every module claiming the namespace.
+    [scriptblock]$ClaimProvider = { param($Namespace) Get-GalleryNamespaceClaimList -Namespace $Namespace }
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
+
+function Get-GalleryNamespaceClaimList {
+    param([string]$Namespace)
+
+    $nameList = @(Find-PSResource -Tag "GerberNamespace_$Namespace" -Repository PSGallery -ErrorAction Stop).Name | Select-Object -Unique
+    foreach ($name in $nameList) {
+        $first = Find-PSResource -Name $name -Version '*' -Repository PSGallery -ErrorAction Stop |
+            Measure-Object -Property PublishedDate -Minimum
+        [pscustomobject]@{ Name = $name; FirstPublished = $first.Minimum }
+    }
+}
+
+function Get-NamespaceRegistryResult {
+    param([string]$Name, [string]$Namespace, [object[]]$ClaimList)
+
+    # The earliest first publication owns the namespace; the name makes ties independent of list order.
+    $owner = @($ClaimList) | Sort-Object FirstPublished, { $_.Name.ToLowerInvariant() } | Select-Object -First 1
+    $status = if ($null -eq $owner) { 'Available' } elseif ($owner.Name -ieq $Name) { 'Owner' } else { 'Conflict' }
+    [pscustomobject]@{ Status = $status; Name = $Name; Namespace = $Namespace; Owner = $owner }
+}
+
+$project = Get-Content -LiteralPath (Join-Path $ProjectRoot 'project.json') -Raw | ConvertFrom-Json
+$gerber = $project.Manifest.PrivateData.Gerber
+$namespace = if ($gerber.PSObject.Properties['Namespace']) { [string]$gerber.Namespace } else { '' }
+if ([string]::IsNullOrWhiteSpace($namespace)) {
+    throw 'project.json must declare Manifest.PrivateData.Gerber.Namespace.'
+}
+
+try {
+    $claimList = @(& $ClaimProvider $namespace)
+} catch {
+    throw "The namespace '/$namespace' is unverified: the registry lookup failed ($($_.Exception.Message)). Run the check again when PowerShell Gallery is reachable."
+}
+
+$result = Get-NamespaceRegistryResult -Name $project.ProjectName -Namespace $namespace -ClaimList $claimList
+if ($result.Status -eq 'Conflict') {
+    throw "Namespace '/$namespace' belongs to '$($result.Owner.Name)', first published $($result.Owner.FirstPublished.ToString('yyyy-MM-dd')). Choose another namespace before publishing."
+}
+
+Write-Output "Namespace '/$namespace' registry check: $($result.Status)."
+$result

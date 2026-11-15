@@ -11,10 +11,12 @@
     "Author": "",
     "PowerShellHostVersion": "7.4",
     "RequiredModules": [],
+    "Tags": ["GerberPlugin", "GerberNamespace_{{Namespace}}"],
     "PrivateData": {
       "Gerber": {
         "Plugin": true,
         "ApiVersion": "1",
+        "Namespace": "{{Namespace}}",
         "MinimumGerberVersion": "{{MinimumGerberVersion}}",
         "Repository": {
           "Name": "PSGallery",

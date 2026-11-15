@@ -7,6 +7,7 @@ This file summarizes user-visible commands, configuration and migration changes.
 
 ### Added
 
+- New plugin projects include a namespace registry gate (script and workflow) that fails when another plugin published the namespace first.
 - `/plugins install` refuses a plugin whose namespace an installed plugin already uses; rename or uninstall the installed plugin first.
 - `/plugins install` installs a plugin from PowerShell Gallery after a namespace ownership check; enable it afterwards with `/plugins enable`.
 ### Changed
