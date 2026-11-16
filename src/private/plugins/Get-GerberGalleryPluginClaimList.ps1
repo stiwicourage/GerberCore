@@ -16,7 +16,7 @@ function Get-GerberGalleryPluginClaimList {
         return [pscustomobject]@{ Namespace = $null; ClaimList = @() }
     }
 
-    $claimNameList = @(Find-PSResource -Tag "GerberNamespace_$namespace" -Repository PSGallery -ErrorAction Stop).Name
+    $claimNameList = @((Find-PSResource -Tag "GerberNamespace_$namespace" -Repository PSGallery -ErrorAction Stop).Name)
     $versionList = foreach ($claimName in ($claimNameList + $Name | Select-Object -Unique)) {
         Find-PSResource -Name $claimName -Version '*' -Repository PSGallery -ErrorAction Stop
     }

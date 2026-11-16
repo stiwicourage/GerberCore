@@ -127,6 +127,14 @@ Describe 'Get-GerberCoreCommandDefinitionList' -Tag 'G4A7' {
         (& $createUuidCommand.Handler ([pscustomobject]@{ Arguments = @() })) | Should -BeFalse
         (& $base64Command.Handler ([pscustomobject]@{ Arguments = @('encode') })) | Should -BeFalse
 
+        Mock Invoke-GerberPluginsInstallCommand {}
+        Mock Invoke-GerberPluginsAliasCommand {}
+        $command = [pscustomobject]@{ Arguments = @('Gerber.Mine') }
+        (& ($definitionList | Where-Object Name -EQ 'plugins install').Handler $command) | Should -BeFalse
+        (& ($definitionList | Where-Object Name -EQ 'plugins alias').Handler $command) | Should -BeFalse
+        Should -Invoke Invoke-GerberPluginsInstallCommand -Times 1
+        Should -Invoke Invoke-GerberPluginsAliasCommand -Times 1
+
         Should -Invoke Show-GerberToolsView -Times 1
         Should -Invoke Show-GerberPluginsView -Times 1
         Should -Invoke Show-GerberHelpView -Times 1

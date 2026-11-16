@@ -33,6 +33,17 @@ Describe 'Set-GerberPluginNamespaceAlias' {
         (Get-GerberUserConfiguration).plugins.aliases[$script:AliasGuid] | Should -Be 'microsoft-ado'
     }
 
+    It 'loads the user configuration when none is passed' {
+        Mock Get-GerberUserConfiguration { @{ schemaVersion = 1 } }
+        Mock Save-GerberUserConfiguration {}
+
+        Set-GerberPluginNamespaceAlias -Guid $script:AliasGuid -Alias 'microsoft-ado'
+
+        Should -Invoke Save-GerberUserConfiguration -Times 1 -ParameterFilter {
+            $Configuration.plugins.aliases[$script:AliasGuid] -eq 'microsoft-ado'
+        }
+    }
+
     It 'removes the alias when none is given' {
         $configuration = @{ schemaVersion = 1; plugins = @{ aliases = @{ $script:AliasGuid = 'microsoft-ado' } } }
 
@@ -94,6 +105,17 @@ Describe 'Test-GerberPluginUserConfiguration aliases' {
         $configuration = @{ schemaVersion = 1; plugins = @{ aliases = @{ $script:AliasGuid = 'dup'; $script:OtherGuid = 'dup' } } }
 
         { Test-GerberPluginUserConfiguration -Configuration $configuration -Path 'c.json' } | Should -Throw "*duplicate*"
+    }
+
+    It 'rejects <Name>' -ForEach @(
+        @{ Name = 'aliases that are not a JSON object'; Aliases = 'microsoft-ado'; Message = '*must be a JSON object*' }
+        @{ Name = 'alias values that are not strings'; Aliases = @{ '6996218c-58d0-48ce-b6cc-38d06149230a' = 5 }; Message = '*valid, unreserved lowercase namespace names*' }
+    ) {
+        param($Aliases, $Message)
+
+        $configuration = @{ schemaVersion = 1; plugins = @{ aliases = $Aliases } }
+
+        { Test-GerberPluginUserConfiguration -Configuration $configuration -Path 'c.json' } | Should -Throw $Message
     }
 
     It 'accepts valid aliases' {
