@@ -110,6 +110,30 @@ Never log, trace, display in errors or JSON-store retrieved values.
 | --- | --- | --- |
 | `CopyText` | `($Value)` | Copy through the platform clipboard abstraction and fallback messaging. |
 
+## Namespaces and conflicts
+
+A plugin's command root is its manifest `PrivateData.Gerber.Namespace`.
+
+- Core reserves `exit`, `help`, `plugins`, `update`, `tools` and `secrets`; a
+  plugin declaring one is rejected with a Gerber-owned message.
+- When two enabled plugins share a namespace, neither contributes commands under
+  it until the user gives one of them an alias with `/plugins alias`. Load order
+  never picks a winner.
+- An alias is stored in user configuration by plugin GUID, survives plugin
+  updates and applies after a Gerber restart.
+- Local plugins may use any unreserved namespace. An installed plugin that uses
+  a namespace blocks `/plugins install` of a public plugin with the same one.
+- For public plugins the earliest PowerShell Gallery first publication owns the
+  namespace. It is checked only at install time and in the generated publish
+  gate, never at runtime, and a failed lookup is reported as unverified.
+
+## Compatibility after 1.0.0
+
+Within `ApiVersion` `"1"` operations may be added but not renamed, removed or
+given an incompatible signature. Objects that Core passes to plugins and that
+plugins only hand back (`PromptContext`, prompt `Style`) are Core-owned; do not
+construct them or depend on their fields.
+
 ## Ownership and lifecycle
 
 Core owns command composition, UI, configuration placement/persistence,

@@ -35,6 +35,7 @@ function Copy-GerberPluginRegistrationBuilder {
         CommandList   = [System.Collections.Generic.List[object]]::new([object[]]@($stagedState.CommandList))
         PluginList    = [System.Collections.Generic.List[object]]::new([object[]]@($State.PluginList))
         GerberVersion = [System.Management.Automation.SemanticVersion]::Parse([string]$State.GerberVersion)
+        WithheldRootList = [System.Collections.Generic.List[object]]::new([object[]]@(Get-GerberWithheldRootList -Source $State))
     }
 }
 

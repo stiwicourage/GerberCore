@@ -41,9 +41,9 @@ Enter these commands **inside Gerber**, not at the PowerShell prompt:
 | `/help` | Show help generated from the active command registry |
 | `/plugins` | Open plugin management |
 | `/plugins list` | List discovered plugins and saved lifecycle records |
-| `/plugins info <plugin>` | Inspect a manifest GUID or unique module name |
 | `/plugins enable` | Select, approve and activate an installed inactive plugin |
 | `/plugins disable` | Deactivate a plugin while keeping approval and installation |
+| `/plugins install` | Install a plugin from PowerShell Gallery after a namespace registry check; enable it afterwards with `/plugins enable` |
 | `/plugins create` | Generate and validate a working plugin project |
 | `/update` | Open the update menu |
 | `/update list` | Check Core and eligible installed plugins; review and confirm updates |
@@ -208,6 +208,21 @@ Core settings, plugin approvals/associations and `coreUpdates.channel` live in
 - Windows: `$env:APPDATA/Gerber/GerberCore.json`
 - macOS/Linux: `$env:XDG_CONFIG_HOME/Gerber/GerberCore.json`, if set;
   otherwise `$HOME/.config/Gerber/GerberCore.json`
+
+`GerberCore.json` uses `schemaVersion` `1`, which is required. All other
+properties are optional, and unknown properties are preserved when Gerber saves
+the file:
+
+| Property | Meaning |
+| --- | --- |
+| `plugins.approved` / `plugins.declined` | Lists of plugin GUIDs. A GUID may not appear twice in one list. |
+| `plugins.associated` | Per-GUID association and enabled state. |
+| `plugins.aliases` | Per-GUID namespace alias, unique across plugins; applied after a restart. |
+| `coreUpdates.channel` | `Stable` (default) or `IncludePrerelease`. |
+
+Gerber rejects an unsupported `schemaVersion` instead of guessing. Later releases
+add optional properties without changing version 1. Changing the meaning of an
+existing property requires a new `schemaVersion`.
 
 `GERBER_CONFIG_PATH` is an absolute **Core file** override. An override ending in
 legacy `config.json` selects sibling `GerberCore.json`; other explicit filenames

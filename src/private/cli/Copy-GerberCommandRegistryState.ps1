@@ -10,5 +10,6 @@ function Copy-GerberCommandRegistryState {
         })
         PluginList = @($State.PluginList)
         GerberVersion = $State.GerberVersion
+        WithheldRootList = @(Get-GerberWithheldRootList -Source $State)
     }
 }

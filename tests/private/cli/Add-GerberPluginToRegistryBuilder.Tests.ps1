@@ -52,4 +52,67 @@ Describe 'Add-GerberPluginToRegistryBuilder' -Tag 'PluginTransactions' {
             @($script:GerberCommandRegistryState.PluginList).Count | Should -Be 0
         }
     }
+
+    Context 'User namespace alias' {
+        It 'registers the plugin commands under the alias stored for its GUID' {
+            Mock Get-GerberPluginNamespaceAlias { 'microsoft-ado' }
+            $state = Copy-GerberCommandRegistryState -State $script:GerberCommandRegistryState
+            $builder = [pscustomobject]@{
+                CommandList = [System.Collections.Generic.List[object]]::new([object[]]@($state.CommandList))
+                PluginList = [System.Collections.Generic.List[object]]::new()
+                GerberVersion = Get-GerberCurrentVersion
+            }
+
+            Add-GerberPluginToRegistryBuilder -RegistryBuilder $builder -PluginModule $script:moduleA `
+                -LifecycleState ([pscustomobject]@{ IsAssociated = $false; IsEnabled = $true })
+
+            $builder.CommandList.Name | Should -Contain 'microsoft-ado staging'
+            $builder.CommandList.Name | Should -Not -Contain 'repository staging'
+            Should -Invoke Get-GerberPluginNamespaceAlias -ParameterFilter { $Guid -eq $script:moduleA.Guid.ToString() }
+        }
+    }
+
+    Context 'Local plugin namespaces' {
+        It 'registers a local plugin under any unreserved namespace without consulting a registry' {
+            Mock Get-GerberPluginDefinition {
+                [pscustomobject]@{ Commands = @(Get-GerberPluginTransactionCommand 'my-own-ns run') }
+            }
+            Mock Get-GerberPluginNamespaceAlias { $null }
+            Mock Invoke-RestMethod { throw 'Registration must stay offline.' }
+            Mock Invoke-WebRequest { throw 'Registration must stay offline.' }
+            $state = Copy-GerberCommandRegistryState -State $script:GerberCommandRegistryState
+            $builder = [pscustomobject]@{
+                CommandList = [System.Collections.Generic.List[object]]::new([object[]]@($state.CommandList))
+                PluginList = [System.Collections.Generic.List[object]]::new()
+                GerberVersion = Get-GerberCurrentVersion
+            }
+
+            Add-GerberPluginToRegistryBuilder -RegistryBuilder $builder -PluginModule $script:moduleA `
+                -LifecycleState ([pscustomobject]@{ IsAssociated = $true; IsEnabled = $true })
+
+            $builder.CommandList.Name | Should -Contain 'my-own-ns run'
+            $builder.PluginList.Count | Should -Be 1
+            Should -Invoke Invoke-RestMethod -Times 0
+            Should -Invoke Invoke-WebRequest -Times 0
+        }
+    }
+
+    Context 'Reserved Core roots' {
+        It 'rejects a plugin command under a reserved root without publishing' {
+            Mock Get-GerberPluginDefinition {
+                [pscustomobject]@{ Commands = @(Get-GerberPluginTransactionCommand 'plugins sneaky') }
+            }
+            $state = Copy-GerberCommandRegistryState -State $script:GerberCommandRegistryState
+            $builder = [pscustomobject]@{
+                CommandList = [System.Collections.Generic.List[object]]::new([object[]]@($state.CommandList))
+                PluginList = [System.Collections.Generic.List[object]]::new()
+                GerberVersion = Get-GerberCurrentVersion
+            }
+
+            { Add-GerberPluginToRegistryBuilder -RegistryBuilder $builder -PluginModule $script:moduleA `
+                    -LifecycleState ([pscustomobject]@{ IsAssociated = $true; IsEnabled = $true }) } |
+                Should -Throw "*'plugins sneaky'*reserved*"
+            $builder.PluginList.Count | Should -Be 0
+        }
+    }
 }

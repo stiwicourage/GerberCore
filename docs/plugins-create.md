@@ -15,6 +15,10 @@ shared text inputs and Escape navigation; it is not a general-purpose generator.
 | Repository URI (another repository only) | `https://packages.example.org/feed`, or Enter if unknown | Canonical endpoint in `Manifest.PrivateData.Gerber.Repository.Uri`. Enter writes the explicit invalid placeholder `REPLACE_WITH_REPOSITORY_URI`. |
 | Destination parent | Enter, or an existing directory | Defaults to the current working directory. The final project is always a new **parent/Gerber.MyCompany** child. |
 
+A local plugin can use any namespace that Gerber Core does not reserve (`exit`,
+`help`, `plugins`, `update`, `tools`, `secrets`). Developing locally needs no
+registration and no network access.
+
 Suffixes and namespaces are limited to 64 characters. Names cannot contain dots,
 slashes, whitespace or path traversal. Parent directories must already exist and
 must not contain `..` path segments. Existing destinations are never overwritten,
@@ -194,7 +198,7 @@ Gerber.MyCompany  0.1.0    <generated-manifest-guid>               Approved  Yes
 ```
 
 The plugin remains approved, associated and enabled, **not installed or loaded**.
-`/plugins info Gerber.MyCompany` also works before installation. GUID remains
+The plugin also shows in `/plugins list` before installation. GUID remains
 identity; the cache is display fallback only while installed/loaded metadata is
 absent. Discovered manifest metadata takes precedence, and older associations
 without display metadata retain the GUID-only fallback without migration.

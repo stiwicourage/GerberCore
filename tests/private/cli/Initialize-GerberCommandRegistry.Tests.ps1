@@ -586,10 +586,6 @@ Describe 'Initialize-GerberCommandRegistry' -Tag 'PluginTransactions', 'G4A7' {
             ExpectedMessage = "Gerber cannot register root command 'tools' from owner 'Gerber.ConflictCorePlugin' because it is already owned by 'Gerber.Core'."
         }
         @{
-            ModuleNameList  = @('Gerber.ConflictOnePlugin', 'Gerber.ConflictTwoPlugin')
-            ExpectedMessage = "Gerber cannot register root command 'shared' from owner 'Gerber.ConflictTwoPlugin' because it is already owned by 'Gerber.ConflictOnePlugin'."
-        }
-        @{
             ModuleNameList  = @('Gerber.ImportFailurePlugin')
             ExpectedMessage = "Gerber could not import plugin 'Gerber.ImportFailurePlugin': Import failed on purpose."
         }
@@ -607,6 +603,20 @@ Describe 'Initialize-GerberCommandRegistry' -Tag 'PluginTransactions', 'G4A7' {
         {
             Initialize-GerberCommandRegistry -PluginModulePathList @($script:isolatedModuleRoot)
         } | Should -Throw $ExpectedMessage
+    }
+
+    It 'withholds a namespace claimed by two plugins and names both plugins' {
+        Reset-GerberPluginTestEnvironment
+        $script:isolatedModuleRoot = New-GerberPluginFixtureModuleRoot `
+            -StartPath $PSScriptRoot `
+            -ModuleNameList @('Gerber.ConflictOnePlugin', 'Gerber.ConflictTwoPlugin')
+
+        $null = Initialize-GerberCommandRegistry -PluginModulePathList @($script:isolatedModuleRoot) -WarningVariable conflictWarning -WarningAction SilentlyContinue
+
+        Get-GerberRegisteredCommand -Name 'shared' | Should -BeNullOrEmpty
+        @($conflictWarning).Count | Should -Be 1
+        "$conflictWarning" | Should -BeLike "*'/shared'*Gerber.ConflictOnePlugin*Gerber.ConflictTwoPlugin*"
+        @((Get-GerberRegisteredCommandRegistryState).PluginList).Count | Should -Be 2
     }
 
     It 'registers plugin commands atomically when any contributed root command conflicts' {

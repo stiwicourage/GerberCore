@@ -1,0 +1,16 @@
+name: Namespace registry
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  namespace-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the namespace against PowerShell Gallery
+        shell: pwsh
+        run: ./scripts/Test-PluginNamespaceRegistry.ps1

@@ -75,8 +75,8 @@ The module name has the fixed `Gerber.` prefix; the command namespace
 
 Gerber approves GUIDs and persists association/enabled state. Successful
 creation approved, associated and enabled this GUID in the creating user's
-configuration, but did **not** install or load it. `/plugins list` and
-`/plugins info` are read-only; known name/version metadata can appear while the
+configuration, but did **not** install or load it. `/plugins list` and the
+plugin details it opens are read-only; known name/version metadata can appear while the
 state is `Missing` and `Loaded` is `No`. Installed manifest metadata takes
 precedence. After installation, restart Gerber for discovery.
 Another user's configuration requires its own approval. `/plugins disable`

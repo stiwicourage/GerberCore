@@ -8,13 +8,64 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- The README now documents the `GerberCore.json` properties and the compatibility rule for `schemaVersion` 1. The schema review found nothing to change before 1.0.0.
+- The Plugin API v1 document now describes the namespace and conflict contract and the compatibility rules that apply after 1.0.0. The API review found nothing to change before the lock.
+- Generated plugin projects now declare their namespace in `project.json` (manifest and `GerberNamespace_<namespace>` Gallery tag) and include `scripts/Test-PluginNamespaceRegistry.ps1` plus a `Namespace-Registry` workflow. The gate fails when an earlier publisher owns the namespace and reports an unreachable registry as unverified.
+- `/plugins install` now stops when an installed plugin already uses the namespace
+  of the plugin being installed, and asks you to rename or uninstall the installed one first.
+- Added `/plugins install`: installs a plugin from PowerShell Gallery for the current
+  user after checking namespace ownership. A namespace owned by an earlier publisher
+  blocks installation, a failed lookup is shown as unverified and needs explicit
+  confirmation, and the plugin is enabled and approved afterwards with `/plugins enable`.
+  Plugins publish their namespace as the Gallery tag `GerberNamespace_<namespace>`.
+- Added the namespace first-publication rule used for registry checks: the earliest
+  PowerShell Gallery first publication of a `PrivateData.Gerber.Namespace` owns it,
+  ties go to the lowest GUID, and a failed lookup is reported as unverified.
+- Documented and covered by a test that a local plugin can use any namespace
+  Core does not reserve, without registration or network access.
+- A user can store a namespace alias for a plugin in the user configuration
+  (`plugins.aliases.<plugin GUID>`). Gerber registers the plugin's commands
+  under the alias, so two plugins that claim the same namespace can run side by
+  side. The alias is keyed by plugin GUID and survives plugin updates. Aliases
+  must be lowercase names, not Core-reserved, and unique. A plugin that
+  registers more than one root command ignores its alias with a warning.
+  `/plugins alias` sets or removes an alias from the menu; restart Gerber to
+  apply it, and the plugin details in `/plugins list` show the alias.
+- After an update that needs a restart, `/update list` offers **Exit Gerber and
+  PowerShell** in PowerShell console hosts, because exiting Gerber alone leaves
+  the old module loaded. Other hosts (VS Code, ISE, remote) get guidance to
+  restart the session from the host.
+- Plugins can no longer register subcommands under the Core-reserved roots
+  `exit`, `help`, `plugins`, `update`, `tools` and `secrets`; registration fails
+  with a Gerber-owned message.
+- When two enabled plugins declare the same root command (namespace), Gerber no
+  longer fails at startup. It withholds that namespace from both plugins
+  regardless of load order and warns naming every plugin involved.
+
 ### Changed
+
+- The `/plugins` description now lists all its subcommands. The review of Core command names found nothing else to change before 1.0.0.
+- Simplified `/update list`: selected packages are inspected without a separate
+  consent prompt, each checkbox is a single line (`Name  from -> to  (Repository)`),
+  the installation confirmation is a compact per-component plan with one source
+  and scope line, and results show one status line per component with details
+  only when they need attention.
 
 ### Deprecated
 
 ### Removed
 
+- `/plugins info <plugin>` is removed. Open `/plugins list`, select a plugin and
+  press Enter to see its details.
+
 ### Fixed
+
+- `/update list` now shows the actionable reason when a plugin installation fails
+  instead of a generic message, and the confirmation states the required Core as
+  a minimum (`requires Core >= X`).
+- `/update list` can update Core and plugins that were copied manually (no
+  PowerShell provider metadata) when the installed PSModuleUpdate supports
+  `-ReplaceUnmanagedInstallation`; older versions keep the reinstall guidance.
 
 ### Security
 
@@ -331,4 +382,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Single `Esc` from `/plugins list` and `/plugins info` now returns to `/plugins`, while single `Esc` from plugin details opened through `/plugins list` still returns to the list view first.
   - Double `Esc` within 200 milliseconds still returns directly to the root prompt from nested plugin-management views.
   - Direct `/plugins list` and `/plugins info` execution continues to use Gerber's existing command-resolution behavior without inventing a separate navigation history.
-

@@ -55,6 +55,64 @@ Describe 'Write-GerberPluginProject' -Tag 'PluginCreate' {
         @(Get-ChildItem $TestDrive -Recurse -Include '*.psd1', '*.psm1').Count | Should -Be 0
     }
 
+    Context 'namespace registry gate' -Tag 'PluginNamespaceGate' {
+        BeforeEach {
+            $request = [pscustomobject]@{
+                Name = 'Gerber.Example'; Namespace = 'example'; Suffix = 'Example'; Description = 'Local tools'
+            }
+            Write-GerberPluginProject -Request $request -Path $TestDrive -Guid '5ff12592-8333-40d1-b167-9f5902149843'
+            $script:gatePath = Join-Path $TestDrive 'scripts/Test-PluginNamespaceRegistry.ps1'
+        }
+
+        It 'publishes the namespace in the manifest and as Gallery tags' {
+            $manifest = (Get-Content (Join-Path $TestDrive 'project.json') -Raw | ConvertFrom-Json -AsHashtable).Manifest
+
+            $manifest.PrivateData.Gerber.Namespace | Should -BeExactly 'example'
+            $manifest.Tags | Should -Contain 'GerberPlugin'
+            $manifest.Tags | Should -Contain 'GerberNamespace_example'
+        }
+
+        It 'runs the gate in a generated workflow' {
+            $workflow = Get-Content (Join-Path $TestDrive '.github/workflows/Namespace-Registry.yml') -Raw
+
+            $workflow | Should -Match ([regex]::Escape('scripts/Test-PluginNamespaceRegistry.ps1'))
+        }
+
+        It 'passes when nobody has published the namespace' {
+            $result = & $script:gatePath -ProjectRoot $TestDrive -ClaimProvider { @() }
+
+            $result.Status | Should -Be 'Available'
+        }
+
+        It 'passes when the project itself published the namespace first' {
+            $claims = @(@('Gerber.Example', '2026-01-01'), @('Gerber.Later', '2026-02-01'))
+            $result = & $script:gatePath -ProjectRoot $TestDrive -ClaimProvider { $claims | ForEach-Object { [pscustomobject]@{ Name = $_[0]; FirstPublished = [datetime]$_[1] } } }.GetNewClosure()
+
+            $result.Status | Should -Be 'Owner'
+        }
+
+        It 'fails and names the owner when another plugin published the namespace first' {
+            $claims = @(@('Gerber.Earlier', '2026-01-01'), @('Gerber.Example', '2026-02-01'))
+            $provider = { $claims | ForEach-Object { [pscustomobject]@{ Name = $_[0]; FirstPublished = [datetime]$_[1] } } }.GetNewClosure()
+            { & $script:gatePath -ProjectRoot $TestDrive -ClaimProvider $provider } |
+                Should -Throw '*/example*Gerber.Earlier*'
+        }
+
+        It 'fails as unverified instead of passing when the registry cannot be read' {
+            { & $script:gatePath -ProjectRoot $TestDrive -ClaimProvider { throw 'offline' } } |
+                Should -Throw '*unverified*offline*'
+        }
+
+        It 'fails when the project declares no namespace' {
+            $projectPath = Join-Path $TestDrive 'project.json'
+            $project = Get-Content $projectPath -Raw | ConvertFrom-Json -AsHashtable
+            $project.Manifest.PrivateData.Gerber.Remove('Namespace')
+            $project | ConvertTo-Json -Depth 10 | Set-Content $projectPath
+
+            { & $script:gatePath -ProjectRoot $TestDrive -ClaimProvider { @() } } | Should -Throw '*Namespace*'
+        }
+    }
+
     Context 'agent-first scaffold' {
         BeforeEach {
             $request = [pscustomobject]@{

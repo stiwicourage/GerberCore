@@ -93,3 +93,60 @@ Describe 'Invoke-GerberPluginsDisableCommand' {
         Should -Invoke Show-GerberTextBlock -Times 1 -ParameterFilter { $Text -like 'No enabled Gerber plugins*' }
     }
 }
+
+Describe 'Invoke-GerberPluginsAliasCommand' {
+    BeforeEach {
+        Mock Get-GerberPluginInventory { @($script:inactivePlugin, $script:activePlugin) }
+        Mock Show-GerberTextBlock {}
+        Mock Wait-GerberContinue {}
+        Mock Set-GerberPluginNamespaceAlias {}
+        Mock Read-GerberNumberedMenuPrompt { $script:activePlugin.Guid }
+    }
+
+    It 'stores the entered alias for the selected plugin GUID' {
+        Mock Read-GerberCommand { 'microsoft-ado' }
+
+        Invoke-GerberPluginsAliasCommand
+
+        Should -Invoke Set-GerberPluginNamespaceAlias -Times 1 -ParameterFilter {
+            $Guid -eq $script:activePlugin.Guid -and $Alias -eq 'microsoft-ado'
+        }
+        Should -Invoke Show-GerberTextBlock -Times 1 -ParameterFilter { $Text -like "*'/microsoft-ado'*restart*" }
+    }
+
+    It 'removes the alias when the input is empty' {
+        Mock Read-GerberCommand { '' }
+
+        Invoke-GerberPluginsAliasCommand
+
+        Should -Invoke Set-GerberPluginNamespaceAlias -Times 1 -ParameterFilter { [string]::IsNullOrEmpty($Alias) }
+        Should -Invoke Show-GerberTextBlock -Times 1 -ParameterFilter { $Text -like 'Removed*alias*' }
+    }
+
+    It 'asks again when the alias is rejected' {
+        $script:aliasAnswers = [System.Collections.Queue]::new(@('plugins', 'ok-name'))
+        Mock Read-GerberCommand { $script:aliasAnswers.Dequeue() }
+        Mock Set-GerberPluginNamespaceAlias { if ($Alias -eq 'plugins') { throw [System.ArgumentException]::new('reserved') } }
+
+        Invoke-GerberPluginsAliasCommand
+
+        Should -Invoke Set-GerberPluginNamespaceAlias -Times 2
+        Should -Invoke Show-GerberTextBlock -Times 1 -ParameterFilter { $Text -like '*reserved*' }
+    }
+
+    It 'leaves aliases unchanged when selection is cancelled' {
+        Mock Read-GerberNumberedMenuPrompt { throw (Get-GerberMenuEscapeException) }
+
+        { Invoke-GerberPluginsAliasCommand } | Should -Not -Throw
+
+        Should -Invoke Set-GerberPluginNamespaceAlias -Times 0
+    }
+
+    It 'leaves aliases unchanged when the alias prompt is cancelled' {
+        Mock Read-GerberCommand { throw (Get-GerberMenuEscapeException) }
+
+        { Invoke-GerberPluginsAliasCommand } | Should -Not -Throw
+
+        Should -Invoke Set-GerberPluginNamespaceAlias -Times 0
+    }
+}
