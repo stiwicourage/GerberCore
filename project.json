@@ -18,7 +18,7 @@
       },
       {
         "ModuleName": "PSModuleUpdate",
-        "ModuleVersion": "0.2.0"
+        "ModuleVersion": "0.3.0"
       },
       {
         "ModuleName": "Gerber.AzureDevOps",
