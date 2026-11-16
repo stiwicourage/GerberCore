@@ -7,20 +7,30 @@ This file summarizes user-visible commands, configuration and migration changes.
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+## [0.4.0] - 2026-11-16
+
+### Added
+
 - README documents the `GerberCore.json` schema; `schemaVersion` 1 is unchanged.
 - Plugin API v1 documentation covers namespaces, conflicts and post-1.0.0 compatibility; the API itself is unchanged.
 - New plugin projects include a namespace registry gate (script and workflow) that fails when another plugin published the namespace first.
 - `/plugins install` refuses a plugin whose namespace an installed plugin already uses; rename or uninstall the installed plugin first.
 - `/plugins install` installs a plugin from PowerShell Gallery after a namespace ownership check; enable it afterwards with `/plugins enable`.
+
 ### Changed
 
 - The `/plugins` description lists all its subcommands.
+
 ### Removed
 
 - `/plugins info <plugin>` is removed. Open `/plugins list`, select a plugin and
   press Enter to see its details.
-
-### Fixed
 
 ## [0.3.2] - 2026-11-10
 
@@ -169,3 +179,4 @@ This file summarizes user-visible commands, configuration and migration changes.
   macOS/Linux storage.
 - Recoverable errors stay inside Gerber with actionable messages. Shared menu
   navigation returns through parent menus and honors double Escape.
+

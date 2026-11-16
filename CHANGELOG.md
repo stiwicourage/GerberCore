@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.4.0] - 2026-11-16
+
+### Added
+
 - The README now documents the `GerberCore.json` properties and the compatibility rule for `schemaVersion` 1. The schema review found nothing to change before 1.0.0.
 - The Plugin API v1 document now describes the namespace and conflict contract and the compatibility rules that apply after 1.0.0. The API review found nothing to change before the lock.
 - Generated plugin projects now declare their namespace in `project.json` (manifest and `GerberNamespace_<namespace>` Gallery tag) and include `scripts/Test-PluginNamespaceRegistry.ps1` plus a `Namespace-Registry` workflow. The gate fails when an earlier publisher owns the namespace and reports an unreachable registry as unverified.
@@ -51,8 +65,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   and scope line, and results show one status line per component with details
   only when they need attention.
 
-### Deprecated
-
 ### Removed
 
 - `/plugins info <plugin>` is removed. Open `/plugins list`, select a plugin and
@@ -66,8 +78,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `/update list` can update Core and plugins that were copied manually (no
   PowerShell provider metadata) when the installed PSModuleUpdate supports
   `-ReplaceUnmanagedInstallation`; older versions keep the reinstall guidance.
-
-### Security
 
 ## [0.3.2] - 2026-11-10
 
@@ -382,3 +392,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Single `Esc` from `/plugins list` and `/plugins info` now returns to `/plugins`, while single `Esc` from plugin details opened through `/plugins list` still returns to the list view first.
   - Double `Esc` within 200 milliseconds still returns directly to the root prompt from nested plugin-management views.
   - Direct `/plugins list` and `/plugins info` execution continues to use Gerber's existing command-resolution behavior without inventing a separate navigation history.
+
