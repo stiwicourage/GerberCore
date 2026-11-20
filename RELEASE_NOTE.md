@@ -49,11 +49,8 @@ This file summarizes user-visible commands, configuration and migration changes.
 - Plugin lifecycle guidance is explicit: disable with `/plugins disable` inside
   Gerber; uninstall the PowerShell module outside Gerber to remove or revoke it.
   There are no remove or revoke commands.
-
-### Removed
-
-- Product-plugin runtime dependencies. Core requires only **NovaModuleTools** and
-  **PSModuleUpdate**; plugins are installed separately.
+- Installing Gerber installs **Gerber.AzureDevOps** again, alongside
+  **NovaModuleTools** and **PSModuleUpdate**.
 
 ### Fixed
 
@@ -179,4 +176,3 @@ This file summarizes user-visible commands, configuration and migration changes.
   macOS/Linux storage.
 - Recoverable errors stay inside Gerber with actionable messages. Shared menu
   navigation returns through parent menus and honors double Escape.
-
