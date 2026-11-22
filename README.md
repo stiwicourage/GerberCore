@@ -2,8 +2,9 @@
 
 Gerber is an interactive DevOps multitool for PowerShell: a terminal command
 palette with developer utilities, secure credential storage and a shared plugin
-platform. Core works without plugins. Integrations are separate PowerShell
-modules, never Core dependencies.
+platform. Integrations are separate PowerShell modules. Core requires the
+Azure DevOps plugin, `Gerber.AzureDevOps`, which is installed with Core; other
+plugins are optional.
 
 ## Install and run
 
@@ -24,8 +25,10 @@ Linux terminals without a separate TUI framework.
   local-publication toolchain.
 - **PSModuleUpdate** provides update discovery, version selection, installation,
   verification and recovery.
+- **Gerber.AzureDevOps** provides the Azure DevOps commands. Like other plugins,
+  it contributes commands only after `/plugins enable`.
 
-Both are required runtime modules. Nova lifecycle operations do not run at
+All three are required runtime modules. Nova lifecycle operations do not run at
 startup; importing Gerber alone does not check for updates. Secure storage loads
 its bundled credential backend lazily, only for credential operations.
 Linux credentials require a desktop Secret Service session, D-Bus and `libsecret`.

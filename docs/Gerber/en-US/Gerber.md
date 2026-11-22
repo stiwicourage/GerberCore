@@ -16,8 +16,9 @@ title: Gerber Module
 
 Gerber Core is an interactive DevOps multitool for PowerShell 7.4 or later.
 It provides a slash-command palette, shared menus, native credential storage,
-UUID/Base64 tools and update management. Core requires NovaModuleTools and
-PSModuleUpdate; plugins are separate modules, never Core dependencies.
+UUID/Base64 tools and update management. Core requires NovaModuleTools,
+PSModuleUpdate and the Gerber.AzureDevOps plugin; other plugins are optional,
+separate modules.
 
 Use `Invoke-Gerber` (alias `gerber`) to start the interactive multitool.
 Plugin authors use `Test-GerberPluginBoundary` to check for identifiable private

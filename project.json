@@ -1,7 +1,7 @@
 {
   "ProjectName": "Gerber",
   "Description": "DevOps Multitool",
-  "Version": "0.4.0",
+  "Version": "0.4.1-preview",
   "Preamble": [
     "Set-StrictMode -Version Latest",
     "$ErrorActionPreference = 'Stop'"
@@ -25,8 +25,19 @@
         "ModuleVersion": "0.1.0"
       }
     ],
-    "Tags": [],
-    "ProjectUri": ""
+    "Tags": [
+      "Gerber",
+      "DevOps",
+      "CLI",
+      "Terminal",
+      "Plugins",
+      "PSEdition_Core",
+      "Windows",
+      "Linux",
+      "MacOS"
+    ],
+    "ProjectUri": "https://github.com/stiwicourage/GerberCore",
+    "ReleaseNotes": "https://github.com/stiwicourage/GerberCore/blob/main/RELEASE_NOTE.md"
   },
   "Package": {
     "Types": [
