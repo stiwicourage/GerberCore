@@ -32,7 +32,8 @@ This cmdlet has the following aliases,
 
 `Invoke-Gerber` starts Gerber Core's interactive command palette in the current
 working directory. Core provides `/exit`, `/help`, `/plugins`, `/update`,
-`/secrets` and `/tools`. Plugins are separate modules, not Core dependencies.
+`/secrets` and `/tools`. Plugins are separate modules; Core requires only the
+Gerber.AzureDevOps plugin.
 Plugin-contributed commands appear only while active plugins contribute them.
 Menus, completion, help and direct lookup share the active registry.
 
@@ -99,8 +100,8 @@ takes a name and safe absolute URI; unknown URIs become
 publishing or updates. Creation validates a staged Plugin API v1 Nova project
 without overwriting existing files, then approves, associates and enables the GUID.
 It does not install or load the plugin. Generated name/version are available to
-read-only inventory before installation. NovaModuleTools and PSModuleUpdate are
-required runtime modules; Nova lifecycle operations run on demand.
+read-only inventory before installation. NovaModuleTools, PSModuleUpdate and
+Gerber.AzureDevOps are required runtime modules; Nova lifecycle operations run on demand.
 
 `/tools create-uuid` displays a hyphenated UUID and copies it when possible; Enter
 repeats and Esc returns to tools. `/tools base-64 encode` and `decode` convert

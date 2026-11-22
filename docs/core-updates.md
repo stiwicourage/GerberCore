@@ -3,11 +3,12 @@
 Gerber owns update presentation, repository policy and confirmation.
 PSModuleUpdate (PMU) owns package discovery, version selection, installation,
 verification and recovery. NovaModuleTools supplies the separate plugin-development
-build/test/publication toolchain. Plugins are independent modules, not Core dependencies.
+build/test/publication toolchain. Plugins are independent modules; `Gerber.AzureDevOps`
+is the only plugin Core requires.
 
 ## Requirements
 
-Gerber requires NovaModuleTools and PSModuleUpdate. The declared minimum PMU
+Gerber requires NovaModuleTools, PSModuleUpdate and Gerber.AzureDevOps. The declared minimum PMU
 version is `0.2.0`.
 
 **Plugin updates require a PSModuleUpdate release that exports
