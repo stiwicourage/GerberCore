@@ -176,3 +176,75 @@ This file summarizes user-visible commands, configuration and migration changes.
   macOS/Linux storage.
 - Recoverable errors stay inside Gerber with actionable messages. Shared menu
   navigation returns through parent menus and honors double Escape.
+
+## [0.2.0] - 2026-10-27
+
+### Added
+
+- `/update policy` saves **Stable only** (default) or **Include prereleases** in
+  the optional `coreUpdates.channel` setting. Startup and manual Core checks use
+  the saved channel; selecting a policy installs nothing.
+- `/update` opens a **list**/**policy** submenu. `/update list` runs a fresh
+  check and returns to the submenu after the results.
+
+### Changed
+
+- Gerber requires PSModuleUpdate `0.1.1` or later. `/update` does not install
+  PSModuleUpdate for you.
+
+### Fixed
+
+- Update checks on an unsupported Core installation layout explain the
+  supported numeric-version module directory and restart, instead of blaming
+  PSGallery.
+- A locally copied Core installation without provider metadata gets PSGallery
+  reinstall guidance.
+
+## [0.1.0] - 2026-10-25
+
+### Added
+
+- `Invoke-Gerber` (alias `gerber`) starts the interactive multitool with
+  `/tools`, `/list`, `/secrets`, `/plugins`, `/update`, `/help` and `/exit`.
+  The prompt supports slash completion, plain-text action search, help previews
+  and nested menus. Esc goes back one level; double Esc within 200 ms returns to
+  the root prompt.
+- `/tools create-uuid` generates a UUID and copies it when possible.
+  `/tools base-64 encode` and `decode` convert one-line UTF-8 text.
+- `/secrets` provides `list`, `get`, `test`, `set` and `remove` using native
+  credential storage. Revealing, overwriting and removing values require
+  confirmation; there is no plaintext fallback.
+- `/update` checks Gerber Core on PSGallery, shows installed and available
+  versions and asks for confirmation with **Cancel** as the default. The startup
+  check only notifies.
+- Unknown plugins require approval by manifest GUID before import; decline is the
+  default and is remembered. Noninteractive sessions skip unknown plugins.
+- `/plugins`, `/plugins list` and `/plugins info <plugin>` inspect plugins
+  without importing them. `/plugins enable` and `/plugins disable` take effect
+  immediately and persist across restarts.
+- `/plugins create` generates a Plugin API v1 plugin project with tests and
+  agent guidance. It never overwrites an existing destination or installs the
+  module.
+- `Test-GerberPluginBoundary -Path <project>` reports private Core dependencies
+  in plugin source without running it.
+- Setting `GERBER_PROMPT_TRACE=1` writes prompt tracing to
+  `.gerber/prompt-debug.log`.
+- Network calls time out after 5 seconds (connection) or 15 seconds (operation)
+  with DNS and timeout hints.
+
+### Changed
+
+- Gerber requires NovaModuleTools and PSModuleUpdate.
+
+### Fixed
+
+- On Windows, secrets use the `gerber://credentials` service name required by the
+  credential provider. Storage on macOS and Linux is unchanged.
+
+[Unreleased]: https://github.com/stiwicourage/GerberCore/compare/0.4.0...HEAD
+[0.4.0]: https://github.com/stiwicourage/GerberCore/compare/0.3.2...0.4.0
+[0.3.2]: https://github.com/stiwicourage/GerberCore/compare/0.3.1...0.3.2
+[0.3.1]: https://github.com/stiwicourage/GerberCore/compare/0.3.0...0.3.1
+[0.3.0]: https://github.com/stiwicourage/GerberCore/compare/0.2.0...0.3.0
+[0.2.0]: https://github.com/stiwicourage/GerberCore/compare/0.1.0...0.2.0
+[0.1.0]: https://github.com/stiwicourage/GerberCore/releases/tag/0.1.0

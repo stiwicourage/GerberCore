@@ -392,3 +392,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Single `Esc` from `/plugins list` and `/plugins info` now returns to `/plugins`, while single `Esc` from plugin details opened through `/plugins list` still returns to the list view first.
   - Double `Esc` within 200 milliseconds still returns directly to the root prompt from nested plugin-management views.
   - Direct `/plugins list` and `/plugins info` execution continues to use Gerber's existing command-resolution behavior without inventing a separate navigation history.
+
+[Unreleased]: https://github.com/stiwicourage/GerberCore/compare/0.4.0...HEAD
+[0.4.0]: https://github.com/stiwicourage/GerberCore/compare/0.3.2...0.4.0
+[0.3.2]: https://github.com/stiwicourage/GerberCore/compare/0.3.1...0.3.2
+[0.3.1]: https://github.com/stiwicourage/GerberCore/compare/0.3.0...0.3.1
+[0.3.0]: https://github.com/stiwicourage/GerberCore/compare/0.2.0...0.3.0
+[0.2.0]: https://github.com/stiwicourage/GerberCore/compare/0.1.0...0.2.0
+[0.1.0]: https://github.com/stiwicourage/GerberCore/releases/tag/0.1.0
