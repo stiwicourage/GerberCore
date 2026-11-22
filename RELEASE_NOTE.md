@@ -13,6 +13,8 @@ This file summarizes user-visible commands, configuration and migration changes.
 
 ### Fixed
 
+## [0.5.0] - 2026-11-22
+
 ## [0.4.0] - 2026-11-16
 
 ### Added
@@ -241,7 +243,8 @@ This file summarizes user-visible commands, configuration and migration changes.
 - On Windows, secrets use the `gerber://credentials` service name required by the
   credential provider. Storage on macOS and Linux is unchanged.
 
-[Unreleased]: https://github.com/stiwicourage/GerberCore/compare/0.4.0...HEAD
+[Unreleased]: https://github.com/stiwicourage/GerberCore/compare/0.5.0...HEAD
+[0.5.0]: https://github.com/stiwicourage/GerberCore/compare/0.4.0...0.5.0
 [0.4.0]: https://github.com/stiwicourage/GerberCore/compare/0.3.2...0.4.0
 [0.3.2]: https://github.com/stiwicourage/GerberCore/compare/0.3.1...0.3.2
 [0.3.1]: https://github.com/stiwicourage/GerberCore/compare/0.3.0...0.3.1
