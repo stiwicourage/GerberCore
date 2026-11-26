@@ -138,6 +138,7 @@ Do not duplicate it inside `PrivateData.Gerber`:
       "Gerber": {
         "Plugin": true,
         "ApiVersion": "1",
+        "Conformance": ["RootNavigation"],
         "Repository": {
           "Name": "PSGallery",
           "Uri": "https://www.powershellgallery.com/api/v2"

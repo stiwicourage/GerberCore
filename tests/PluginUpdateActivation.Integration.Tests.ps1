@@ -22,6 +22,7 @@ Describe 'Plugin update activation through a fresh process' -Tag 'G4A9' {
         $script:plugin = Initialize-TestActivationFixture (Join-Path $TestDrive 'fixture') @{
             Plugin               = $true
             ApiVersion           = '1'
+            Conformance          = @('RootNavigation')
             MinimumGerberVersion = '0.2.0'
         }
         $script:payload = @{

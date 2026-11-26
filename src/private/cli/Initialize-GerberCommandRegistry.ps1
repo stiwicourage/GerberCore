@@ -189,6 +189,27 @@ function Assert-GerberPluginModuleManifest {
     Assert-GerberRequiredPluginMetadataField -ModuleInfo $ModuleInfo -Metadata $gerberMetadata -Name 'ApiVersion'
     Assert-GerberSupportedPluginApi -ModuleInfo $ModuleInfo -Metadata $gerberMetadata
     Assert-GerberRequiredPluginMetadataField -ModuleInfo $ModuleInfo -Metadata $gerberMetadata -Name 'MinimumGerberVersion'
+    Assert-GerberPluginConformance -ModuleInfo $ModuleInfo -Metadata $gerberMetadata
+}
+
+function Get-GerberRequiredPluginConformanceList {
+    return @('RootNavigation')
+}
+
+function Assert-GerberPluginConformance {
+    param(
+        [psobject]$ModuleInfo,
+        [object]$Metadata
+    )
+
+    $declared = @(Read-GerberManifestProperty -InputObject $Metadata -Name 'Conformance')
+    foreach ($behavior in (Get-GerberRequiredPluginConformanceList)) {
+        if ($behavior -notin $declared) {
+            throw [System.InvalidOperationException]::new(
+                "Gerber plugin '$($ModuleInfo.Name)' was rejected: it does not declare support for the required plugin API v1 behavior '$behavior' in 'PrivateData.Gerber.Conformance'. The behavior is not supported by the plugin."
+            )
+        }
+    }
 }
 
 function Assert-GerberRequiredPluginMetadataField {

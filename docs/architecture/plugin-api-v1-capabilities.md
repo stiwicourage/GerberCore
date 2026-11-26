@@ -127,6 +127,21 @@ A plugin's command root is its manifest `PrivateData.Gerber.Namespace`.
   namespace. It is checked only at install time and in the generated publish
   gate, never at runtime, and a failed lookup is reported as unverified.
 
+## Required conformance
+
+Every plugin must declare the behaviors it supports in
+`PrivateData.Gerber.Conformance`. Gerber rejects a plugin that omits a required
+behavior while validating its manifest, before import, and reports which behavior
+is not supported. A plugin that is rejected exposes no commands.
+
+| Behavior | Requirement |
+| --- | --- |
+| `RootNavigation` | Pressing Escape twice quickly makes Core raise an exception carrying `Data['GerberRootNavigation']`. A plugin must not handle or display it: rethrow it (including when wrapped) from every catch block so Core returns to the root menu from any submenu. Swallowing it only goes back one level; showing it is a defect. `IsEscapeException` covers ordinary back navigation only. |
+
+Declare it in `project.json`: `"Conformance": ["RootNavigation"]`. Declaring a
+behavior the plugin does not implement is a defect; cover it with a test that
+passes a root-navigation exception through each flow.
+
 ## Compatibility after 1.0.0
 
 Within `ApiVersion` `"1"` operations may be added but not renamed, removed or

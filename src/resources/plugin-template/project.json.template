@@ -16,6 +16,7 @@
       "Gerber": {
         "Plugin": true,
         "ApiVersion": "1",
+        "Conformance": ["RootNavigation"],
         "Namespace": "{{Namespace}}",
         "MinimumGerberVersion": "{{MinimumGerberVersion}}",
         "Repository": {

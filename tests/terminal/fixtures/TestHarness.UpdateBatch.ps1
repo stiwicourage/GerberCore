@@ -111,7 +111,7 @@ function script:Get-GerberTerminalPluginMinimumCore {
 function script:Get-GerberTerminalTargetManifest {
     param([object]$Plan, [string]$Minimum)
     $metadata = @{
-        Plugin = $true; ApiVersion = '1'; MinimumGerberVersion = $Minimum
+        Plugin = $true; ApiVersion = '1'; Conformance = @('RootNavigation'); MinimumGerberVersion = $Minimum
     }
     $manifest = @{
         GUID = $Plan.ModuleGuid; PrivateData = @{

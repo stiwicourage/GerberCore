@@ -385,6 +385,33 @@ Describe 'Initialize-GerberCommandRegistry' -Tag 'PluginTransactions', 'G4A7' {
             -ExpectedMessage "Gerber plugin 'MissingMinimum' is missing required manifest metadata 'PrivateData.Gerber.MinimumGerberVersion'."
     }
 
+    It 'rejects a plugin that does not declare the required conformance and names the missing behavior' -TestCases @(
+        @{ Conformance = $null }
+        @{ Conformance = @() }
+        @{ Conformance = @('SomethingElse') }
+    ) {
+        param($Conformance)
+        & $script:assertManifestValidationFailure `
+            -ModuleInfo ([pscustomobject]@{
+                Name        = 'Gerber.NoConformancePlugin'
+                PrivateData = @{
+                    Gerber = @{
+                        ApiVersion           = '1'
+                        MinimumGerberVersion = '0.1.0'
+                        Conformance          = $Conformance
+                    }
+                }
+            }) `
+            -ExpectedMessage "Gerber plugin 'Gerber.NoConformancePlugin' was rejected: it does not declare support for the required plugin API v1 behavior 'RootNavigation' in 'PrivateData.Gerber.Conformance'. The behavior is not supported by the plugin."
+    }
+
+    It 'accepts a plugin that declares every required conformance' {
+        { Assert-GerberPluginModuleManifest -ModuleInfo ([pscustomobject]@{
+                Name        = 'Gerber.ConformantPlugin'
+                PrivateData = @{ Gerber = @{ ApiVersion = '1'; MinimumGerberVersion = '0.1.0'; Conformance = @('RootNavigation') } }
+            }) } | Should -Not -Throw
+    }
+
     It 'fails when a plugin entry point returns an empty definition' {
         $pluginModule = [pscustomobject]@{
             Name       = 'Gerber.EmptyDefinitionPlugin'

@@ -29,7 +29,7 @@ def _write_batch_plugin_manifest(directory, name: str, guid: str) -> None:
         "    FunctionsToExport = @('Get-GerberPlugin')\n"
         "    PrivateData = @{\n"
         "        Gerber = @{\n"
-        "            Plugin = $true; ApiVersion = '1'; MinimumGerberVersion = '0.1.0-preview'\n"
+        "            Plugin = $true; ApiVersion = '1'; Conformance = @('RootNavigation'); MinimumGerberVersion = '0.1.0-preview'\n"
         "        }\n"
         "    }\n"
         "}\n",

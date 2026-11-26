@@ -8,6 +8,7 @@
         Gerber = @{
             Plugin               = $true
             ApiVersion           = '1'
+            Conformance          = @('RootNavigation')
             MinimumGerberVersion = '9.0.0'
         }
     }

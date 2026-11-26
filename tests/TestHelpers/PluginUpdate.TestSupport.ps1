@@ -91,6 +91,7 @@ function Get-TestPluginTargetManifest {
             Gerber = @{
                 Plugin               = $true
                 ApiVersion           = '1'
+                Conformance          = @('RootNavigation')
                 MinimumGerberVersion = $Minimum
             }
         }
