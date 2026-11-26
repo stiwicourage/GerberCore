@@ -38,10 +38,12 @@ function Complete-TestActivationManifest {
     param([string]$Path, [hashtable]$Metadata)
     $api = $Metadata.ApiVersion.Replace("'", "''")
     $minimum = $Metadata.MinimumGerberVersion.Replace("'", "''")
+    $conformance = (@($Metadata.Conformance) | Where-Object { $_ } | ForEach-Object { "'$_'" }) -join ', '
     $literal = @"
 @{
     Plugin = `$true
     ApiVersion = '$api'
+    Conformance = @($conformance)
     MinimumGerberVersion = '$minimum'
 }
 "@
