@@ -156,11 +156,26 @@ function Read-GerberValidatedPluginManifest {
 
     return @(
         foreach ($moduleInfo in (Get-GerberPluginManifestMetadataList -PluginModulePathList $PluginModulePathList)) {
-            Assert-GerberPluginModuleManifest -ModuleInfo $moduleInfo
-            $moduleInfo
+            if (Test-GerberPluginManifestAccepted -ModuleInfo $moduleInfo) {
+                $moduleInfo
+            }
         }
     )
 
+}
+
+# A plugin rejected for missing conformance is skipped with a warning so Gerber and other plugins still start.
+function Test-GerberPluginManifestAccepted {
+    param([psobject]$ModuleInfo)
+
+    try {
+        Assert-GerberPluginModuleManifest -ModuleInfo $ModuleInfo
+        return $true
+    } catch {
+        if (-not $_.Exception.Data.Contains('GerberPluginRejected')) { throw }
+        Write-Warning $_.Exception.Message
+        return $false
+    }
 }
 
 function Select-GerberLatestPluginManifest {
@@ -205,9 +220,11 @@ function Assert-GerberPluginConformance {
     $declared = @(Read-GerberManifestProperty -InputObject $Metadata -Name 'Conformance')
     foreach ($behavior in (Get-GerberRequiredPluginConformanceList)) {
         if ($behavior -notin $declared) {
-            throw [System.InvalidOperationException]::new(
+            $rejection = [System.InvalidOperationException]::new(
                 "Gerber plugin '$($ModuleInfo.Name)' was rejected: it does not declare support for the required plugin API v1 behavior '$behavior' in 'PrivateData.Gerber.Conformance'. The behavior is not supported by the plugin."
             )
+            $rejection.Data['GerberPluginRejected'] = $true
+            throw $rejection
         }
     }
 }

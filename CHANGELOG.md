@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Plugins must declare required behaviors in `PrivateData.Gerber.Conformance` (`RootNavigation`: rethrow the quick double-Escape root-navigation exception so Core returns to the root menu). Gerber rejects plugins that omit it and names the unsupported behavior. The plugin template, plugin-creation documentation and Plugin API v1 reference describe the requirement.
+- Plugins must declare required behaviors in `PrivateData.Gerber.Conformance` (`RootNavigation`: rethrow the quick double-Escape root-navigation exception so Core returns to the root menu). Gerber skips plugins that omit it with a startup warning naming the unsupported behavior; Gerber and other plugins still start. The plugin template, plugin-creation documentation and Plugin API v1 reference describe the requirement.
 
 ### Changed
 

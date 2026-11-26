@@ -7,7 +7,7 @@ This file summarizes user-visible commands, configuration and migration changes.
 
 ### Added
 
-- Plugin manifests must declare `PrivateData.Gerber.Conformance = @('RootNavigation')`. Gerber rejects plugins without it and states which behavior is not supported. Migration: add the declaration after making every plugin flow return quietly on a quick double Escape.
+- Plugin manifests must declare `PrivateData.Gerber.Conformance = @('RootNavigation')`. Gerber skips plugins without it with a warning stating which behavior is not supported; Gerber still starts. Migration: add the declaration after making every plugin flow return quietly on a quick double Escape.
 
 ### Changed
 

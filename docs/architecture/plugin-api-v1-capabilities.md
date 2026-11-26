@@ -131,8 +131,8 @@ A plugin's command root is its manifest `PrivateData.Gerber.Namespace`.
 
 Every plugin must declare the behaviors it supports in
 `PrivateData.Gerber.Conformance`. Gerber rejects a plugin that omits a required
-behavior while validating its manifest, before import, and reports which behavior
-is not supported. A plugin that is rejected exposes no commands.
+behavior while validating its manifest, before import, and warns which behavior
+is not supported. A rejected plugin is skipped with a startup warning and exposes no commands; Gerber and the other plugins still start.
 
 | Behavior | Requirement |
 | --- | --- |

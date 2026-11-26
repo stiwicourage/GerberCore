@@ -711,3 +711,29 @@ Describe 'Initialize-GerberCommandRegistry' -Tag 'PluginTransactions', 'G4A7' {
     }
 
 }
+
+Describe 'Read-GerberValidatedPluginManifest conformance handling' {
+    BeforeAll {
+        . (Join-Path (Split-Path -Parent (Split-Path -Parent $PSScriptRoot)) 'TestHelpers/GerberTestSupport.ps1')
+        Import-GerberSource -StartPath $PSScriptRoot
+    }
+
+    It 'skips a plugin rejected for missing conformance with a warning and still discovers the others' {
+        $good = [pscustomobject]@{ Name = 'Gerber.Good'; PrivateData = @{ Gerber = @{ ApiVersion = '1'; MinimumGerberVersion = '0.1.0'; Conformance = @('RootNavigation') } } }
+        $old = [pscustomobject]@{ Name = 'Gerber.Old'; PrivateData = @{ Gerber = @{ ApiVersion = '1'; MinimumGerberVersion = '0.1.0' } } }
+        Mock Get-GerberPluginManifestMetadataList { @($old, $good) }
+
+        $output = @(Read-GerberValidatedPluginManifest -PluginModulePathList @('x') 3>&1)
+        $warnings = $output | Where-Object { $_ -is [System.Management.Automation.WarningRecord] }
+        $result = $output | Where-Object { $_ -isnot [System.Management.Automation.WarningRecord] }
+
+        $result.Name | Should -Be @('Gerber.Good')
+        "$warnings" | Should -Match "Gerber plugin 'Gerber.Old' was rejected"
+        "$warnings" | Should -Match "'RootNavigation'"
+    }
+
+    It 'still stops on other invalid manifests' {
+        Mock Get-GerberPluginManifestMetadataList { @([pscustomobject]@{ Name = 'Gerber.Bad'; PrivateData = @{ Gerber = @{ ApiVersion = '2'; MinimumGerberVersion = '0.1.0' } } }) }
+        { Read-GerberValidatedPluginManifest -PluginModulePathList @('x') } | Should -Throw "*requires plugin API version '2'*"
+    }
+}
